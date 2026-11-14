@@ -49,8 +49,10 @@ jobs:
           ndk=$(sed -nE 's/.*ndkVersion.*"([0-9.]+)".*/\1/p' "$extension" | head -1)
           sdk=$(sed -nE 's/.*compileSdkVersion[^0-9]*([0-9]+).*/\1/p' "$extension" | head -1)
           test -n "$ndk" && test -n "$sdk"
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-$sdk" "build-tools;$sdk.0.0" "ndk;$ndk" 'cmake;3.22.1'
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$sdkmanager"
+          yes | "$sdkmanager" --licenses >/dev/null || true
+          "$sdkmanager" "platforms;android-$sdk" "build-tools;$sdk.0.0" "ndk;$ndk" 'cmake;3.22.1'
       - name: Resolve locked App dependencies
         working-directory: app
         run: flutter pub get --enforce-lockfile
