@@ -146,7 +146,7 @@ HomeShell = [ChatScreen] + [SessionsDrawer 左] + [QuickPanel 右] + [SystemEntr
 | `share_code/` `share_hosted/` | 分享码/对话导出（打码）；加密托管链接 | `conversation_redact.dart`、`hosted_client.dart` |
 | `remote/` | 远程 UI 侧：链路状态、网络监测、WebRTC peer、SSH 转发 | `relay/webrtc_peer.dart`、`ssh/local_forward.dart` |
 | `tavern/` `companion/` `pets/` | 酒馆逻辑、伙伴小屋、桌宠 overlay 桥 | 各自 `*_state.dart`/`*_bridge.dart` |
-| `links/` `launch/` `notify/` `voice/` `usage/` `performance/` `wallpaper/` `forum/` `workshop/` | 深链、开屏、通知、语音、用量、性能、壁纸、论坛、工坊 | 各自通道/服务 |
+| `links/` `launch/` `notify/` `voice/` `performance/` `wallpaper/` `forum/` `workshop/` | 深链、开屏、通知、语音、性能、壁纸、论坛、工坊 | 各自通道/服务 |
 | `dev/` | 开发探针入口（不进发行包） | `runtime_probe_main.dart` 等 |
 
 > **ui.json 现状**：内核/解析/schema 齐全，但当前只有 4 处真正接线——
@@ -207,7 +207,7 @@ HomeShell = [ChatScreen] + [SessionsDrawer 左] + [QuickPanel 右] + [SystemEntr
 | `notify/` | 通知、实时活动（Live Activity）、回合提醒、通知动作回调 |
 | `files/` `media/` `nativemedia/` | 文件选择器/保存、相册权限队列、视频/音频/麦克风、JS 预览 |
 | `launch/` `icons/` `shortcuts/` `tile/` | 开屏、桌面图标、快捷方式、磁贴 |
-| `links/` `share/` `theme/` `islands/` `voice/` `usage/` `performance/` `web/` `mlkit/` `i18n/` | 深链、分享接收、动态取色、插件岛、语音、用量、性能策略、Web 文件、ML Kit、原生文案 |
+| `links/` `share/` `theme/` `islands/` `voice/` `performance/` `web/` `mlkit/` `i18n/` | 深链、分享接收、动态取色、插件岛、语音、性能策略、Web 文件、ML Kit、原生文案 |
 
 ### 3.5 平台通道（Dart ↔ Kotlin）
 

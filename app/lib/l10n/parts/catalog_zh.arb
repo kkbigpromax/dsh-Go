@@ -65,7 +65,7 @@
   "catalogWorkspaces": "工作区",
   "catalogWorkspacesSummary": "添加与切换目录",
   "catalogGeneral": "通用设置",
-  "catalogGeneralSummary": "显示、发送与日志上传",
+  "catalogGeneralSummary": "显示与发送",
   "catalogAccount": "账号与余额",
   "catalogAccountSummary": "登录、余额与充值",
   "catalogRemoteSummary": "连接电脑或服务器",

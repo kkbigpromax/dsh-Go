@@ -188,10 +188,7 @@ class NoConnection extends LocalConnectionController {
 
 class FakeOnboardingPrefs extends OnboardingPrefsController {
   @override
-  OnboardingPrefs build() => const OnboardingPrefs(loaded: true, welcomeSeen: true);
-
-  @override
-  Future<void> markWelcomeSeen() async => state = state.copyWith(welcomeSeen: true);
+  OnboardingPrefs build() => const OnboardingPrefs(loaded: true);
 
   @override
   Future<void> setKeySkipped(bool skipped) async => state = state.copyWith(keySkipped: skipped);

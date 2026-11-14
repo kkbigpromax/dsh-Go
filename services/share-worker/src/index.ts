@@ -11,7 +11,6 @@
 //   GET    /beta, /beta/…                 beta builds behind an access key (src/beta.ts)
 //   GET    /download, /download/…         the same builds for anyone, once
 //                                         DOWNLOAD_ACCESS=public (src/download.ts)
-//   POST   /api/usage/v1                  the app's anonymous usage report (src/usage.ts)
 //   GET    /api/github/stars              the repository's star count, for the home page
 //                                         (src/github.ts)
 //   GET    /market/index.json, /market/dsh-go.json, /p/<package>
@@ -19,7 +18,7 @@
 //                                         also put on the public bucket every 10
 //                                         minutes (the cron, below)
 //
-// Downloads, update checks and usage reports are counted in Analytics Engine
+// Downloads and update checks are counted in Analytics Engine
 // without keeping IPs (src/stats.ts); scripts/stats.sh reads them.
 //
 // /update.json (a retired public mirror) is 404, and so is /download until
@@ -31,7 +30,6 @@ import { beta, isBetaPath } from './beta';
 export { BetaGuard } from './beta-guard';
 import { accessMode, download, isDownloadPath } from './download';
 export { StatsSalt } from './stats';
-import { usage } from './usage';
 import { githubStars } from './github';
 import { isMarketPath, market, publishMarket } from './market';
 import { isPetMarketPath, petMarket, publishPetMarket } from './pet-market';
@@ -52,7 +50,6 @@ async function route(request: Request, env: Env, ctx: Ctx): Promise<Response> {
 
   if (isWorkshopPath(path)) return workshop(request, env, ctx);
   if (path.startsWith('/api/')) {
-    if (path === '/api/usage/v1') return usage(request, env);
     if (path === '/api/github/stars') return githubStars(request, env, ctx);
     if (path === '/api/v1/c') {
       return method === 'POST' ? upload(request, env) : json(405, { error: 'method_not_allowed' }, { Allow: 'POST' });

@@ -16,6 +16,7 @@ import 'dart:convert';
 import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/pets/pet_mood.dart';
 import 'package:dsh_app/pets/pet_signals.dart';
+import 'package:dsh_app/phone/phone_channel.dart';
 import 'package:dsh_app/runtime/runtime_bridge.dart' show RuntimePhase, RuntimeStatus;
 import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/draft_store.dart';
@@ -44,9 +45,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../phone/support.dart' show FixedActiveHost;
 import '../shell/golden_harness.dart';
 import '../support/test_fonts.dart';
-import '../usage/support.dart' show NoPhone;
 
 // ── Fakes ────────────────────────────────────────────────────────────────────
+
+class NoPhone extends PhoneChannel {
+  @override
+  Future<PhoneStatus> status() async => const PhoneStatus.notReady();
+}
 
 class MemoryStarStore implements StarPromptStore {
   MemoryStarStore([this.record]);

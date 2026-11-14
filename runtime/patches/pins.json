@@ -252,6 +252,30 @@
         }
       }
     },
+    "remove-deepseek-session-log.diff": {
+      "0.2.2-rc.1": {
+        "node_modules/@deepseek-ai/dsh-base/cordis.patch.yml": {
+          "after": "f006a6c673eeef404f71c0954fc52a3ac2326b01fb63ba56c5167e4a7066061d",
+          "before": "b65a86e55f02d863286bb6faac8ae292c18fffca3c8aa4491b600fa4dd6b48d0"
+        },
+        "node_modules/@deepseek-ai/dsh-client-ui-settings-session-log/lib/client.js": {
+          "after": "482990452739055827cd939fd30856e21e0d3a214f79c7eb590f2baef98f27b0",
+          "before": "fe9cf2f75c5884219bfee5944658561d0160dd2245e8e75983833883e44034a3"
+        },
+        "node_modules/@deepseek-ai/dsh-session-log-deepseek/lib/index.js": {
+          "after": "0f9f4b72f45a9551f4041947f8707ffdee14d497d2f3ee0ea8f0d7614310e8e7",
+          "before": "a4b5cc74b9bd9705e107ab4c8eb2395a5c580507e2b5fbd8eff09377f41ca0cf"
+        },
+        "node_modules/@deepseek-ai/dsh-session-log-deepseek/lib/types/index.js": {
+          "after": "5fbb592b062f20c60792b9cbae84b497b7c8d7024bdb98adbd5603f65306581c",
+          "before": "4a046a87e4683e927ea05fe1cf3e2ed443af649a5372962df433e1e4aaee33eb"
+        },
+        "node_modules/@deepseek-ai/dsh-web-app/cordis.patch.yml": {
+          "after": "f6a000c3159cc4ed58dfde21436f2ce2153451f188ba33e1709d4ec85731103d",
+          "before": "11c444b94936f8c645f49740b692fc8545898591f78af893d2cb1b7fed4c701c"
+        }
+      }
+    },
     "route-guard.diff": {
       "0.2.1-rc.2": {
         "node_modules/@deepseek-ai/dsh-host-webserver/lib/index.js": {

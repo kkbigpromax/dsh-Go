@@ -13,7 +13,6 @@ import 'package:dsh_app/ui/engine/engine_screen.dart';
 import 'package:dsh_app/ui/onboarding/api_key_page.dart';
 import 'package:dsh_app/ui/onboarding/onboarding_scaffold.dart';
 import 'package:dsh_app/ui/onboarding/runtime_setup_page.dart';
-import 'package:dsh_app/ui/onboarding/welcome_page.dart';
 import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
 import 'package:dsh_app/ui/shell/home_shell.dart';
@@ -27,7 +26,6 @@ import 'golden_harness.dart';
 const _key = 'sk-4c1f0e7b9a2d4e6f8a1b3c5d7e9fa3f9';
 
 void main() {
-  goldenBoth('welcome', () => WelcomePage(onStart: () {}));
 
   goldenBoth(
     'setup_40',

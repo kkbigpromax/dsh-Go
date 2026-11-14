@@ -44,17 +44,11 @@ export interface Env {
    *  `<base>download/<version>/<file>`, the Global route's once a release is
    *  there. Empty or not https: Global stays on /download/<version>/<file>. */
   DL_BASE_URL?: string;
-  /** Workers Analytics Engine datasets (src/stats.ts, src/usage.ts). */
+  /** Workers Analytics Engine datasets (src/stats.ts). */
   DOWNLOADS?: AnalyticsEngineDataset;
   CHECKS?: AnalyticsEngineDataset;
-  USAGE?: AnalyticsEngineDataset;
   /** Today's random salt for daily device codes (src/stats.ts). */
   STATS_SALT?: DurableObjectNamespace;
-  /** Secret: keys the hash of the app's install id (src/usage.ts). Without
-   *  it /api/usage/v1 is 404. */
-  USAGE_SECRET?: string;
-  /** Usage reports per client per minute. */
-  USAGE_LIMIT?: RateLimiter;
   /** Optional secret: a GitHub token (no scopes) for the star count's API
    *  requests, which otherwise share GitHub's per-IP limit (src/github.ts). */
   GITHUB_TOKEN?: string;

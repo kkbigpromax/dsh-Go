@@ -139,7 +139,7 @@ Future<void> frames(WidgetTester tester, [int n = 10]) async {
 Future<GateRig> pumpGate(
   WidgetTester tester, {
   LocalRuntimeState runtime = const LocalRuntimeState(loaded: true, status: missingStatus),
-  OnboardingPrefs prefs = const OnboardingPrefs(loaded: true, welcomeSeen: true),
+  OnboardingPrefs prefs = const OnboardingPrefs(loaded: true),
   AppSettings settings = const AppSettings(loaded: true),
   List<Override> overrides = const [],
 }) async {

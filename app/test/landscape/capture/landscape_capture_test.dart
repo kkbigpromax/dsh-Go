@@ -27,7 +27,6 @@ import 'package:dsh_app/ui/files/files_page.dart';
 import 'package:dsh_app/ui/onboarding/api_key_page.dart';
 import 'package:dsh_app/ui/onboarding/onboarding_scaffold.dart';
 import 'package:dsh_app/ui/onboarding/runtime_setup_page.dart';
-import 'package:dsh_app/ui/onboarding/welcome_page.dart';
 import 'package:dsh_app/ui/phone/phone_control_screen.dart';
 import 'package:dsh_app/ui/session/session_detail_page.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
@@ -278,7 +277,6 @@ void main() {
   );
 
   // ── Onboarding ───────────────────────────────────────────────────────────
-  capture('welcome', (_) => _golden(WelcomePage(onStart: () {})));
   capture(
     'setup',
     (_) => _golden(

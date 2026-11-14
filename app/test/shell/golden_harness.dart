@@ -71,15 +71,12 @@ class FakeSettings extends SettingsController {
 }
 
 class FakeOnboardingPrefs extends OnboardingPrefsController {
-  FakeOnboardingPrefs([this.initial = const OnboardingPrefs(loaded: true, welcomeSeen: true)]);
+  FakeOnboardingPrefs([this.initial = const OnboardingPrefs(loaded: true)]);
 
   final OnboardingPrefs initial;
 
   @override
   OnboardingPrefs build() => initial;
-
-  @override
-  Future<void> markWelcomeSeen() async => state = state.copyWith(welcomeSeen: true);
 
   @override
   Future<void> setKeySkipped(bool skipped) async => state = state.copyWith(keySkipped: skipped);

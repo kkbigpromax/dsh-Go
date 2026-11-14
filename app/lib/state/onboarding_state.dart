@@ -3,8 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// First-run flags that outlive a single launch.
 ///
-/// - [welcomeSeen]: the user tapped "开始" once. If the process dies mid-unpack, the
-///   next launch resumes at the setup screen instead of showing the welcome again.
 /// - [keySkipped]: the user chose "稍后设置" on the API key step. We don't nag on
 ///   every launch after that (they may have configured the key inside DSH's own
 ///   Web UI); settings shows the key as missing instead.
@@ -18,27 +16,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 class OnboardingPrefs {
   const OnboardingPrefs({
     this.loaded = false,
-    this.welcomeSeen = false,
     this.keySkipped = false,
     this.localDeclined = false,
     this.setupStep,
   });
 
   final bool loaded;
-  final bool welcomeSeen;
   final bool keySkipped;
   final bool localDeclined;
   final SetupStep? setupStep;
 
   OnboardingPrefs copyWith({
-    bool? welcomeSeen,
     bool? keySkipped,
     bool? localDeclined,
     SetupStep? setupStep,
     bool clearSetupStep = false,
   }) => OnboardingPrefs(
     loaded: loaded,
-    welcomeSeen: welcomeSeen ?? this.welcomeSeen,
     keySkipped: keySkipped ?? this.keySkipped,
     localDeclined: localDeclined ?? this.localDeclined,
     setupStep: clearSetupStep ? null : (setupStep ?? this.setupStep),
@@ -64,7 +58,6 @@ enum SetupStep {
 }
 
 class OnboardingPrefsController extends Notifier<OnboardingPrefs> {
-  static const _welcomeKey = 'onboarding_welcome_seen';
   static const _skippedKey = 'onboarding_key_skipped';
   static const _declinedKey = 'onboarding_local_declined';
   static const _setupStepKey = 'onboarding_setup_step';
@@ -81,7 +74,6 @@ class OnboardingPrefsController extends Notifier<OnboardingPrefs> {
       if (!ref.mounted) return;
       state = OnboardingPrefs(
         loaded: true,
-        welcomeSeen: prefs.getBool(_welcomeKey) ?? false,
         keySkipped: prefs.getBool(_skippedKey) ?? false,
         localDeclined: prefs.getBool(_declinedKey) ?? false,
         setupStep: SetupStep.parse(prefs.getString(_setupStepKey)),
@@ -90,14 +82,6 @@ class OnboardingPrefsController extends Notifier<OnboardingPrefs> {
       // Preferences unavailable: behave like a fresh install rather than hang the gate.
       if (ref.mounted) state = const OnboardingPrefs(loaded: true);
     }
-  }
-
-  Future<void> markWelcomeSeen() async {
-    state = state.copyWith(welcomeSeen: true);
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_welcomeKey, true);
-    } catch (_) {}
   }
 
   Future<void> setKeySkipped(bool skipped) async {

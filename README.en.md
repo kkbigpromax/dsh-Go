@@ -198,7 +198,7 @@ The local engine uses compatible PRoot startup by default. Direct startup is off
 
 Model requests go to the provider you configure. During phone-control tasks, relevant screen text may be sent to the model, and vision-capable models may receive screenshots. Read the app's permission disclosure before enabling the feature.
 
-“Send anonymous usage statistics” is on by default. You can turn it off during onboarding or in Settings → Privacy and sharing. See [Troubleshooting](docs/guide/en/11-faq.md) for the fields collected and what happens when it is disabled. Review content before sharing it; recipients can save a copy of a shared link or file's contents.
+This fork removes the app’s own anonymous usage collection and reporting, its settings switch, and the first-run statistics screen. The bundled engine also removes the DeepSeek session-log request contributor and its settings entries. Review content before sharing it; recipients can save a copy of a shared link or file's contents.
 
 ## Risks and disclaimer
 

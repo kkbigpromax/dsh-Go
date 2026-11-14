@@ -69,7 +69,6 @@ const curatedNamespaces = {
   'ui-settings',
   'ui-chat',
   'ui-conversation',
-  'session-log-deepseek',
   // 设置 › 图像与视频.
   'dsh-media',
   'media',
@@ -80,6 +79,8 @@ const curatedNamespaces = {
 /// makes an entry a plugin: that is `PluginConfigScope` (an allowlist), for
 /// the plugin settings page and everything that lists it.
 const internalNamespaces = {
+  // Removed from this fork; never offer a generated form from older hosts.
+  'session-log-deepseek',
   'permission',
   'agent-preset-registry',
   'agent-default-model',
@@ -108,7 +109,7 @@ Widget settingsPageFor(String ns, {String? title}) => switch (ns) {
   'agent-loop' => const AgentLoopSettingsPage(),
   'bash-sandbox' || 'pwsh-sandbox' => const ShellSettingsPage(),
   'web' || 'web-search-deepseek' || 'web-deepseek-api' => const WebSearchSettingsPage(),
-  'ui-settings' || 'ui-chat' || 'ui-conversation' || 'session-log-deepseek' => const GeneralSettingsPage(),
+  'ui-settings' || 'ui-chat' || 'ui-conversation' => const GeneralSettingsPage(),
   'dsh-media' || 'media' => const MediaSettingsPage(),
   _ => PluginConfigPage(ns: ns, title: title),
 };

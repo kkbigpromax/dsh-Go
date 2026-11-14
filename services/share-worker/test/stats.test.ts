@@ -1,13 +1,11 @@
-// Counting downloads, update checks and the app's usage reports, and what is
-// (not) kept: src/stats.ts, src/usage.ts.
+// Counting downloads and update checks, and what is kept: src/stats.ts.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import worker from '../src/index';
 import { CHANNEL_PREFIX, channelId, resetChannelMemo } from '../src/beta-auth';
 import { resetBetaCache } from '../src/beta';
 import type { Env } from '../src/env';
-import { addDays, deviceCode, hmacHex, nextDayStart, parseUpdaterAgent, resetStatsMemo, statsDay } from '../src/stats';
-import { COUNT_LIMITS, resetUsageMemo, validateReport } from '../src/usage';
+import { deviceCode, nextDayStart, parseUpdaterAgent, resetStatsMemo, statsDay } from '../src/stats';
 import { FakeCache, makeCtx, makeEnv } from './fakes';
 
 const ORIGIN = 'https://go.dshtui.com';
@@ -19,7 +17,6 @@ const CN = 'https://dshgo-cn.oss-cn-hongkong.aliyuncs.com/';
 const TOKEN = 'dshc_' + 'A'.repeat(43);
 const IP = '203.0.113.77';
 const IP6 = '2001:db8:abcd:12:1111:2222:3333:4444';
-const USAGE_SECRET = 'usage-secret-0123456789abcdef0123456789abcdef';
 const UA = 'Mozilla/5.0 (Linux; Android 14; V2309A) AppleWebKit/537.36 Chrome/126 Mobile Safari/537.36';
 
 const manifest = {
@@ -36,7 +33,6 @@ beforeEach(() => {
   resetBetaCache();
   resetChannelMemo();
   resetStatsMemo();
-  resetUsageMemo();
   (globalThis as { caches?: unknown }).caches = { default: new FakeCache() };
 });
 
@@ -46,7 +42,7 @@ afterEach(() => {
 });
 
 async function setup(vars: Partial<Env> = {}) {
-  const ctx = makeEnv({ BETA_SECRET: 'beta-secret-0123456789abcdef0123456789', CN_BASE_URL: CN, DOWNLOAD_ACCESS: 'public', USAGE_SECRET, ...vars });
+  const ctx = makeEnv({ BETA_SECRET: 'beta-secret-0123456789abcdef0123456789', CN_BASE_URL: CN, DOWNLOAD_ACCESS: 'public', ...vars });
   const put = (key: string, bytes: Uint8Array) => ctx.bucket.objects.set(key, { bytes, uploaded: new Date(), customMetadata: {} });
   put('beta/update.json', new TextEncoder().encode(JSON.stringify(manifest)));
   put(`beta/${VERSION}/${APK}`, new Uint8Array(10));
@@ -211,170 +207,9 @@ describe('daily device codes', () => {
   });
 });
 
-// ── The app's usage report ───────────────────────────────────────────────
-
-const IID = 'q1w2e3r4t5y6u7i8o9p0aQ';
-const today = statsDay(testNow);
-function report(over: Record<string, unknown> = {}) {
-  return {
-    v: 1, iid: IID, day: today, app: '0.9.9', build: 10301000, sdk: 34, abi: 'arm64-v8a', maker: 'vivo', lang: 'zh', engine: 'proot',
-    counts: { turns: 12, voice: 1, phone: 0, share: 2, gen: 0, plugins: 3 },
-    ...over,
-  };
-}
-const post = (body: unknown, init: { ip?: string; headers?: Record<string, string>; raw?: string } = {}) =>
-  req('/api/usage/v1', {
-    method: 'POST',
-    ip: init.ip,
-    body: init.raw ?? JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json', ...init.headers },
-  });
-
-describe('usage reports', () => {
-  it('are stored with the install id hashed, and answered 204', async () => {
-    const { env, usage } = await setup();
-    const res = await run(env, post(report()));
-    expect(res.status).toBe(204);
-    expect(await res.text()).toBe('');
-    expect(usage.points).toHaveLength(1);
-    const device = await hmacHex(USAGE_SECRET, `iid\n${IID}`, 16);
-    expect(device).toMatch(/^[0-9a-f]{32}$/);
-    expect(usage.points[0]).toEqual({
-      indexes: [device],
-      blobs: [today, device, '0.9.9', 'arm64-v8a', 'vivo', 'zh', 'proot', '', ''],
-      doubles: [10301000, 34, 12, 1, 0, 2, 0, 3],
-    });
-  });
-
-  it('take v2 with the model and system, stored in lower case', async () => {
-    const { env, usage } = await setup();
-    const res = await run(env, post(report({ v: 2, model: 'V2405A', rom: 'originos 5.0' })));
-    expect(res.status).toBe(204);
-    expect(usage.points[0].blobs.slice(7)).toEqual(['v2405a', 'originos 5.0']);
-  });
-
-  it('take exactly the fields of v2', async () => {
-    const { env, usage } = await setup();
-    const v2 = (over: Record<string, unknown>) => report({ v: 2, model: 'pjz110', rom: 'coloros v15.0.0', ...over });
-    const bad: [Record<string, unknown>, string, string][] = [
-      [report({ v: 2 }), 'missing_field', 'model'],
-      [report({ v: 2, model: 'pjz110' }), 'missing_field', 'rom'],
-      [report({ model: 'pjz110' }), 'unknown_field', 'model'],
-      [v2({ extra: 1 }), 'unknown_field', 'extra'],
-      [v2({ model: '' }), 'invalid', 'model'],
-      [v2({ model: 'x'.repeat(33) }), 'invalid', 'model'],
-      [v2({ rom: '<b>' }), 'invalid', 'rom'],
-      [v2({ rom: 5 }), 'invalid', 'rom'],
-    ];
-    for (const [body, error, field] of bad) {
-      const res = await run(env, post(body));
-      expect(res.status, JSON.stringify(body)).toBe(400);
-      expect(await res.json()).toEqual({ error, field });
-    }
-    expect(usage.points).toHaveLength(0);
-  });
-
-  it('count a device once a day', async () => {
-    const { env, usage } = await setup();
-    expect((await run(env, post(report()))).status).toBe(204);
-    expect((await run(env, post(report({ counts: { turns: 20, voice: 1, phone: 0, share: 2, gen: 0, plugins: 3 } })))).status).toBe(204);
-    // Padded base64url is the same install.
-    expect((await run(env, post(report({ iid: `${IID}==` })))).status).toBe(204);
-    expect(usage.points).toHaveLength(1);
-    expect((await run(env, post(report({ day: addDays(today, -1) })))).status).toBe(204);
-    expect((await run(env, post(report({ iid: 'z'.repeat(21) + 'A' })))).status).toBe(204);
-    expect(usage.points).toHaveLength(3);
-  });
-
-  it('take exactly the fields of v1', async () => {
-    const { env, usage } = await setup();
-    const bad: [Record<string, unknown>, string, string][] = [
-      [{ extra: 1 }, 'unknown_field', 'extra'],
-      [{ ip: '1.2.3.4' }, 'unknown_field', 'ip'],
-      [{ counts: { turns: 1, voice: 0, phone: 0, share: 0, gen: 0, plugins: 0, chats: 1 } }, 'unknown_field', 'counts.chats'],
-      [{ counts: { turns: 1, voice: 0, phone: 0, share: 0, gen: 0 } }, 'missing_field', 'counts.plugins'],
-      [{ v: 3 }, 'invalid', 'v'],
-      [{ v: '1' }, 'invalid', 'v'],
-      [{ iid: 'short' }, 'invalid', 'iid'],
-      [{ iid: 'q1w2e3r4t5y6u7i8o9p0aB' }, 'invalid', 'iid'],
-      [{ iid: 42 }, 'invalid', 'iid'],
-      [{ app: '0.9' }, 'invalid', 'app'],
-      [{ app: '0.9.9+10301000' }, 'invalid', 'app'],
-      [{ build: 1.5 }, 'invalid', 'build'],
-      [{ build: '10301000' }, 'invalid', 'build'],
-      [{ build: 0 }, 'invalid', 'build'],
-      [{ sdk: 25 }, 'invalid', 'sdk'],
-      [{ sdk: 99 }, 'invalid', 'sdk'],
-      [{ abi: 'mips' }, 'invalid', 'abi'],
-      [{ maker: '' }, 'invalid', 'maker'],
-      [{ maker: 'x'.repeat(33) }, 'invalid', 'maker'],
-      [{ maker: '<script>' }, 'invalid', 'maker'],
-      [{ lang: 'Chinese' }, 'invalid', 'lang'],
-      [{ engine: 'termux' }, 'invalid', 'engine'],
-      [{ counts: [1, 2] }, 'invalid', 'counts'],
-      [{ counts: { turns: -1, voice: 0, phone: 0, share: 0, gen: 0, plugins: 0 } }, 'invalid', 'counts.turns'],
-      [{ counts: { turns: COUNT_LIMITS.turns + 1, voice: 0, phone: 0, share: 0, gen: 0, plugins: 0 } }, 'invalid', 'counts.turns'],
-      [{ counts: { turns: 0, voice: 0, phone: 0, share: 0, gen: 0, plugins: 1e9 } }, 'invalid', 'counts.plugins'],
-    ];
-    for (const [over, error, field] of bad) {
-      const res = await run(env, post(report(over)));
-      expect(res.status, JSON.stringify(over)).toBe(400);
-      expect(await res.json()).toEqual({ error, field });
-    }
-    const { iid: _, ...noIid } = report();
-    expect(await (await run(env, post(noIid))).json()).toEqual({ error: 'missing_field', field: 'iid' });
-    for (const raw of ['not json', '[]', 'null', '"x"', '{"v":1,']) {
-      expect((await run(env, post(null, { raw }))).status, raw).toBe(400);
-    }
-    expect(usage.points).toHaveLength(0);
-  });
-
-  it('take days from the last week (UTC+8), or tomorrow for phones ahead', () => {
-    const now = Date.parse('2026-10-30T04:00:00Z'); // 12:00 on the 30th in UTC+8
-    const day = (d: string) => () => validateReport(report({ day: d }), now);
-    for (const ok of ['2026-10-30', '2026-10-23', '2026-10-31']) expect(day(ok)).not.toThrow();
-    for (const bad of ['2026-10-22', '2026-11-01', '2026-02-30', '2026-13-01', '2026-1-30', '30-10-2026']) expect(day(bad), bad).toThrow();
-  });
-
-  it('stay small, JSON and POST', async () => {
-    const { env, usage } = await setup();
-    const big = JSON.stringify(report()).replace('"proot"', `"proot"${' '.repeat(2100)}`);
-    expect((await run(env, post(null, { raw: big }))).status).toBe(413);
-    expect((await run(env, post(null, { raw: big, headers: { 'Content-Length': '0' } }))).status).toBe(413);
-    expect((await run(env, post(report(), { headers: { 'Content-Length': '4096' } }))).status).toBe(413);
-    expect((await run(env, post(report(), { headers: { 'Content-Type': 'text/plain' } }))).status).toBe(415);
-    expect((await run(env, req('/api/usage/v1'))).status).toBe(405);
-    expect(usage.points).toHaveLength(0);
-    // Exactly at the limit is fine.
-    const padded = JSON.stringify(report());
-    expect((await run(env, post(null, { raw: padded + ' '.repeat(2048 - padded.length) }))).status).toBe(204);
-  });
-
-  it('are limited per client per minute', async () => {
-    const { env, usage, usageLimit } = await setup();
-    usageLimit.allow = 3;
-    const statuses = [];
-    for (let i = 0; i < 5; i++) statuses.push((await run(env, post(report({ iid: `${'abcde'[i]}`.repeat(21) + 'A' })))).status);
-    expect(statuses).toEqual([204, 204, 204, 429, 429]);
-    expect(usage.points).toHaveLength(3);
-    expect((await run(env, post(report({ iid: 'k'.repeat(21) + 'A' }), { ip: '198.51.100.20' }))).status).toBe(204);
-  });
-
-  it('are 404 without the secret', async () => {
-    const { env, usage } = await setup({ USAGE_SECRET: undefined });
-    expect((await run(env, post(report()))).status).toBe(404);
-    expect(usage.points).toHaveLength(0);
-  });
-
-  it('are 404 without the dataset', async () => {
-    const { env } = await setup({ USAGE: undefined });
-    expect((await run(env, post(report()))).status).toBe(404);
-  });
-});
-
 describe('without Analytics Engine', () => {
   it('downloads and update checks work and count nothing', async () => {
-    const { env, salts } = await setup({ DOWNLOADS: undefined, CHECKS: undefined, USAGE: undefined });
+    const { env, salts } = await setup({ DOWNLOADS: undefined, CHECKS: undefined });
     const button = await run(env, req(`/download/get?via=github&v=${VERSION}`));
     expect(button.status).toBe(302);
     expect(button.headers.get('Location')).toBe(`https://github.com/ccch1mneyyy/dsh-go/releases/download/v${VERSION}/${APK}`);
@@ -387,14 +222,13 @@ describe('without Analytics Engine', () => {
 
 describe('what is kept', () => {
   it('never an IP, an install id or a User-Agent', async () => {
-    const { env, downloads, checks, usage, salts, kv } = await setup();
+    const { env, downloads, checks, salts, kv } = await setup();
     for (const ip of [IP, IP6]) {
       await run(env, req(`/download/get?via=cn&v=${VERSION}`, { ip, country: 'CN' }));
       await run(env, req('/beta/update.json', { ip, headers: { Authorization: `Bearer ${TOKEN}` } }));
-      await run(env, post(report(), { ip }));
     }
-    const kept = JSON.stringify([downloads.points, checks.points, usage.points, [...salts.objects.values()].map((o) => [...o.storage.data]), [...kv.values]]);
-    expect(downloads.points.length + checks.points.length + usage.points.length).toBe(5);
-    for (const secret of [IP, IP6, '2001:db8:abcd:12', IID, UA, 'V2309A']) expect(kept, secret).not.toContain(secret);
+    const kept = JSON.stringify([downloads.points, checks.points, [...salts.objects.values()].map((o) => [...o.storage.data]), [...kv.values]]);
+    expect(downloads.points.length + checks.points.length).toBe(4);
+    for (const secret of [IP, IP6, '2001:db8:abcd:12', UA, 'V2309A']) expect(kept, secret).not.toContain(secret);
   });
 });

@@ -65,7 +65,7 @@
   "catalogWorkspaces": "Workspaces",
   "catalogWorkspacesSummary": "Add and switch folders",
   "catalogGeneral": "General",
-  "catalogGeneralSummary": "Display, sending and log uploads",
+  "catalogGeneralSummary": "Display and sending",
   "catalogAccount": "Account",
   "catalogAccountSummary": "Sign in, balance and top-ups",
   "catalogRemoteSummary": "Connect to a computer or server",

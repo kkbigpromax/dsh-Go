@@ -6491,7 +6491,7 @@ abstract class L10n {
   /// No description provided for @catalogGeneralSummary.
   ///
   /// In zh, this message translates to:
-  /// **'显示、发送与日志上传'**
+  /// **'显示与发送'**
   String get catalogGeneralSummary;
 
   /// No description provided for @catalogAccount.
@@ -11516,23 +11516,11 @@ abstract class L10n {
   /// **'这组设置仅影响当前主机的网页版，不改变原生聊天。'**
   String get engineGeneralWebOnlyHint;
 
-  /// No description provided for @engineGeneralData.
-  ///
-  /// In zh, this message translates to:
-  /// **'数据'**
-  String get engineGeneralData;
-
   /// No description provided for @engineSubagentModelsTitle.
   ///
   /// In zh, this message translates to:
   /// **'子代理模型'**
   String get engineSubagentModelsTitle;
-
-  /// No description provided for @engineChatLogTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'对话日志'**
-  String get engineChatLogTitle;
 
   /// No description provided for @engineThinkingTranslationTitle.
   ///
@@ -11725,12 +11713,6 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'搜索时附带用户原问题'**
   String get engineSearchSendOriginalQuestion;
-
-  /// No description provided for @engineChatLogUpload.
-  ///
-  /// In zh, this message translates to:
-  /// **'向 DeepSeek 上传对话日志'**
-  String get engineChatLogUpload;
 
   /// No description provided for @engineTranslationProvider.
   ///
@@ -23246,12 +23228,6 @@ abstract class L10n {
   /// **'权限'**
   String get pluginsNamespacePermissions;
 
-  /// No description provided for @pluginsNamespaceChatLog.
-  ///
-  /// In zh, this message translates to:
-  /// **'对话日志'**
-  String get pluginsNamespaceChatLog;
-
   /// No description provided for @pluginsNamespaceThinkingTranslation.
   ///
   /// In zh, this message translates to:
@@ -29810,12 +29786,6 @@ abstract class L10n {
   /// **'搜索 Key,联网 Key'**
   String get searchKwWebSearchKey;
 
-  /// No description provided for @searchKwChatLogUpload.
-  ///
-  /// In zh, this message translates to:
-  /// **'隐私,日志,上传日志,对话日志'**
-  String get searchKwChatLogUpload;
-
   /// No description provided for @searchKwAddSshHost.
   ///
   /// In zh, this message translates to:
@@ -29953,12 +29923,6 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'插件市场,安装插件,市场,获取插件'**
   String get searchKwPluginsMarket;
-
-  /// No description provided for @searchKwUsageStats.
-  ///
-  /// In zh, this message translates to:
-  /// **'统计,使用统计,匿名,隐私,数据,改进,遥测,分析'**
-  String get searchKwUsageStats;
 
   /// No description provided for @searchKwQuickPanel.
   ///
@@ -30559,18 +30523,6 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'引擎日志'**
   String get shellEngineLogs;
-
-  /// No description provided for @shellWelcomeMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'把 DeepSeek 智能体\n装进口袋'**
-  String get shellWelcomeMessage;
-
-  /// No description provided for @shellGetStarted.
-  ///
-  /// In zh, this message translates to:
-  /// **'开始'**
-  String get shellGetStarted;
 
   /// No description provided for @shellSearchChats.
   ///
@@ -42037,48 +41989,6 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'正在下载 {percent}%'**
   String updateDownloadingPercent(int percent);
-
-  /// No description provided for @usageStatsTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'发送匿名使用统计'**
-  String get usageStatsTitle;
-
-  /// No description provided for @usageStatsSection.
-  ///
-  /// In zh, this message translates to:
-  /// **'改进 DSH Go'**
-  String get usageStatsSection;
-
-  /// No description provided for @usageStatsFooter.
-  ///
-  /// In zh, this message translates to:
-  /// **'这个开关只控制 dsh-go 自身的使用次数、版本、手机品牌和型号、系统版本统计，不含对话、文件和账号；它不控制 Google ML Kit SDK 的统计。'**
-  String get usageStatsFooter;
-
-  /// No description provided for @usageNoticeBody.
-  ///
-  /// In zh, this message translates to:
-  /// **'不含对话和个人信息，可随时关闭'**
-  String get usageNoticeBody;
-
-  /// No description provided for @usageUpgradeNotice.
-  ///
-  /// In zh, this message translates to:
-  /// **'新增匿名使用统计，帮助改进 DSH Go。\n不含对话和个人信息'**
-  String get usageUpgradeNotice;
-
-  /// No description provided for @usageUpgradeLearn.
-  ///
-  /// In zh, this message translates to:
-  /// **'了解'**
-  String get usageUpgradeLearn;
-
-  /// No description provided for @usageUpgradeOff.
-  ///
-  /// In zh, this message translates to:
-  /// **'关闭'**
-  String get usageUpgradeOff;
 
   /// No description provided for @viewArtifactSaved.
   ///

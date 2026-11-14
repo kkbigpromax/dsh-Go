@@ -175,7 +175,7 @@ final appForegroundProvider = NotifierProvider<FlagController, bool>(() => FlagC
 final chatOnScreenProvider = NotifierProvider<FlagController, bool>(() => FlagController(true));
 
 /// Something asked for the person's attention unbidden in this launch (the
-/// usage statistics toast, an update offer, the background running line):
+/// update offer or the background running line):
 /// the star prompt waits for another launch.
 final launchNoticeShownProvider = NotifierProvider<FlagController, bool>(() => FlagController(false));
 

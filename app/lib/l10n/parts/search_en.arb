@@ -88,7 +88,6 @@
   "searchKwParallelCalls": "parallel,concurrent calls",
   "searchKwCommandTimeout": "timeout,time limit",
   "searchKwWebSearchKey": "search key,web search key",
-  "searchKwChatLogUpload": "privacy,logs,upload logs,telemetry",
   "searchKwAddSshHost": "ssh,add host,connect computer",
   "searchKwRemoteAutoConnect": "auto connect,on launch",
   "searchKwPermissionCurrent": "allow for this chat,this chat",
@@ -119,6 +118,5 @@
   "searchKwWebCollapse": "work steps,collapse,web",
   "searchKwWebBusySend": "send,queue,while AI works",
   "searchKwPluginsMarket": "plugin market,install plugins,marketplace",
-  "searchKwUsageStats": "statistics,stats,usage data,analytics,telemetry,anonymous,privacy,data",
   "searchKwQuickPanel": "swipe,left swipe,shortcuts,gesture,quick panel,quick access"
 }

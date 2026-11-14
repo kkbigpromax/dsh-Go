@@ -1,5 +1,5 @@
 // dshgo-share (docs/design/share-links.md). No secrets here: ADMIN_KEY,
-// BETA_SECRET and USAGE_SECRET are Worker secrets (provision.sh, beta-keys.sh
+// BETA_SECRET is a Worker secret (provision.sh, beta-keys.sh
 // init, docs/release.md「统计」), and so is the optional GITHUB_TOKEN (the home
 // page's star count, src/github.ts); the API token is passed in by the scripts.
 // The account id and the KV namespace id below are placeholders in the public
@@ -60,19 +60,15 @@
     { "tag": "v1", "new_sqlite_classes": ["BetaGuard"] },
     { "tag": "v2", "new_sqlite_classes": ["StatsSalt"] }
   ],
-  // Download clicks, update checks, the app's usage reports (src/stats.ts,
-  // src/usage.ts). provision.sh deploys them unless --no-analytics (or
-  // DSH_ANALYTICS=0), for an account without Analytics Engine: then nothing
-  // is counted and /api/usage/v1 is 404. docs/design/share-links.md §15.
+  // Download clicks and update checks (src/stats.ts). Accounts without
+  // Analytics Engine can deploy with --no-analytics or DSH_ANALYTICS=0.
   "analytics_engine_datasets": [
     { "binding": "DOWNLOADS", "dataset": "dshgo_downloads" },
-    { "binding": "CHECKS", "dataset": "dshgo_checks" },
-    { "binding": "USAGE", "dataset": "dshgo_usage" }
+    { "binding": "CHECKS", "dataset": "dshgo_checks" }
   ],
   "ratelimits": [
     { "name": "UPLOAD_BURST", "namespace_id": "42001", "simple": { "limit": 5, "period": 60 } },
-    { "name": "READ_LIMIT", "namespace_id": "42002", "simple": { "limit": 120, "period": 60 } },
-    { "name": "USAGE_LIMIT", "namespace_id": "42003", "simple": { "limit": 20, "period": 60 } }
+    { "name": "READ_LIMIT", "namespace_id": "42002", "simple": { "limit": 120, "period": 60 } }
   ],
   "vars": {
     "PET_MARKET_ENABLED": "1",

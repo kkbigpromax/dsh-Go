@@ -82,15 +82,18 @@ void main() {
       expect(_ids('Dark mode').first, Spots.darkMode.id);
     });
 
-    test('「统计」「隐私」「数据」 and 「analytics」 find 发送匿名使用统计', () {
-      expect(_ids('统计').first, Spots.usageStats.id);
-      expect(_ids('使用统计').first, Spots.usageStats.id);
-      expect(_ids('analytics').first, Spots.usageStats.id);
-      expect(_ids('usage stats').first, Spots.usageStats.id);
-      for (final q in ['隐私', '数据', 'privacy', 'telemetry']) {
-        expect(_ids(q), contains(Spots.usageStats.id), reason: q);
+    test('anonymous usage reporting has no settings or deep-link entry', () {
+      for (final q in ['发送匿名使用统计', 'analytics', 'usage stats']) {
+        expect(_ids(q), isNot(contains('usage-stats')));
       }
-      expect(SettingsIndex.trail(Spots.usageStats, _zh), ['设置', '隐私与分享', '发送匿名使用统计']);
+      expect(SettingsIndex.spots.where((s) => s.id == 'usage-stats'), isEmpty);
+    });
+
+    test('chat log upload has no settings search or deep-link entry', () {
+      for (final q in ['上传对话日志', 'upload chat logs', 'telemetry']) {
+        expect(_ids(q), isNot(contains('chat-log-upload')));
+      }
+      expect(SettingsIndex.spot('chat-log-upload'), isNull);
     });
 
     test('「保活」 and 「后台保活」 find 后台运行 by the old names, and say so', () {
@@ -248,7 +251,12 @@ void main() {
           home: Scaffold(
             body: Align(
               alignment: Alignment.bottomCenter,
-              child: IdentityBar(onHost: () {}, onFeatures: () {}, onSettings: () => tapped++, onSettingsHold: () => held++),
+              child: IdentityBar(
+                onHost: () {},
+                onFeatures: () {},
+                onSettings: () => tapped++,
+                onSettingsHold: () => held++,
+              ),
             ),
           ),
           brightness: Brightness.light,

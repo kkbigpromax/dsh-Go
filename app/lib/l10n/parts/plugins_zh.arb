@@ -31,7 +31,6 @@
   "pluginsNamespaceSearchApi": "联网搜索接口",
   "pluginsNamespaceCommands": "命令执行",
   "pluginsNamespacePermissions": "权限",
-  "pluginsNamespaceChatLog": "对话日志",
   "pluginsNamespaceThinkingTranslation": "思考翻译",
   "pluginsNamespaceTranslation": "翻译",
   "pluginsNamespaceLanguage": "语言",

@@ -28,7 +28,7 @@ import 'local_optional_support.dart';
 import 'parallel_setup_support.dart';
 
 const _capsule = ValueKey('setup-capsule');
-const _seen = OnboardingPrefs(loaded: true, welcomeSeen: true);
+const _seen = OnboardingPrefs(loaded: true);
 
 Finder _capsuleText(String text) => find.descendant(of: find.byKey(_capsule), matching: find.text(text));
 
@@ -45,7 +45,7 @@ void main() {
   setUp(useSavedHost);
 
   group('where a launch resumes', () {
-    const fresh = OnboardingPrefs(loaded: true, welcomeSeen: true);
+    const fresh = OnboardingPrefs(loaded: true);
     OnboardingStep? at(SetupStep step, RuntimeStatus status, {bool key = false, bool skipped = false}) =>
         initialOnboardingStep(
           status: status,

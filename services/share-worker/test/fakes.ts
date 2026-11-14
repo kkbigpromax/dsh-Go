@@ -272,8 +272,6 @@ export function makeEnv(overrides: Partial<Env> = {}) {
   const salts = new FakeSaltNamespace();
   const downloads = new FakeDataset();
   const checks = new FakeDataset();
-  const usage = new FakeDataset();
-  const usageLimit = new FakeLimiter();
   const env = {
     ASSETS: fakeAssets,
     BUCKET: bucket as unknown as R2Bucket,
@@ -285,14 +283,12 @@ export function makeEnv(overrides: Partial<Env> = {}) {
     STATS_SALT: salts as unknown as DurableObjectNamespace,
     DOWNLOADS: downloads,
     CHECKS: checks,
-    USAGE: usage,
-    USAGE_LIMIT: usageLimit,
     ADMIN_KEY: 'a'.repeat(20) + 'admin-key-for-tests-0123456789',
     UPLOADS_PER_HOUR: '20',
     MAX_BYTES: String(1024 * 1024),
     ...overrides,
   } satisfies Env;
-  return { env, bucket, dl, kv, uploadBurst, readLimit, guards, salts, downloads, checks, usage, usageLimit };
+  return { env, bucket, dl, kv, uploadBurst, readLimit, guards, salts, downloads, checks };
 }
 
 /** caches.default: full responses keyed by URL; a Range lookup slices them. */

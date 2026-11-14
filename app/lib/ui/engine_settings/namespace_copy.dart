@@ -23,7 +23,6 @@ Map<String, String> get namespaceTitles => <String, String>{
   'web': appL10n.engineSearchTitle,
   'web-search-deepseek': appL10n.engineSearchTitle,
   'web-deepseek-api': appL10n.engineSearchTitle,
-  'session-log-deepseek': appL10n.engineChatLogTitle,
   'cot-translation': appL10n.engineThinkingTranslationTitle,
   'plugin-market': appL10n.enginePluginIndexesTitle,
   'permission': appL10n.enginePermissionTitle,
@@ -101,7 +100,6 @@ Map<String, Map<String, FieldCopy>> get namespaceCopy => <String, Map<String, Fi
     ),
     'sendOriginalQuestion': FieldCopy(label: appL10n.engineSearchSendOriginalQuestion),
   },
-  'session-log-deepseek': {'enabled': FieldCopy(label: appL10n.engineChatLogUpload)},
   'cot-translation': {
     'provider': FieldCopy(
       label: appL10n.engineTranslationProvider,

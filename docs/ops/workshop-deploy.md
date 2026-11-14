@@ -43,8 +43,7 @@
 | `STATS_SALT` | Durable Object 类 `StatsSalt`，既有统计使用的当日盐 | 随 migration `v2` 部署 |
 | `UPLOAD_BURST` | Rate Limiting namespace `42001`，每 60 秒 5 次 | 由部署配置绑定；同账号其他 Worker 不要复用该 namespace |
 | `READ_LIMIT` | namespace `42002`，每 60 秒 120 次 | 同上；工坊作者鉴权和公开读取会使用它 |
-| `USAGE_LIMIT` | namespace `42003`，每 60 秒 20 次 | 同上；供 App 使用统计，不是工坊投稿额度 |
-| `DOWNLOADS` / `CHECKS` / `USAGE` | Analytics Engine 数据集 `dshgo_downloads` / `dshgo_checks` / `dshgo_usage` | 已开 Analytics Engine 时正常部署；未开时本手册用 `--no-analytics` |
+| `DOWNLOADS` / `CHECKS` | Analytics Engine 数据集 `dshgo_downloads` / `dshgo_checks` | 已开 Analytics Engine 时正常部署；未开时本手册用 `--no-analytics` |
 | Custom Domain | 脚本选择的 `go.<zone>` 或 `s.<zone>` | `apply` 核对占用情况后部署；DNS 由 Custom Domain 管理 |
 | Cron | 每 10 分钟同步既有插件/宠物市场 | 随配置部署；它不是工坊审批器 |
 | zone Redirect Rule | 既有插件市场两条路径转公开下载桶 | `apply/deploy` 在镜像一致后创建或更新指定描述的规则 |
@@ -69,7 +68,6 @@
 | `DL_BASE_URL` | 公开下载桶的 HTTPS 基址，当前 `https://dl.dshtui.com/` | 与你已创建的公开桶域名一致 |
 | `CN_BASE_URL` | 可选香港下载桶基址，当前空 | 未配置该下载线路时保持空 |
 | `BETA_SECRET` | 既有内测密钥哈希/下载签名 secret | 工坊不使用它；已有 beta 服务按原政策保留，生成由 `scripts/beta-keys.sh init` 完成，见 `docs/release.md` |
-| `USAGE_SECRET` | 既有 App 使用统计的哈希 secret | 工坊不使用它；开启统计时按 `docs/release.md` 的“统计”一节用 32 个随机字节生成、保存私有文件并上传 secret，不放进 `vars` |
 | `GITHUB_TOKEN` | 可选首页 Star 查询 secret | 工坊不使用它；仓库只消费、不生成 GitHub 令牌（`docs/design/share-links.md` 称无需任何权限的 fine-grained token 即可）。若另启用该可选项，由维护者在自己的 GitHub 账号创建；不为工坊临时填一个其他用途的 token。（待确认：账号/组织允许的令牌类型、有效期与后台创建流程，以 GitHub 账号设置页为准） |
 
 脚本输入与 Worker 配置不同：`CF_TOKEN_FILE` 是 Cloudflare API token 的文件路径；`CF_ACCOUNT_ID` / `CF_ACCOUNT_ID_FILE` 是账号 ID 或其文件；`CF_KV_QUOTA_ID` / `CF_KV_QUOTA_ID_FILE` 是 QUOTA ID 或其文件；`ZONE_NAME` 是自己 zone；`ADMIN_FILE` 是管理员密钥文件；`DSH_ANALYTICS=0` 与 `--no-analytics` 作用相同。这些都在 `provision.sh` 与 `cloudflare.sh` 开头定义。不要设置测试用 `CF_API`，也不要为了跳过占用检查随手设置 `ALLOW_EXISTING_WORKER=1`。

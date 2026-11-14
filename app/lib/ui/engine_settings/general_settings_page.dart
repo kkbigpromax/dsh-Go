@@ -2,8 +2,7 @@
 // engine — the code work view (`ui-settings`), work details, collapse timing,
 // performance & usage and link opening (`ui-chat`), the busy-Enter behaviour
 // (`ui-conversation`) — all of which only the web client reads, hence the
-// 网页版 groups — and the session log upload (`session-log-deepseek`), which
-// the engine itself honours. Language is left out: the app has its own.
+// 网页版 groups. Language is left out: the app has its own.
 
 import 'package:flutter/material.dart';
 
@@ -16,7 +15,7 @@ SchemaFieldSpec _field(String ns, String key) => SchemaFieldSpec(ns, [key], copy
 class GeneralSettingsPage extends StatelessWidget {
   const GeneralSettingsPage({super.key});
 
-  static const namespaces = ['ui-settings', 'ui-chat', 'ui-conversation', 'session-log-deepseek'];
+  static const namespaces = ['ui-settings', 'ui-chat', 'ui-conversation'];
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +41,6 @@ class GeneralSettingsPage extends StatelessWidget {
           footer: l10n.engineGeneralWebOnlyHint,
           fields: [_field('ui-conversation', 'busyEnter'), _field('ui-chat', 'linkOpening')],
         ),
-        if (settings.served('session-log-deepseek'))
-          SchemaFormSection(title: l10n.engineGeneralData, fields: [_field('session-log-deepseek', 'enabled')]),
       ], settings: settings),
     );
   }

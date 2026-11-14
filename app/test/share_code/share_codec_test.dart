@@ -302,7 +302,14 @@ void main() {
     });
 
     test('account, telemetry and network namespaces are never offered', () {
-      for (final ns in ['ui-settings-account', 'desktop-product-telemetry', 'remote-access', 'credentials-local']) {
+      for (final ns in [
+        'ui-settings-account',
+        'desktop-product-telemetry',
+        'remote-access',
+        'credentials-local',
+        'session-log-deepseek',
+        'ui-settings-session-log',
+      ]) {
         expect(isShareableNamespace(ns), isFalse, reason: ns);
         expect(sanitizeNamespace(view(ns, {'a': 1})), isNull);
       }

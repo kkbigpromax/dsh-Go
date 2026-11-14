@@ -24,7 +24,6 @@ import '../remote/remote_screen.dart';
 import '../theme/theme.dart';
 import '../web/mode_home.dart';
 import 'brand_mark.dart';
-import 'usage_upgrade_notice.dart';
 
 /// Where a launch should start, given what is installed and configured.
 ///
@@ -36,8 +35,7 @@ import 'usage_upgrade_notice.dart';
 /// - The app runs without the runtime ([OnboardingPrefs.localDeclined]: a
 ///   remote host instead, or uninstalled) → home.
 /// - Runtime outdated → setup, which upgrades it.
-/// - Runtime missing → setup, which first asks 本机 or 远程主机 (welcome
-///   first on a truly fresh install).
+/// - Runtime missing → setup, which first asks 本机 or 远程主机.
 /// - Runtime ready but nothing to talk to (no DeepSeek key, no custom provider
 ///   on the local engine), and the user never chose "稍后设置" → key entry.
 /// - Otherwise → home (`null`).
@@ -70,9 +68,7 @@ OnboardingStep? initialOnboardingStep({
     if (status.phase == RuntimePhase.installing) return OnboardingStep.runtime;
     // Runs without it (also after leaving a failed upgrade for a remote host).
     if (prefs.localDeclined) return null;
-    // An upgrade (an older rootfs exists) skips the welcome and the choice.
-    if (!runtimeStepAsks(status)) return OnboardingStep.runtime;
-    return prefs.welcomeSeen ? OnboardingStep.runtime : OnboardingStep.welcome;
+    return OnboardingStep.runtime;
   }
   if (!hasApiKey && !hasCustomProvider && !prefs.keySkipped) return OnboardingStep.apiKey;
   return null;
@@ -352,11 +348,6 @@ class _RootGateState extends ConsumerState<RootGate> {
           onAccessDone: _afterAccess,
           onFinished: _afterFinishing,
           onRemote: _useRemote,
-          onWelcomeDone: () {
-            unawaited(ref.read(onboardingPrefsProvider.notifier).markWelcomeSeen());
-            _chooseRuntime = runtimeStepAsks(ref.read(localRuntimeProvider).status);
-            _goTo(OnboardingStep.runtime);
-          },
           onRuntimeDone: _afterRuntime,
           onKeyDone: _afterKey,
         );
@@ -364,9 +355,8 @@ class _RootGateState extends ConsumerState<RootGate> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _maybeAutoStart();
         });
-        // The native shell or the web page, by 界面 (ui_mode_state.dart); an
-        // install from before usage statistics is told about them there, once.
-        child = UsageUpgradeNotice(child: widget.home ?? const ModeHome());
+        // The native shell or the web page, by 界面 (ui_mode_state.dart).
+        child = widget.home ?? const ModeHome();
       }
     }
     if (child is! _Splash && !_launchReady) {

@@ -40,6 +40,15 @@ void main() {
 
   List<Object?> lastOps() => host.mutates().last['ops']! as List<Object?>;
 
+  testWidgets('an older host cannot restore the log upload control in general settings', (tester) async {
+    final fake = FakeSettingsHost();
+    fake.namespaces['session-log-deepseek']!.user = {'enabled': true};
+    await open(tester, const GeneralSettingsPage(), fake: fake, local: false);
+    expect(find.text('显示代码工作视图'), findsOneWidget);
+    expect(find.text('向 DeepSeek 上传对话日志'), findsNothing);
+    expect(fake.mutates(), isEmpty);
+  });
+
   testWidgets('a switch and a capsule write at once; picking the inherited value clears it', (tester) async {
     await open(tester, const GeneralSettingsPage());
     await tester.tap(find.text('显示代码工作视图'));

@@ -17,7 +17,6 @@ import 'package:dsh_app/ui/onboarding/api_key_page.dart';
 import 'package:dsh_app/ui/onboarding/connect_page.dart';
 import 'package:dsh_app/ui/onboarding/onboarding_flow.dart';
 import 'package:dsh_app/ui/onboarding/runtime_setup_page.dart';
-import 'package:dsh_app/ui/onboarding/welcome_page.dart';
 import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
 import 'package:dsh_app/ui/shell/home_shell.dart';
@@ -39,13 +38,13 @@ RuntimeStatus _status(RuntimePhase phase, {String? installed, String bundled = _
 void main() {
   group('initialOnboardingStep', () {
     const fresh = OnboardingPrefs(loaded: true);
-    const seen = OnboardingPrefs(loaded: true, welcomeSeen: true);
-    const skipped = OnboardingPrefs(loaded: true, welcomeSeen: true, keySkipped: true);
+    const seen = OnboardingPrefs(loaded: true);
+    const skipped = OnboardingPrefs(loaded: true, keySkipped: true);
 
-    test('fresh install starts at the welcome page', () {
+    test('fresh install starts at the runtime choice without a statistics page', () {
       expect(
         initialOnboardingStep(status: _status(RuntimePhase.notInstalled), hasApiKey: false, prefs: fresh),
-        OnboardingStep.welcome,
+        OnboardingStep.runtime,
       );
     });
 
@@ -341,18 +340,18 @@ void main() {
 
     testWidgets('waits on a splash until the runtime reports in', (tester) async {
       await pumpGate(tester, const LocalRuntimeState(), const AppSettings(loaded: true));
-      expect(find.byType(WelcomePage), findsNothing);
       expect(find.byType(RuntimeSetupPage), findsNothing);
     });
 
-    testWidgets('not installed (welcome already seen) shows setup', (tester) async {
+    testWidgets('fresh install shows the runtime choice without a data-sharing question', (tester) async {
       await pumpGate(
         tester,
         const LocalRuntimeState(loaded: true, status: RuntimeStatus(phase: RuntimePhase.notInstalled)),
         const AppSettings(loaded: true),
       );
-      // The fake onboarding prefs report welcomeSeen = true.
       expect(find.byType(RuntimeSetupPage), findsOneWidget);
+      expect(find.text('发送匿名使用统计'), findsNothing);
+      expect(find.text('改进 DSH Go'), findsNothing);
     });
 
     testWidgets('installed without a key shows the connect step with a skip option', (tester) async {
@@ -369,7 +368,6 @@ void main() {
 
   group('small screen, large text: nothing overflows', () {
     final screens = <String, Widget Function()>{
-      'welcome': () => WelcomePage(onStart: () {}),
       'setup': () => RuntimeSetupPage(onDone: () {}),
       'api key': () => ApiKeyPage(onDone: () {}),
       'settings': () => const SettingsScreen(),

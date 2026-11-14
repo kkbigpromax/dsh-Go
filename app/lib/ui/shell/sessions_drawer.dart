@@ -167,16 +167,24 @@ class SessionsDrawer extends ConsumerWidget {
                           child: FittedBox(fit: BoxFit.scaleDown, child: BrandLockup(height: 19)),
                         ),
                       ),
-                      // 模式 and 网页模式, quietly: the one solid element stays 新对话.
-                      const ModeKey(),
-                      const SizedBox(width: 8),
-                      const WebModeKey(tier: GlassTier.pill),
-                      const SizedBox(width: 8),
+                      // Hide both switch keys in this fork's drawer; keep their implementations.
+                      const Visibility(
+                        visible: false,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ModeKey(),
+                            SizedBox(width: 8),
+                            WebModeKey(tier: GlassTier.pill),
+                            SizedBox(width: 8),
+                          ],
+                        ),
+                      ),
                       // When even the lockup's room is not enough, 新对话
                       // keeps its glyph and lets its words go.
                       NewChatButton(
                         onTap: newChat,
-                        compact: NewChatButton.widthOf(context) > box.maxWidth - (36 + 8 + 36 + 8),
+                        compact: NewChatButton.widthOf(context) > box.maxWidth,
                       ),
                     ],
                   ),

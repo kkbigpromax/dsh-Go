@@ -5,7 +5,6 @@ import 'appearance_step.dart';
 import 'connect_page.dart';
 import 'onboarding_scaffold.dart';
 import 'runtime_setup_page.dart';
-import 'welcome_page.dart';
 
 /// First-run pages. [apiKey] is the "connect DeepSeek" step: account sign-in
 /// first, API key as the alternative.
@@ -16,19 +15,18 @@ import 'welcome_page.dart';
 /// and [apiKey] follow while it unpacks, and [finishing] waits for whatever
 /// is left of it. Upgrades, resets and a phone that only needs a key go
 /// [runtime] (the unpack itself) → [apiKey].
-enum OnboardingStep { welcome, runtime, appearance, access, apiKey, finishing }
+enum OnboardingStep { runtime, appearance, access, apiKey, finishing }
 
 /// Moves between the first-run pages. The step itself is owned by the root
 /// gate, which also decides where a returning user resumes.
 ///
-/// The welcome and finishing pages stand alone; the steps between show a thin
+/// The finishing page stands alone; the other steps show a thin
 /// step bar at the top ([OnboardingProgress]) and, beside an unpack, its
 /// capsule at the bottom.
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({
     super.key,
     required this.step,
-    required this.onWelcomeDone,
     required this.onRuntimeDone,
     required this.onKeyDone,
     this.chooseRuntime = false,
@@ -41,7 +39,6 @@ class OnboardingFlow extends StatefulWidget {
   });
 
   final OnboardingStep step;
-  final VoidCallback onWelcomeDone;
   final VoidCallback onRuntimeDone;
   final VoidCallback onKeyDone;
 
@@ -84,7 +81,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   Widget build(BuildContext context) {
     final step = widget.step;
     final Widget page = switch (step) {
-      OnboardingStep.welcome => WelcomePage(onStart: widget.onWelcomeDone),
       OnboardingStep.runtime => RuntimeSetupPage(
         onDone: widget.onRuntimeDone,
         choose: widget.chooseRuntime,

@@ -133,7 +133,7 @@ class VoiceInputController extends ChangeNotifier with WidgetsBindingObserver {
   final bool _observing;
   void Function(VoiceMessage message)? onMessage;
 
-  /// A dictation put its words in the composer (usage statistics).
+  /// Called after dictation puts recognized words in the composer.
   final VoidCallback? onRecognized;
   final level = ValueNotifier<double>(0);
 

@@ -98,7 +98,7 @@
 | 工作区：添加、切换、分组、置顶 | ui-workspace、ui-directory-picker-browse · 侧栏 | ☑️ | 抽屉里对话列表上方的工作区切换；全部功能 › 工作区（添加、改名、分组、置顶、移除）；新对话空状态显示要建在哪个工作区 |
 | 目录选择（应用内浏览 / 系统选择框） | ui-directory-picker-* | ☑️ | 添加工作区时的原生目录浏览（主机文件系统；本机另有「手机存储」「下载」等快捷入口） |
 | 通用设置：语言、显示代码工作视图、链接打开方式、性能与用量、Enter 发送 | ui-settings-general、ui-chat、ui-conversation | ☑️ | 设置 › 界面 › 网页版显示 / 网页版发送（引擎侧的这些开关；App 自己的显示设置在 设置 › 外观） |
-| 会话日志上传（官方 API） | ui-settings-session-log · 通用设置 | ☑️ | 设置 › 隐私与分享 › 向 DeepSeek 上传对话日志（原生开关） |
+| 会话日志上传（官方 API） | ui-settings-session-log · 通用设置 | 已移除 | 此修改版删除本机引擎的日志上传贡献器以及原生、网页版设置入口 |
 | 外观、字号 | ui-theme · 通用设置 | ☑️ | 设置 › 外观（App 自己的主题与字号；网页版仍用自己的设置） |
 | 三栏布局（AppFrame） | dsh-client-ui-layout · 三栏 AppFrame | ☑️ | `AdaptiveScaffold`：≥840dp 三栏，左侧放不下时收成导轨 |
 | 快捷键 | ui-shortcuts | ➖ | 手机没有键盘快捷键；网页版通用设置里仍可编辑 |

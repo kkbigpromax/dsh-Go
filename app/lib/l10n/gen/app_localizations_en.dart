@@ -3684,7 +3684,7 @@ class L10nEn extends L10n {
   String get catalogGeneral => 'General';
 
   @override
-  String get catalogGeneralSummary => 'Display, sending and log uploads';
+  String get catalogGeneralSummary => 'Display and sending';
 
   @override
   String get catalogAccount => 'Account';
@@ -6538,13 +6538,7 @@ class L10nEn extends L10n {
   String get engineGeneralWebOnlyHint => 'These settings only affect this host’s web app, not native chat.';
 
   @override
-  String get engineGeneralData => 'Data';
-
-  @override
   String get engineSubagentModelsTitle => 'Subagent models';
-
-  @override
-  String get engineChatLogTitle => 'Chat logs';
 
   @override
   String get engineThinkingTranslationTitle => 'Thinking translation';
@@ -6641,9 +6635,6 @@ class L10nEn extends L10n {
 
   @override
   String get engineSearchSendOriginalQuestion => 'Include your original question in searches';
-
-  @override
-  String get engineChatLogUpload => 'Upload chat logs to DeepSeek';
 
   @override
   String get engineTranslationProvider => 'Translation service';
@@ -13270,9 +13261,6 @@ class L10nEn extends L10n {
   String get pluginsNamespacePermissions => 'Permissions';
 
   @override
-  String get pluginsNamespaceChatLog => 'Chat log';
-
-  @override
   String get pluginsNamespaceThinkingTranslation => 'Thinking translation';
 
   @override
@@ -17131,9 +17119,6 @@ class L10nEn extends L10n {
   String get searchKwWebSearchKey => 'search key,web search key';
 
   @override
-  String get searchKwChatLogUpload => 'privacy,logs,upload logs,telemetry';
-
-  @override
   String get searchKwAddSshHost => 'ssh,add host,connect computer';
 
   @override
@@ -17204,9 +17189,6 @@ class L10nEn extends L10n {
 
   @override
   String get searchKwPluginsMarket => 'plugin market,install plugins,marketplace';
-
-  @override
-  String get searchKwUsageStats => 'statistics,stats,usage data,analytics,telemetry,anonymous,privacy,data';
 
   @override
   String get searchKwQuickPanel => 'swipe,left swipe,shortcuts,gesture,quick panel,quick access';
@@ -17577,12 +17559,6 @@ class L10nEn extends L10n {
 
   @override
   String get shellEngineLogs => 'Engine logs';
-
-  @override
-  String get shellWelcomeMessage => 'The DeepSeek agent,\nin your pocket';
-
-  @override
-  String get shellGetStarted => 'Start';
 
   @override
   String get shellSearchChats => 'Search chats';
@@ -24221,28 +24197,6 @@ class L10nEn extends L10n {
   String updateDownloadingPercent(int percent) {
     return 'Downloading $percent%';
   }
-
-  @override
-  String get usageStatsTitle => 'Send anonymous usage stats';
-
-  @override
-  String get usageStatsSection => 'Improve DSH Go';
-
-  @override
-  String get usageStatsFooter =>
-      'This switch controls dsh-go’s own usage counts, versions, phone maker and model, and system version statistics. It includes no chats, files or accounts, and does not control Google ML Kit SDK statistics.';
-
-  @override
-  String get usageNoticeBody => 'No chats or personal info.\nTurn off anytime.';
-
-  @override
-  String get usageUpgradeNotice => 'New: anonymous usage stats, to help improve DSH Go.\nNo chats or personal info.';
-
-  @override
-  String get usageUpgradeLearn => 'Learn more';
-
-  @override
-  String get usageUpgradeOff => 'Turn off';
 
   @override
   String viewArtifactSaved(String value) {

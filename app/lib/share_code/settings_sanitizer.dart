@@ -43,7 +43,8 @@ final _secretQuery = RegExp(
 );
 
 /// Whether [ns] may be offered at all.
-bool isShareableNamespace(String ns) => !_deniedNamespace.hasMatch(ns);
+bool isShareableNamespace(String ns) =>
+    ns != 'session-log-deepseek' && ns != 'ui-settings-session-log' && !_deniedNamespace.hasMatch(ns);
 
 /// Whether a text file contains a recognizable credential.
 bool containsSecret(String text) => findSecrets(text).isNotEmpty;

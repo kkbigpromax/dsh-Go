@@ -3,7 +3,7 @@
 // plugin that brings a form of its own (named and marked read-only as in
 // plugin_config_entries.dart). Each row shows the value that matters most.
 // (联网搜索 has its own row in 设置 › 能力; the web app's preferences moved to
-// 设置 › 界面 and the log upload to 隐私与分享.)
+// 设置 › 界面.)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

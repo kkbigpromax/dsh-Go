@@ -52,7 +52,7 @@ seed(['kv', 'key', 'put', `beta:chan:${chanId}`, JSON.stringify({ label: 'smoke-
 const dev = spawn(
   'npx',
   ['wrangler', 'dev', '--local', '--ip', '127.0.0.1', '--port', String(port), '--persist-to', join(state, 'persist'),
-    '--var', `ADMIN_KEY:${adminKey}`, '--var', `BETA_SECRET:${betaSecret}`, '--var', `USAGE_SECRET:${betaSecret}x`,
+    '--var', `ADMIN_KEY:${adminKey}`, '--var', `BETA_SECRET:${betaSecret}`,
     // The beta checks below are for the access-key mode (public mode: test/download.test.ts).
     '--var', 'DOWNLOAD_ACCESS:key', '--show-interactive-dev-session=false'],
   { cwd: worker, env: { ...process.env, CLOUDFLARE_API_TOKEN: '', WRANGLER_SEND_METRICS: 'false' }, stdio: ['ignore', 'pipe', 'pipe'] },
@@ -126,14 +126,8 @@ try {
     if ((await fetch(base + p, { redirect: 'manual' })).status !== 404) throw new Error(`${p} is back`);
   }
   console.log(`ok - beta: page, wrong key 403, 5 wrong then 429, unlock, signed APK ${got.length} bytes (sha256 ok), resume 206, channel 401/200, old mirror 404`);
-  // The app's usage report: counted (wrangler dev has the Analytics Engine datasets).
-  const day = new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
-  const usage = (body) => fetch(`${base}/api/usage/v1`, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '192.0.2.40' } });
-  const good = { v: 1, iid: 'smokesmokesmokesmoke0A', day, app: '0.9.9', build: 10301000, sdk: 34, abi: 'arm64-v8a', maker: 'vivo', lang: 'zh', engine: 'proot', counts: { turns: 1, voice: 0, phone: 0, share: 0, gen: 0, plugins: 0 } };
-  const sent = await usage(good);
-  if (sent.status !== 204) throw new Error(`usage: ${sent.status}`);
-  if (output.includes('stats write failed') || output.includes('unhandled')) throw new Error('a stats write failed');
-  console.log('ok - usage report: 204; nothing failed');
+  const removedUsage = await fetch(`${base}/api/usage/v1`, { method: 'POST', body: '{}' });
+  if (removedUsage.status !== 404) throw new Error(`removed usage endpoint: ${removedUsage.status}`);
   if (!statuses.includes(429)) throw new Error('the upload burst limit never kicked in');
   console.log('smoke: all passed');
   stop(0);

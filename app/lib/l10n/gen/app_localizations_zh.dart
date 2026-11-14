@@ -3508,7 +3508,7 @@ class L10nZh extends L10n {
   String get catalogGeneral => '通用设置';
 
   @override
-  String get catalogGeneralSummary => '显示、发送与日志上传';
+  String get catalogGeneralSummary => '显示与发送';
 
   @override
   String get catalogAccount => '账号与余额';
@@ -6176,13 +6176,7 @@ class L10nZh extends L10n {
   String get engineGeneralWebOnlyHint => '这组设置仅影响当前主机的网页版，不改变原生聊天。';
 
   @override
-  String get engineGeneralData => '数据';
-
-  @override
   String get engineSubagentModelsTitle => '子代理模型';
-
-  @override
-  String get engineChatLogTitle => '对话日志';
 
   @override
   String get engineThinkingTranslationTitle => '思考过程翻译';
@@ -6279,9 +6273,6 @@ class L10nZh extends L10n {
 
   @override
   String get engineSearchSendOriginalQuestion => '搜索时附带用户原问题';
-
-  @override
-  String get engineChatLogUpload => '向 DeepSeek 上传对话日志';
 
   @override
   String get engineTranslationProvider => '翻译服务';
@@ -12616,9 +12607,6 @@ class L10nZh extends L10n {
   String get pluginsNamespacePermissions => '权限';
 
   @override
-  String get pluginsNamespaceChatLog => '对话日志';
-
-  @override
   String get pluginsNamespaceThinkingTranslation => '思考翻译';
 
   @override
@@ -16284,9 +16272,6 @@ class L10nZh extends L10n {
   String get searchKwWebSearchKey => '搜索 Key,联网 Key';
 
   @override
-  String get searchKwChatLogUpload => '隐私,日志,上传日志,对话日志';
-
-  @override
   String get searchKwAddSshHost => 'SSH,添加主机,连接电脑';
 
   @override
@@ -16356,9 +16341,6 @@ class L10nZh extends L10n {
 
   @override
   String get searchKwPluginsMarket => '插件市场,安装插件,市场,获取插件';
-
-  @override
-  String get searchKwUsageStats => '统计,使用统计,匿名,隐私,数据,改进,遥测,分析';
 
   @override
   String get searchKwQuickPanel => '左滑,快捷入口,手势,滑动,目录,自定义目录,快捷,常用入口';
@@ -16685,12 +16667,6 @@ class L10nZh extends L10n {
 
   @override
   String get shellEngineLogs => '引擎日志';
-
-  @override
-  String get shellWelcomeMessage => '把 DeepSeek 智能体\n装进口袋';
-
-  @override
-  String get shellGetStarted => '开始';
 
   @override
   String get shellSearchChats => '搜索对话';
@@ -23002,27 +22978,6 @@ class L10nZh extends L10n {
   String updateDownloadingPercent(int percent) {
     return '正在下载 $percent%';
   }
-
-  @override
-  String get usageStatsTitle => '发送匿名使用统计';
-
-  @override
-  String get usageStatsSection => '改进 DSH Go';
-
-  @override
-  String get usageStatsFooter => '这个开关只控制 dsh-go 自身的使用次数、版本、手机品牌和型号、系统版本统计，不含对话、文件和账号；它不控制 Google ML Kit SDK 的统计。';
-
-  @override
-  String get usageNoticeBody => '不含对话和个人信息，可随时关闭';
-
-  @override
-  String get usageUpgradeNotice => '新增匿名使用统计，帮助改进 DSH Go。\n不含对话和个人信息';
-
-  @override
-  String get usageUpgradeLearn => '了解';
-
-  @override
-  String get usageUpgradeOff => '关闭';
 
   @override
   String viewArtifactSaved(String value) {

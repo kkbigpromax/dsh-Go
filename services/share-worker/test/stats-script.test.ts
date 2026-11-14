@@ -40,22 +40,7 @@ const ROWS: Record<string, unknown[]> = {
     { day: '2026-11-05', device: 'z', app: '0.9.9+10301000', abi: 'arm64-v8a', n: '1' },
     { day: '2026-11-06', device: 'x2', app: '', abi: '', n: '1' },
   ],
-  dshgo_usage: [],
 };
-const use = (day: string, device: string, turns: number, over: Record<string, unknown> = {}) => ({
-  day, device, app: '0.9.9', abi: 'arm64-v8a', maker: 'vivo', lang: 'zh', engine: 'proot', build: 10301000, sdk: 34, turns, voice: 1, phone: 0, share: 0, gen: 0, plugins: 2, ...over,
-});
-ROWS.dshgo_usage = [
-  use('2026-10-10', 'u5', 1), // seen before: not new on 10-28
-  use('2026-10-28', 'u1', 5), use('2026-10-28', 'u1', 8), // a repeat: once, the larger counts
-  use('2026-10-28', 'u2', 1, { maker: 'xiaomi', engine: 'direct' }),
-  use('2026-10-28', 'u3', 0, { abi: 'x86_64', lang: 'en' }),
-  use('2026-10-28', 'u4', 2, { maker: 'huawei' }),
-  use('2026-10-28', 'u5', 3),
-  use('2026-10-28', 'u6', 4), use('2026-10-28', 'u6', 6, { app: '0.9.10', build: 11020000 }), // updated that day
-  use('2026-11-04', 'u1', 7), use('2026-11-04', 'u2', 2, { maker: 'xiaomi', engine: 'direct' }),
-];
-
 let server: Server;
 let api = '';
 const seen: { path: string; auth: string; sql: string }[] = [];
@@ -90,18 +75,18 @@ describe('stats.sh', () => {
     const { code, out } = await sh('stats.sh', ['--dry-run', '--days', '7'], { PATH: `${trapped}:${process.env.PATH}`, FAKE_LOG: log });
     expect(code).toBe(0);
     expect(out).toContain(`POST https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/analytics_engine/sql`);
-    for (const table of ['dshgo_downloads', 'dshgo_checks', 'dshgo_usage']) expect(out).toContain(`FROM ${table}`);
+    for (const table of ['dshgo_downloads', 'dshgo_checks']) expect(out).toContain(`FROM ${table}`);
     expect(out).toContain("INTERVAL '8' DAY");
-    expect(out).toContain("INTERVAL '29' DAY");
+    expect(out).not.toContain('dshgo_usage');
     expect(out).toContain('SUM(_sample_interval) AS n');
     expect(readFileSync(log, 'utf8')).toBe('');
   });
 
-  it('reports downloads, near-daily-active and the app stats from the rows', async () => {
+  it('reports downloads and near-daily-active from the rows', async () => {
     seen.length = 0;
     const { code, out } = await sh('stats.sh', ['--days', '14'], { CF_TOKEN_FILE: join(dir, 'token'), CF_API_BASE: api, STATS_TODAY: '2026-11-06' });
     expect(code, out).toBe(0);
-    expect(seen).toHaveLength(3);
+    expect(seen).toHaveLength(2);
     expect(seen.every((s) => s.path === `/client/v4/accounts/${ACCOUNT}/analytics_engine/sql` && s.auth === `Bearer ${TOKEN}`)).toBe(true);
     expect(out).not.toContain(TOKEN);
     const text = squash(out);
@@ -114,15 +99,7 @@ describe('stats.sh', () => {
     // Update checks: distinct devices, checks, versions by device.
     expect(text).toContain('2026-11-05 3 4 未上报 67% · 0.9.9+10301000 33%');
     expect(text).toContain('2026-11-06 1 1 未上报 100%');
-    // App: a device once a day, the larger counts; u5 isn't new on 10-28.
-    expect(text).toContain('2026-10-28 6 20 6 0 0 0 12');
-    expect(text).toContain('2026-11-04 2 9 2 0 0 0 4');
-    expect(text).toContain('2026-10-28 5 2 40%');
-    expect(text).toContain('分布（窗口内 6 个安装，各取最近一次上报）');
-    expect(text).toContain('版本：0.9.9 83% · 0.9.10 17%');
-    expect(text).toContain('厂商：vivo 67% · xiaomi 17% · huawei 17%');
-    expect(text).toContain('运行方式：proot 83% · direct 17%');
-    expect(text).toContain('ABI：arm64-v8a 83% · x86_64 17%');
+    expect(out).not.toContain('App 统计');
   });
 
   it('says what went wrong, and needs the token file', async () => {

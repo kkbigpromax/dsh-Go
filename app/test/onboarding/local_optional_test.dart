@@ -53,8 +53,8 @@ Future<void> _frames(WidgetTester tester, [int n = 10]) async {
 
 void main() {
   group('initialOnboardingStep without the runtime', () {
-    const seen = OnboardingPrefs(loaded: true, welcomeSeen: true);
-    const declined = OnboardingPrefs(loaded: true, welcomeSeen: true, localDeclined: true);
+    const seen = OnboardingPrefs(loaded: true);
+    const declined = OnboardingPrefs(loaded: true, localDeclined: true);
 
     test('a phone that runs on a remote host goes straight home', () {
       expect(initialOnboardingStep(status: missingStatus, hasApiKey: false, prefs: declined), isNull);
@@ -78,10 +78,10 @@ void main() {
       expect(initialOnboardingStep(status: upgrade, hasApiKey: true, prefs: declined), isNull);
     });
 
-    test('not declined: welcome on a fresh phone, the choice after it', () {
+    test('not declined: a fresh phone starts at the runtime choice', () {
       expect(
         initialOnboardingStep(status: missingStatus, hasApiKey: false, prefs: const OnboardingPrefs(loaded: true)),
-        OnboardingStep.welcome,
+        OnboardingStep.runtime,
       );
       expect(initialOnboardingStep(status: missingStatus, hasApiKey: false, prefs: seen), OnboardingStep.runtime);
     });
@@ -120,7 +120,7 @@ void main() {
       RuntimeStatus status = missingStatus,
       VoidCallback? onRemote,
       bool choose = true,
-      OnboardingPrefs prefs = const OnboardingPrefs(loaded: true, welcomeSeen: true),
+      OnboardingPrefs prefs = const OnboardingPrefs(loaded: true),
     }) async {
       final runtime = RecordingLocalRuntime(LocalRuntimeState(loaded: true, status: status));
       usePhoneSurface(tester);
@@ -221,7 +221,7 @@ void main() {
       final (_, container) = await pump(
         tester,
         onRemote: () {},
-        prefs: const OnboardingPrefs(loaded: true, welcomeSeen: true, localDeclined: true),
+        prefs: const OnboardingPrefs(loaded: true, localDeclined: true),
       );
       await tester.tap(find.widgetWithText(FilledButton, '继续'));
       await tester.pump();
@@ -279,7 +279,7 @@ void main() {
     Future<(RecordingLocalRuntime, ProviderContainer)> pumpGate(
       WidgetTester tester, {
       RuntimeStatus status = missingStatus,
-      OnboardingPrefs prefs = const OnboardingPrefs(loaded: true, welcomeSeen: true),
+      OnboardingPrefs prefs = const OnboardingPrefs(loaded: true),
       AppSettings settings = const AppSettings(loaded: true),
     }) async {
       final runtime = RecordingLocalRuntime(LocalRuntimeState(loaded: true, status: status));
@@ -337,7 +337,7 @@ void main() {
     testWidgets('a phone without the runtime opens home and starts nothing', (tester) async {
       final (runtime, _) = await pumpGate(
         tester,
-        prefs: const OnboardingPrefs(loaded: true, welcomeSeen: true, localDeclined: true),
+        prefs: const OnboardingPrefs(loaded: true, localDeclined: true),
       );
       expect(find.text('home'), findsOneWidget);
       expect(runtime.calls, isEmpty);

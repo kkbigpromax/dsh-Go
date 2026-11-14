@@ -314,26 +314,16 @@ scripts/publish-release.sh ../../dist --github
 
 ## 统计
 
-下载、更新检查和 App 的匿名使用报告都记在 Cloudflare 的 Analytics Engine 里，不存 IP；数据模型和隐私说明见 `docs/design/share-links.md` §15。
+下载和更新检查记在 Cloudflare 的 Analytics Engine 里，不存 IP；数据模型和隐私说明见 `docs/design/share-links.md` §15。
 
-**开通**（一次，我们的账号已经做完）。`wrangler.jsonc` 绑定了三个数据集，`provision.sh` 默认带着部署；没开 Analytics Engine 的账号带着它们部署会失败，所以先开通。没开通期间（`--no-analytics`）下载和更新检查不计数，`/api/usage/v1` 是 404。
+**开通**（一次，我们的账号已经做完）。`wrangler.jsonc` 绑定了下载和更新检查两个数据集，`provision.sh` 默认带着部署；没开 Analytics Engine 的账号带着它们部署会失败，所以先开通。没开通期间（`--no-analytics`）下载和更新检查不计数。
 
 1. 在 Cloudflare 后台的 Analytics Engine 页面开通（免费计划可用）。
-2. `USAGE_SECRET` 和带上数据集的部署：
-
-   ```sh
-   cd services/share-worker
-   (umask 077; openssl rand -base64 32 | tr '+/' '-_' | tr -d '=\n' > <USAGE_SECRET 文件>)
-   CLOUDFLARE_API_TOKEN="$(cat <token 文件>)" CLOUDFLARE_ACCOUNT_ID="$(cat ~/keys/dshgo-cloudflare-account-id)" \
-     npx wrangler secret put USAGE_SECRET < <USAGE_SECRET 文件>
-   CF_TOKEN_FILE=<token 文件> scripts/provision.sh deploy   # 默认绑定 DOWNLOADS、CHECKS、USAGE（数据集第一次写入时自动建）
-   ```
+2. 在 `services/share-worker` 中运行 `CF_TOKEN_FILE=<token 文件> scripts/provision.sh deploy`，默认绑定 `DOWNLOADS`、`CHECKS`（首次写入时创建数据集）。此修改版已删除 App 匿名统计接收接口及相应 secret 和数据集配置。
 
 3. 点一次下载页的按钮，几分钟后 `scripts/stats.sh` 有数。没开通 Analytics Engine 的账号（fork）部署时要带 `--no-analytics`（或 `DSH_ANALYTICS=0`），否则部署失败。
 
 - 读数用的 token 要加一项权限：Account → Account Analytics → Read（部署用的那把可以一起加，也可以另开一把只读的）。
-- `USAGE_SECRET` 不要换：换了以后安装编号的哈希对不上，留存从那天断开。丢了也只是从头算，不影响 App。
-- 没设 `USAGE_SECRET` 时 `/api/usage/v1` 是 404，下载和更新检查照常计数。
 
 **看数**：
 

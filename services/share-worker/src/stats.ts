@@ -8,7 +8,6 @@
 //   dshgo_checks     GET /beta/update.json answered to the app's channel
 //                    token: day, daily device code, app version and ABI (when
 //                    the User-Agent says), country
-//   dshgo_usage      POST /api/usage/v1, the app's own report (src/usage.ts)
 //
 // The daily device code is HMAC(today's salt, IP + User-Agent), 64 bits. The
 // salt is random: the StatsSalt Durable Object makes it on the day's first
@@ -36,11 +35,6 @@ export function nextDayStart(now = Date.now()): number {
   return Math.floor((now + OFFSET_MS) / DAY_MS) * DAY_MS + DAY_MS - OFFSET_MS;
 }
 
-/** [day] moved by [days] (calendar arithmetic on YYYY-MM-DD). */
-export function addDays(day: string, days: number): string {
-  return new Date(Date.parse(`${day}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
-}
-
 const encoder = new TextEncoder();
 
 function base64url(bytes: Uint8Array): string {
@@ -53,21 +47,8 @@ function hex(bytes: ArrayBuffer, take: number): string {
   return [...new Uint8Array(bytes).slice(0, take)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Keep only one completed string-key import per isolate. Match the secret
-// exactly so rotation cannot reuse the previous key; never retain a Promise.
-let hmacMemo: { secret: string; key: CryptoKey } | null = null;
-
-export async function hmacHex(key: string | CryptoKey, message: string, bytes: number): Promise<string> {
-  let k: CryptoKey;
-  if (typeof key !== 'string') {
-    k = key;
-  } else if (hmacMemo?.secret === key) {
-    k = hmacMemo.key;
-  } else {
-    k = await crypto.subtle.importKey('raw', encoder.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-    hmacMemo = { secret: key, key: k };
-  }
-  return hex(await crypto.subtle.sign('HMAC', k, encoder.encode(message)), bytes);
+async function hmacHex(key: CryptoKey, message: string, bytes: number): Promise<string> {
+  return hex(await crypto.subtle.sign('HMAC', key, encoder.encode(message)), bytes);
 }
 
 // ── The day's salt ───────────────────────────────────────────────────────
@@ -114,7 +95,6 @@ let saltPending: { day: string; result: Promise<CryptoKey | null> } | null = nul
 
 /** For tests. */
 export function resetStatsMemo(): void {
-  hmacMemo = null;
   saltMemo = null;
   saltPending = null;
 }
@@ -189,5 +169,3 @@ export async function countCheck(env: Env, request: Request, now = Date.now()): 
   const { app, abi } = parseUpdaterAgent(request.headers.get('User-Agent'));
   write(env.CHECKS, { indexes: [device || 'none'], blobs: [statsDay(now), device, app, abi, countryOf(request) ?? 'XX'], doubles: [1] });
 }
-
-export { write as writeStat };

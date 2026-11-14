@@ -31,7 +31,6 @@
   "pluginsNamespaceSearchApi": "Web search API",
   "pluginsNamespaceCommands": "Command execution",
   "pluginsNamespacePermissions": "Permissions",
-  "pluginsNamespaceChatLog": "Chat log",
   "pluginsNamespaceThinkingTranslation": "Thinking translation",
   "pluginsNamespaceTranslation": "Translation",
   "pluginsNamespaceLanguage": "Language",

@@ -57,7 +57,6 @@ import '../../state/voice_state.dart';
 import '../../state/voice_model_state.dart';
 import '../../state/voice_settings.dart';
 import '../../state/workspaces_state.dart' show selectedWorkspaceProvider, workspaceTitle;
-import '../../usage/usage_stats.dart';
 import '../common/app_sheet.dart';
 import '../common/brief_notice.dart';
 import '../common/fluid_bits.dart';
@@ -391,9 +390,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       // The capability probe is async and can finish after this page is gone.
       client: () => mounted ? ref.read(activeConnectionProvider).value?.client : null,
       inputOwner: () => mounted ? ref.read(activeHostProvider) : null,
-      onRecognized: () {
-        if (mounted) ref.read(usageStatsProvider.notifier).count(UsageCount.voice);
-      },
     );
     // A download or deletion changes capabilities without replacing the host.
     ref.listenManual(voiceModelProvider.select((s) => s.status == VoiceModelStatus.ready), (_, _) {
@@ -777,8 +773,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
       ok = await chat.answer(request, [QuestionAnswer(request.questions.single.id, custom: text)]);
     } else {
       ok = await chat.send(text, attachments: drafts, mode: mode);
-      // A generation request, counted on top of its turn.
-      if (ok && generate != null && mounted) ref.read(usageStatsProvider.notifier).count(UsageCount.gen);
     }
     if (!ok && _sameConnection(client, generation)) _giveBack(sessionId, typed, drafts, quote: quote);
   }

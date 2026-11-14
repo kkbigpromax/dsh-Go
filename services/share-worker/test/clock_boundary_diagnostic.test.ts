@@ -5,7 +5,6 @@ import worker from '../src/index';
 import { resetBetaCache } from '../src/beta';
 import { resetChannelMemo } from '../src/beta-auth';
 import { resetStatsMemo, statsDay } from '../src/stats';
-import { resetUsageMemo } from '../src/usage';
 import { FakeCache, makeCtx, makeEnv } from './fakes';
 
 const ORIGIN = 'https://go.dshtui.com';
@@ -18,7 +17,6 @@ afterEach(() => {
   resetBetaCache();
   resetChannelMemo();
   resetStatsMemo();
-  resetUsageMemo();
 });
 
 async function run(env: ReturnType<typeof makeEnv>['env'], path: string) {
@@ -77,7 +75,6 @@ describe('download test day-reference boundary', () => {
       resetBetaCache();
       resetChannelMemo();
       resetStatsMemo();
-      resetUsageMemo();
       (globalThis as { caches?: unknown }).caches = { default: new FakeCache() };
       const t0 = Date.parse(crossing ? '2026-10-30T15:59:59.999Z' : '2026-10-30T04:00:00.000Z');
       const clock = vi.spyOn(Date, 'now').mockReturnValue(t0);

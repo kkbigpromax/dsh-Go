@@ -162,7 +162,7 @@ fi
 [[ -n "$FOUND_KV" ]] || die "KV namespace $KV_TITLE is missing: run apply"
 # Our ids and the chosen host, in a copy of wrangler.jsonc next to it.
 wrangler_config "$HOST"
-echo "analytics: $([[ $ANALYTICS == 1 ]] && echo 'on (DOWNLOADS, CHECKS, USAGE)' || echo 'off (--no-analytics)')"
+echo "analytics: $([[ $ANALYTICS == 1 ]] && echo 'on (DOWNLOADS, CHECKS)' || echo 'off (--no-analytics)')"
 wr deploy
 if [[ "$mode" == apply ]]; then
   wr secret put ADMIN_KEY <"$ADMIN_FILE"

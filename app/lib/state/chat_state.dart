@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../diagnostics/app_error_log.dart';
 import '../l10n/l10n.dart';
-import '../usage/usage_stats.dart';
 import 'attachments.dart';
 import 'chat_error_text.dart';
 import 'connection_state.dart';
@@ -1361,7 +1360,6 @@ class ChatController extends Notifier<ChatState> {
       }
       final notice = await _deliver(operation, body, attachments, receipts, requestId: requestId, mode: promptMode,
         deliveryAllowed: deliveryAllowed);
-      _sent();
       if (!_currentOperation(operation)) return false;
       state = state.copyWith(error: stopFailed, notice: notice);
       return true;
@@ -1374,7 +1372,6 @@ class ChatController extends Notifier<ChatState> {
           _claimedAt.containsKey(requestId) ||
           _withdrawn.contains(requestId) ||
           _inboxIds().contains(requestId)) {
-        _sent();
         return true;
       }
       _recordSendFailure(operation, e);
@@ -1420,12 +1417,6 @@ class ChatController extends Notifier<ChatState> {
     } finally {
       _retryingFailed.remove(prompt.requestId);
     }
-  }
-
-  /// A message went out: one more turn in the usage statistics (only how
-  /// many).
-  void _sent() {
-    if (ref.mounted) ref.read(usageStatsProvider.notifier).count(UsageCount.turns);
   }
 
   /// Retry the same text and attachment selections. Picking again is a new

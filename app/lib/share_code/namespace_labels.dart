@@ -18,7 +18,6 @@ Map<String, String> get _labels => {
   'web-deepseek-api': appL10n.pluginsNamespaceSearchApi,
   'bash-sandbox': appL10n.pluginsNamespaceCommands,
   'permission': appL10n.pluginsNamespacePermissions,
-  'session-log-deepseek': appL10n.pluginsNamespaceChatLog,
   'cot-translation': appL10n.pluginsNamespaceThinkingTranslation,
   'translator': appL10n.pluginsNamespaceTranslation,
   'locale': appL10n.pluginsNamespaceLanguage,
