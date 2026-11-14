@@ -71,7 +71,12 @@ jobs:
           cp "$RUNNER_TEMP/fork-gradle-wrapper/gradle/wrapper/"* app/android/gradle/wrapper/
           chmod +x app/android/gradlew
       - name: Build the modified phone runtime
-        run: bash runtime/build-runtime.sh arm64-v8a
+        run: |
+          export TERMUX_RUNTIME_APK="$RUNNER_TEMP/upstream-1.0.16-arm64.apk"
+          curl -fL --retry 3 --connect-timeout 20 \
+            https://github.com/ccch1mneyyy/dsh-Go/releases/download/v1.0.16/dsh-go-1.0.16-arm64.apk \
+            -o "$TERMUX_RUNTIME_APK"
+          bash runtime/build-runtime.sh arm64-v8a
       - name: Verify runtime inputs
         run: |
           python3 -I tooling/check_runtime_bundle.py arm64

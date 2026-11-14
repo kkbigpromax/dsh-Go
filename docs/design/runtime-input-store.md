@@ -1,5 +1,7 @@
 # 固定运行时输入原件库
 
+本 fork 的 arm64 APK 工作流为恢复 Termux 已下架的旧 deb，显式设置 `TERMUX_RUNTIME_APK`：仅从原作者 v1.0.16 APK 复用四个 JNI 库和原许可文件。`runtime/lib/termux_from_apk.py` 钉死整包 SHA256，再核对 ABI、三项库版本和每个库的清单摘要；不接受任意 APK，也不复用原包的 DSH 引擎。运行时输入摘要包含此 APK 和恢复脚本，JNI 清单记录来源。默认 deb 构建路径不变；下述 inventory 仍描述默认 deb 原件库，不包含这个显式替代输入。
+
 `runtime/lib/input_store.py` 保留构建所需的原始归档字节，使用原有 SHA256 / npm SRI 寻址。它以 UTF-8 读取 `runtime/build-runtime.sh` 的版本默认值、`PIN` 和源地址，以及 Ubuntu / npm 锁；不执行 shell，不另维护一份 pin，不发布到外部。
 
 这是 Linux 构建主机工具，要求 Python 3.11 或更新版本。npm 预热另需已有的 host Node/npm；脚本不安装系统工具。原件库必须支持同盘硬链接，批次临时目录建在库内。这里的文件同步和原子替换保证正常错误路径不发布半文件，不宣称完整的断电持久性。

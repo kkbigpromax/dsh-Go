@@ -385,6 +385,12 @@ build_abi() {
   local -a extra_debs=(); mapfile -t extra_debs < "$work/extra-debs.txt"
   [[ ${#extra_debs[@]} -gt 0 ]] || die "Ubuntu package resolution produced nothing"
   local python; python="$(python_dist "$termux_arch")"
+  local -a termux_inputs=()
+  if [[ -n ${TERMUX_RUNTIME_APK:-} ]]; then
+    python3 -I "$HERE/lib/termux_from_apk.py" "$TERMUX_RUNTIME_APK" "$abi" "$jni" \
+      "$assets/licenses" "$work/jnilibs.json" "$PROOT_VERSION" "$TALLOC_VERSION" "$SHMEM_VERSION"
+    termux_inputs=("$TERMUX_RUNTIME_APK")
+  else
   proot_deb="$(termux_deb proot "$PROOT_VERSION" "$termux_arch")"
   talloc_deb="$(termux_deb libtalloc "$TALLOC_VERSION" "$termux_arch")"
   shmem_deb="$(termux_deb libandroid-shmem "$SHMEM_VERSION" "$termux_arch")"
@@ -443,6 +449,8 @@ open(sys.argv[2], "wb").write(z.read(name))
 PYEOF
   cp "$debx/data/data/com.termux/files/usr/share/doc/libandroid-shmem/copyright" "$assets/licenses/libandroid-shmem-copyright.txt"
   sed -n '1,/\*\//p' "$tprefix/include/talloc.h" > "$assets/licenses/libtalloc-notice.txt"
+  termux_inputs=("$proot_deb" "$talloc_deb" "$shmem_deb")
+  fi
 
   # -- DSH --
   local prefix="$work/dsh-prefix"
@@ -463,8 +471,9 @@ PYEOF
   inputs_sha="$( {
       echo "$RUNTIME_REVISION $abi $DSH_VERSION $NODE_VERSION $PNPM_VERSION $UBUNTU_VERSION $COMPRESS $XZ_PRESET $XZ_THREADS $PRUNE_DEV_METADATA $SOURCE_DATE_EPOCH $RUNTIME_LAYERS"
       sha256 "$base"; sha256 "$node"; sha256 "$python"; sha256sum "${extra_debs[@]}" | cut -d' ' -f1
-      sha256 "$proot_deb"; sha256 "$talloc_deb"; sha256 "$shmem_deb"
+      sha256sum "${termux_inputs[@]}" | cut -d' ' -f1
       sha256 "$lockfile"; sha256 "$pnpm_lockfile"; sha256 "$HERE/build-runtime.sh"; sha256 "$HERE/lib/rtbuild.py"
+      sha256 "$HERE/lib/termux_from_apk.py"
       (cd "$HERE" && find patches bridge boot direct session-deletion -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum)
     } | sha256sum | cut -c1-12 )"
   local runtime_version="${RUNTIME_REVISION}-dsh${DSH_VERSION}-node${NODE_VERSION}-ubuntu${UBUNTU_VERSION}-${inputs_sha}"
