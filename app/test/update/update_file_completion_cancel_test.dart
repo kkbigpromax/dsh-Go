@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support.dart';
 
 const _name = 'dsh-go-1.2.0-arm64.apk';
-const _url = 'https://github.com/ccch1mneyyy/dsh-go/releases/download/v1.2.0/$_name';
+const _url = 'https://github.com/kkbigpromax/dsh-Go/releases/download/v1.2.0/$_name';
 final _bytes = utf8.encode('PK a complete update awaiting its file operation');
 
 enum _Operation { close, rename }
@@ -111,6 +111,7 @@ void main() {
     final gate = _CompletionGate();
     SharedPreferences.setMockInitialValues({
       'update_latest': jsonEncode({
+        'repository': updateRepo,
         'schema': 1,
         'version': '1.2.0',
         'tag': 'v1.2.0',

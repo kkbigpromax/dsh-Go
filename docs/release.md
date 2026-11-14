@@ -1,5 +1,7 @@
 # 发版与应用内更新
 
+本 fork 的应用内更新仅访问 `kkbigpromax/dsh-Go` 的 GitHub Releases，包含 `fork.*` 预发布版本；不使用原作者的更新源、下载镜像或内测通道。旧包缓存的原版更新提示会丢弃。下文保留上游发布流程供参考；本 fork 以本机验证通过的包交付，不自动发布 Release。
+
 App 以 APK 分发、不上商店，更新靠 App 自己查 GitHub Releases、下载、校验、调系统安装器。本文是发版约定和步骤，以及更新链路的取舍。代码在 `app/lib/update/`（检查、下载、校验）、`app/lib/state/update_state.dart`（状态与节流）、`app/lib/ui/update/`（设置行、弹窗）、`app/android/.../update/`（PackageInstaller 安装）。
 
 > **正式发版前必须先换成固定的发布密钥**（见「签名」）。存在 `app/android/key.properties` 时 release 使用其中的发布密钥；缺少配置时仅为本地构建回落到 debug key，不可用于正式发布。

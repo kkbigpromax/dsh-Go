@@ -62,6 +62,7 @@ void main() {
         });
         SharedPreferences.setMockInitialValues({
           'update_latest': jsonEncode({
+            'repository': updateRepo,
             'schema': 1,
             'version': '1.2.0',
             'tag': 'v1.2.0',

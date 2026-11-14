@@ -350,7 +350,11 @@ class AppUpdateController extends Notifier<AppUpdateState> {
     ReleaseInfo? cached;
     try {
       final raw = prefs.getString(_latestKey);
-      if (raw != null) cached = parseUpdateManifest(jsonDecode(raw));
+      if (raw != null) {
+        final json = jsonDecode(raw);
+        // Old builds cached the original author's offer under this same key.
+        if (json is Map && json['repository'] == updateRepo) cached = parseUpdateManifest(json);
+      }
     } catch (_) {}
     final latest = cached != null && cached.version.isNewerThan(current) ? cached : null;
     if (latest == null) {
@@ -580,7 +584,7 @@ class AppUpdateController extends Notifier<AppUpdateState> {
         if (answer == _Answer.same) offer = _keepDigest(offer);
         unawaited(prefs?.setInt(_checkedKey, now.millisecondsSinceEpoch));
         if (offer case final offer?) {
-          unawaited(prefs?.setString(_latestKey, jsonEncode(offer.toManifestJson())));
+          unawaited(prefs?.setString(_latestKey, jsonEncode({...offer.toManifestJson(), 'repository': updateRepo})));
         } else {
           unawaited(prefs?.remove(_latestKey));
         }

@@ -15,9 +15,9 @@ import 'support.dart';
 
 const _m1 = UpdateMirror(id: 'm1', label: 'mirror-one.example', prefix: 'https://mirror-one.example/');
 const _sources = UpdateSources(mirrors: [UpdateMirror.github, _m1]);
-const _api = 'https://api.github.com/repos/ccch1mneyyy/dsh-go/releases/latest';
-const _manifest = 'https://github.com/ccch1mneyyy/dsh-go/releases/latest/download/update.json';
-const _apkUrl = 'https://github.com/ccch1mneyyy/dsh-go/releases/download/v1.2.0/dsh-go-1.2.0-arm64.apk';
+const _api = 'https://api.github.com/repos/kkbigpromax/dsh-Go/releases/latest';
+const _manifest = 'https://github.com/kkbigpromax/dsh-Go/releases/latest/download/update.json';
+const _apkUrl = 'https://github.com/kkbigpromax/dsh-Go/releases/download/v1.2.0/dsh-go-1.2.0-arm64.apk';
 
 final _apk = utf8.encode('PK pretend this is DSH 1.2.0 for arm64');
 
@@ -193,9 +193,29 @@ void main() {
       expect(await controller.autoCheckIfDue(), isFalse, reason: 'just attempted');
     });
 
+    for (final repository in <String?>[null, 'ccch1mneyyy/dsh-go']) {
+      test('an original build cached offer is discarded; repository=$repository', () async {
+        installer.app = const InstalledApp(versionName: '1.0.16-fork.1', versionCode: 11142346, abi: 'arm64');
+        SharedPreferences.setMockInitialValues({
+          'update_auto_check': false,
+          'update_latest': jsonEncode({
+            ..._release(version: '1.0.16'),
+            'repository': ?repository,
+            'page': 'https://github.com/ccch1mneyyy/dsh-go/releases/tag/v1.0.16',
+          }),
+        });
+        final c = container();
+        await ready(c);
+        expect(c.read(appUpdateProvider).hasUpdate, isFalse);
+        expect(c.read(appUpdateProvider).autoCheck, isFalse);
+        expect(http.requests, isEmpty);
+        expect((await SharedPreferences.getInstance()).getString('update_latest'), isNull);
+      });
+    }
+
     test('the last offer survives a restart without the network, and is dropped once installed', () async {
       SharedPreferences.setMockInitialValues({
-        'update_latest': jsonEncode(_release()),
+        'update_latest': jsonEncode({..._release(), 'repository': updateRepo}),
         'update_last_checked': now.millisecondsSinceEpoch,
         'update_last_attempt': now.millisecondsSinceEpoch,
       });

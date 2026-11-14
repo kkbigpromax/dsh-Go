@@ -60,6 +60,7 @@ class UpdateChecker {
   Future<CheckResult> check({
     String? preferred,
     void Function(UpdateEndpoint endpoint)? onAttempt,
+
     /// What this build is. A source that answers with something no newer than
     /// this is not the end of the search: another source may still know a
     /// release (a stale channel must not hide the GitHub release). Null keeps
@@ -103,7 +104,7 @@ class UpdateChecker {
       response = await http.get(
         endpoint.url,
         headers: {
-          ...endpoint.kind == EndpointKind.githubApi
+          ...endpoint.kind != EndpointKind.manifest
               ? const {'accept': 'application/vnd.github+json', 'x-github-api-version': '2022-11-28'}
               : const {'accept': 'application/json'},
           ...endpoint.headers,
@@ -135,6 +136,7 @@ class UpdateChecker {
       final json = jsonDecode(body);
       return switch (endpoint.kind) {
         EndpointKind.githubApi => parseGithubRelease(json),
+        EndpointKind.githubReleaseList => _releaseFromList(json),
         EndpointKind.manifest => parseUpdateManifest(json, base: endpoint.url),
       };
     } on Object {
@@ -142,5 +144,21 @@ class UpdateChecker {
       // mirrors answer 200 with an HTML error page.
       return CheckFailure.badResponse;
     }
+  }
+
+  Object _releaseFromList(Object? json) {
+    if (json is! List) throw const FormatException('release list is not an array');
+    ReleaseInfo? newest;
+    for (final item in json.whereType<Map>()) {
+      if (item['draft'] == true) continue;
+      try {
+        final release = parseGithubRelease(item);
+        if (release.apks.isEmpty) continue;
+        if (newest == null || release.version.isNewerThan(newest.version)) newest = release;
+      } on FormatException {
+        // A non-app tag must not hide a valid fork release.
+      }
+    }
+    return newest ?? CheckFailure.noRelease;
   }
 }

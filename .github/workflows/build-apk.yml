@@ -1,8 +1,6 @@
 name: Build fork APK
 
 on:
-  push:
-    branches: [remove-anonymous-usage-stats]
   workflow_dispatch:
 
 permissions:

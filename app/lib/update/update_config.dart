@@ -1,7 +1,11 @@
 /// Where in-app updates come from. Everything network-facing about updates is
 /// configured here; the conventions and trade-offs are in `docs/release.md`.
 ///
-/// Every build asks our own copy of the release files first
+/// This fork checks only kkbigpromax/dsh-Go, including pre-releases. It does
+/// not use the original author's feeds, mirrors or beta channel.
+///
+/// The source-building helpers below retain support for explicit custom feeds.
+/// Upstream builds ask their own copy of the release files first
 /// ([updateDownloadOrigin]: `/update.json`, `/download/<version>/<file>`), then
 /// GitHub and the public accelerators, and the rate-limited GitHub API last.
 /// Beta builds carry a channel token (`--dart-define=DSH_BETA_CHANNEL_TOKEN`,
@@ -9,26 +13,22 @@
 /// that ([UpdateChannel], `go.dshtui.com/beta/update.json`,
 /// docs/design/share-links.md) and download from it with the token.
 ///
-/// Build-time overrides (no code change needed):
-/// - `--dart-define=DSH_BETA_CHANNEL_ORIGIN=https://example.com` moves the beta
-///   channel;
-/// - `--dart-define=DSH_UPDATE_MIRROR=https://example.com` moves the copy of
-///   the release files (empty string = none);
-/// - `--dart-define=DSH_UPDATE_FEED=https://example.com/dsh/update.json`
-///   asks another manifest in place of the copy's (empty string = none);
-/// - `--dart-define=DSH_UPDATE_MIRRORS=https://a.example/,https://b.example/`
-///   replaces the public GitHub accelerator list (empty string = none).
+/// Custom feed helpers are used by tests and do not change the shipped fork's
+/// source. Its configuration is [defaultUpdateSources].
 library;
 
 /// GitHub repository the releases live in.
-const updateRepo = 'ccch1mneyyy/dsh-go';
+const updateRepo = 'kkbigpromax/dsh-Go';
 
 /// `releases/latest` of the REST API: tag, notes, assets with sizes and
 /// SHA-256 digests. Unauthenticated: 60 requests per hour per IP.
 final githubLatestApi = Uri.parse('https://api.github.com/repos/$updateRepo/releases/latest');
 
-/// The latest release's page, for "open in browser".
-final githubReleasesPage = Uri.parse('https://github.com/$updateRepo/releases/latest');
+/// Includes fork pre-releases, which GitHub's `latest` endpoint excludes.
+final githubReleasesApi = Uri.parse('https://api.github.com/repos/$updateRepo/releases?per_page=30');
+
+/// The fork's release list also shows pre-releases, for "open in browser".
+final githubReleasesPage = Uri.parse('https://github.com/$updateRepo/releases');
 
 /// A file attached to the latest release. github.com redirects to the asset
 /// CDN; not rate limited like the API and reachable through download mirrors.
@@ -144,23 +144,10 @@ const publicMirrors = [
   UpdateMirror(id: 'gh-proxy', label: 'gh-proxy.com', prefix: 'https://gh-proxy.com/'),
 ];
 
-const _unset = '\u0000';
-const _mirrorDefine = String.fromEnvironment('DSH_UPDATE_MIRROR', defaultValue: updateDownloadOrigin);
-const _feedDefine = String.fromEnvironment('DSH_UPDATE_FEED', defaultValue: _unset);
-const _mirrorsDefine = String.fromEnvironment('DSH_UPDATE_MIRRORS', defaultValue: _unset);
-const _betaTokenDefine = String.fromEnvironment('DSH_BETA_CHANNEL_TOKEN');
-const _betaOriginDefine = String.fromEnvironment('DSH_BETA_CHANNEL_ORIGIN', defaultValue: updateMirrorOrigin);
+/// The shipped fork has one metadata source and direct GitHub downloads.
+UpdateSources defaultUpdateSources() => const UpdateSources(includePreReleases: true);
 
-/// The configuration the app ships with (see the library comment for overrides).
-UpdateSources defaultUpdateSources() => buildUpdateSources(
-  mirror: _mirrorDefine,
-  feed: _feedDefine == _unset ? null : _feedDefine,
-  accelerators: _mirrorsDefine == _unset ? null : _mirrorsDefine,
-  channelToken: _betaTokenDefine,
-  channelOrigin: _betaOriginDefine,
-);
-
-/// [defaultUpdateSources] from the defines' values: [mirror] is the origin of
+/// Explicit custom sources (the shipped fork does not call this): [mirror] is the origin of
 /// a copy of the release files ('' = none); [feed] another manifest to ask
 /// (null = the mirror's, '' = none); [accelerators] a comma list replacing
 /// [publicMirrors] (null = keep them); [channelToken] turns on the beta
@@ -192,6 +179,9 @@ UpdateSources buildUpdateSources({
 enum EndpointKind {
   /// GitHub REST `releases/latest` JSON.
   githubApi,
+
+  /// GitHub's release list, including pre-releases.
+  githubReleaseList,
 
   /// An `update.json` manifest (release asset or self-hosted feed).
   manifest,
@@ -234,17 +224,24 @@ class UpdateEndpoint {
 /// API stays last even then: anonymous calls get 60 an hour per IP, shared
 /// IPs often find them spent, and its answer carries no delta patches.
 class UpdateSources {
-  const UpdateSources({this.channel, this.feed, this.useGithubApi = true, this.mirrors = const [UpdateMirror.github]});
+  const UpdateSources({
+    this.channel,
+    this.feed,
+    this.useGithubApi = true,
+    this.includePreReleases = false,
+    this.mirrors = const [UpdateMirror.github],
+  });
 
   final UpdateChannel? channel;
   final Uri? feed;
   final bool useGithubApi;
+  final bool includePreReleases;
   final List<UpdateMirror> mirrors;
 
   List<UpdateEndpoint> metadataEndpoints({String? preferred}) {
     final manifests = [
       if (feed case final feed?) UpdateEndpoint(id: 'feed', kind: EndpointKind.manifest, url: feed, mirrorId: null),
-      for (final mirror in mirrors)
+      for (final mirror in includePreReleases ? const <UpdateMirror>[] : mirrors)
         if (mirror.rewrite(githubLatestAsset(updateManifestName)) case final url?)
           UpdateEndpoint(id: 'manifest:${mirror.id}', kind: EndpointKind.manifest, url: url, mirrorId: mirror.id),
     ];
@@ -259,7 +256,12 @@ class UpdateSources {
         ),
       ..._preferFirst(manifests, (e) => e.id == preferred),
       if (useGithubApi)
-        UpdateEndpoint(id: 'api', kind: EndpointKind.githubApi, url: githubLatestApi, mirrorId: UpdateMirror.github.id),
+        UpdateEndpoint(
+          id: 'api',
+          kind: includePreReleases ? EndpointKind.githubReleaseList : EndpointKind.githubApi,
+          url: includePreReleases ? githubReleasesApi : githubLatestApi,
+          mirrorId: UpdateMirror.github.id,
+        ),
     ];
   }
 
