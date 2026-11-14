@@ -53,6 +53,7 @@ jobs:
           test -x "$sdkmanager"
           yes | "$sdkmanager" --licenses >/dev/null || true
           "$sdkmanager" "platforms;android-$sdk" "build-tools;$sdk.0.0" "ndk;$ndk" 'cmake;3.22.1'
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$ndk" >> "$GITHUB_ENV"
       - name: Resolve locked App dependencies
         working-directory: app
         run: flutter pub get --enforce-lockfile
@@ -70,6 +71,8 @@ jobs:
           cp "$RUNNER_TEMP/fork-gradle-wrapper/gradlew" app/android/gradlew
           cp "$RUNNER_TEMP/fork-gradle-wrapper/gradle/wrapper/"* app/android/gradle/wrapper/
           chmod +x app/android/gradlew
+      - name: Build native launcher
+        run: python3 -I runtime/tawcroot/build.py
       - name: Build the modified phone runtime
         run: |
           export TERMUX_RUNTIME_APK="$RUNNER_TEMP/upstream-1.0.16-arm64.apk"
