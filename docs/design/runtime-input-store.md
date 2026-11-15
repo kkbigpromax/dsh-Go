@@ -1,6 +1,6 @@
 # 固定运行时输入原件库
 
-本 fork 的 arm64 APK 工作流为恢复 Termux 已下架的旧 deb，显式设置 `TERMUX_RUNTIME_APK`：仅从原作者 v1.0.16 APK 复用四个 JNI 库和原许可文件。`runtime/lib/termux_from_apk.py` 钉死整包 SHA256，再核对 ABI、三项库版本和每个库的清单摘要；不接受任意 APK，也不复用原包的 DSH 引擎。运行时输入摘要包含此 APK 和恢复脚本，JNI 清单记录来源。默认 deb 构建路径不变；下述 inventory 仍描述默认 deb 原件库，不包含这个显式替代输入。
+仅历史 1.0.16 构建为恢复 Termux 已下架的旧 deb，显式设置 `TERMUX_RUNTIME_APK`：仅从原作者 v1.0.16 APK 复用四个 JNI 库和原许可文件。`runtime/lib/termux_from_apk.py` 钉死整包 SHA256，再核对 ABI、三项库版本和每个库的清单摘要；不接受任意 APK，也不复用原包的 DSH 引擎。运行时输入摘要包含此 APK 和恢复脚本，JNI 清单记录来源。1.1.0 起工作流恢复使用默认 deb 输入（PRoot 5.1.107.102），不再使用该旧 APK；下述 inventory 仍描述默认 deb 原件库，不包含这个显式替代输入。
 
 `runtime/lib/input_store.py` 保留构建所需的原始归档字节，使用原有 SHA256 / npm SRI 寻址。它以 UTF-8 读取 `runtime/build-runtime.sh` 的版本默认值、`PIN` 和源地址，以及 Ubuntu / npm 锁；不执行 shell，不另维护一份 pin，不发布到外部。
 

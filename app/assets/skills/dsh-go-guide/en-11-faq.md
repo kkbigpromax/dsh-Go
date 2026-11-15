@@ -102,6 +102,8 @@ This fork removes the app’s own anonymous usage statistics. It no longer colle
 
 Model requests, explicit sharing and third-party SDK data handling follow their respective feature descriptions.
 
+This fork hides in-app update controls and disables launch-time update checks; install new locally built APKs manually.
+
 ## Local text recognition and Google ML Kit
 
 <!-- nav: commonSettings,hubSettingsPhoneControl -->

@@ -73,10 +73,6 @@ jobs:
         run: python3 -I runtime/tawcroot/build.py
       - name: Build the modified phone runtime
         run: |
-          export TERMUX_RUNTIME_APK="$RUNNER_TEMP/upstream-1.0.16-arm64.apk"
-          curl -fL --retry 3 --connect-timeout 20 \
-            https://github.com/ccch1mneyyy/dsh-Go/releases/download/v1.0.16/dsh-go-1.0.16-arm64.apk \
-            -o "$TERMUX_RUNTIME_APK"
           bash runtime/build-runtime.sh arm64-v8a
       - name: Verify runtime inputs
         run: |
@@ -89,11 +85,11 @@ jobs:
           print('Bundled engine includes the session-log removal patch.')
           PY
       - name: Build release APK
-        run: bash tooling/build-apk.sh --flavor arm64 --build-name 1.0.16-fork.1 --keep-daemon
+        run: bash tooling/build-apk.sh --flavor arm64 --build-name 1.1.0-fork.1 --keep-daemon
       - name: Prepare download
         run: |
           mkdir -p dist
-          cp app/build/app/outputs/flutter-apk/app-arm64-release.apk dist/dsh-go-1.0.16-fork.1-arm64.apk
+          cp app/build/app/outputs/flutter-apk/app-arm64-release.apk dist/dsh-go-1.1.0-fork.1-arm64.apk
           cd dist
           sha256sum ./*.apk > SHA256SUMS
       - name: Upload APK

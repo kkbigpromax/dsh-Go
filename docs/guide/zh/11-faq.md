@@ -102,6 +102,8 @@ App 会在本机有界保存错误类别、有限的自有源码位置和语音�
 
 模型请求、主动分享及第三方 SDK 的数据处理仍按各自功能说明进行。
 
+此修改版隐藏应用内更新入口并停用启动时自动检查；新版本通过本机编译的 APK 手动安装。
+
 ## 本机文字识别与 Google ML Kit
 
 <!-- nav: commonSettings,hubSettingsPhoneControl -->

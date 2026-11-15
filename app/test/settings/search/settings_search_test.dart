@@ -82,6 +82,12 @@ void main() {
       expect(_ids('Dark mode').first, Spots.darkMode.id);
     });
 
+    test('manual-build fork hides update settings from search', () {
+      for (final q in ['检查更新', '自动检查更新', 'check for updates', 'automatic updates']) {
+        expect(_ids(q), isNot(contains(anyOf('update-check', 'update-auto'))));
+      }
+    });
+
     test('anonymous usage reporting has no settings or deep-link entry', () {
       for (final q in ['发送匿名使用统计', 'analytics', 'usage stats']) {
         expect(_ids(q), isNot(contains('usage-stats')));

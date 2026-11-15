@@ -106,6 +106,8 @@ void main() {
         expect(find.text('@cccch1mneyyyy'), findsOneWidget);
         expect(find.text('@ccch1mneyyy'), findsOneWidget);
         expect(find.text('1.0.2 (42)'), findsOneWidget);
+        expect(find.text(lookupL10n(locale).updateCheck), findsNothing);
+        expect(find.text(lookupL10n(locale).updateAutoCheck), findsNothing);
         expect(find.byKey(const ValueKey('settings-star')), findsOneWidget);
         expect(find.text(english ? 'Bilibili profile' : 'B站主页'), findsOneWidget);
         expect(find.text(english ? 'X profile' : 'X 主页'), findsOneWidget);
@@ -142,7 +144,7 @@ void main() {
   testWidgets('the separate project star still opens the repository', (tester) async {
     await pump(tester);
     await tap(tester, 'settings-star');
-    expect(opened.map((uri) => uri.toString()), ['https://github.com/ccch1mneyyy/dsh-go']);
+    expect(opened.map((uri) => uri.toString()), ['https://github.com/kkbigpromax/dsh-Go']);
     expect(store.writes.last.finished, isTrue);
   });
 
