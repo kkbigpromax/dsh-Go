@@ -251,7 +251,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
   });
 
-  testWidgets('背景: the water by default; a picture once picked; her only when she lives here', (tester) async {
+  testWidgets('背景: water or a picked picture, without the retired companion option', (tester) async {
     final (audio, _) = await pumpCall(tester, extra: [callBackdropPickerProvider.overrideWithValue(() async => null)]);
     await tester.tap(find.byKey(const ValueKey('call-backdrop')));
     await tester.pump(const Duration(milliseconds: 600));
@@ -273,9 +273,7 @@ void main() {
     expect(audio.calls, contains('callPause:patient'));
     expect(find.text('深海'), findsOneWidget);
     expect(find.text('选一张图'), findsOneWidget);
-    // No companion pack in tests: her card is there but can't be chosen.
-    await tester.tap(find.byKey(const ValueKey('backdrop-companion')));
-    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const ValueKey('backdrop-companion')), findsNothing);
     final container = ProviderScope.containerOf(tester.element(find.byType(VoiceCallPage)));
     expect(container.read(callSettingsProvider).backdrop, CallBackdrop.sea);
     await tester.tapAt(const Offset(20, 20));

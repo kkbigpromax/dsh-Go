@@ -4,14 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'companion/companion_initiative_owner.dart' show companionInitiativeProvider;
 import 'l10n/l10n.dart';
 import 'performance/performance_state.dart';
 import 'performance/refresh_rate.dart';
 import 'state/app_info.dart';
 import 'state/appearance_state.dart';
 import 'state/locale_state.dart';
-import 'state/star_prompt.dart' show starPromptGateProvider, starPromptProvider;
 import 'state/tile_style_state.dart';
 import 'ui/chat/dsh_ui/dsh_ui_model.dart' show DshUiAppAccent;
 import 'ui/common/side_insets.dart';
@@ -55,10 +53,6 @@ class _DshAppState extends ConsumerState<DshApp> with WidgetsBindingObserver {
     // Start loading the stored tile style now, so 全部功能 opens in it rather
     // than flashing the default first.
     ref.read(tileStyleProvider);
-    // 公测版: the star prompt counts time in front from launch, in either 界面.
-    if (ref.read(starPromptGateProvider)) ref.read(starPromptProvider);
-    // 伙伴小屋: her invitation ledger is read now, so it is known before the room opens.
-    ref.read(companionInitiativeProvider);
     // 刷新率: some systems cap third-party apps at 60 Hz and then show their per-app
     // switch as an in-app setting; the app answers frames to run at the fastest rate
     // while it is actually drawing (see RefreshRateService).
@@ -142,9 +136,7 @@ class _DshAppState extends ConsumerState<DshApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     // 刷新率设置改动时告诉原生;setMode 对同一个值不做任何事。
-    unawaited(
-      RefreshRateService.instance.setMode(ref.watch(performancePrefsProvider.select((p) => p.refreshRate))),
-    );
+    unawaited(RefreshRateService.instance.setMode(ref.watch(performancePrefsProvider.select((p) => p.refreshRate))));
     final themeMode = ref.watch(uiThemeModeProvider.select((s) => s.value));
     final appearance = ref.watch(appearanceProvider);
     final waiting =

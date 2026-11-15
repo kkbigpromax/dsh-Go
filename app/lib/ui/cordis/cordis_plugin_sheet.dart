@@ -206,6 +206,7 @@ class _CordisPluginSheetState extends ConsumerState<CordisPluginSheet> {
                   // The plugin's interactive region, when it can show here.
                   CordisIslandSeat(plugin: plugin),
                   RecoveryActions(
+                    showPrimary: false,
                     primaryLabel: l10n.commonOpenInWeb,
                     onPrimary: idle ? _open : null,
                     secondary: [

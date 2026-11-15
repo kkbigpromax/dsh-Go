@@ -572,7 +572,7 @@ final petSignalsProvider = Provider<PetSignals>((ref) {
   );
 });
 
-final petTimingsProvider = Provider<PetTimings>((ref) => PetTimings.of(ref.watch(currentPetPackProvider)));
+final petTimingsProvider = Provider<PetTimings>((ref) => PetTimings.of(null));
 
 // ── The mood ─────────────────────────────────────────────────────────────────
 

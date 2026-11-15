@@ -34,8 +34,6 @@
     <!-- 不打扰模式 (optional, default off): Shizuku provides the shell-uid channel. -->
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
 
-    <!-- App 外悬浮窗 (pet/PetOverlay.kt): the floating pet over other apps, off until the person turns it on. -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- In-app update: installs the downloaded APK through a PackageInstaller session (update/). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -256,17 +254,7 @@
                 android:value="Runs the user's local DeepSeek Harness agent server" />
         </service>
 
-        <!-- Keeps the floating pet's process up when only remote hosts are used (pet/PetOverlayService.kt). -->
-        <service
-            android:name=".pet.PetOverlayService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Shows the user's floating assistant pet while their remote agent session runs" />
-        </service>
-
-        <!-- 手机操控: reads and drives the main screen, owns the status bar / confirm overlay (phone/a11y). -->
+<!-- 手机操控: reads and drives the main screen, owns the status bar / confirm overlay (phone/a11y). -->
         <service
             android:name=".phone.a11y.PhoneA11yService"
             android:label="@string/phone_a11y_label"
@@ -298,20 +286,7 @@
             </intent-filter>
         </receiver>
 
-        <!-- 伙伴小屋 on the home screen (companion/CompanionWidget.kt). -->
-        <receiver
-            android:name=".companion.CompanionWidgetProvider"
-            android:exported="false"
-            android:label="@string/companion_widget_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/companion_widget_info" />
-        </receiver>
-
-        <receiver android:name=".notify.NotifyActionReceiver" android:exported="false" />
+<receiver android:name=".notify.NotifyActionReceiver" android:exported="false" />
         <receiver android:name=".phone.a11y.A11yKeeper$Receiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />

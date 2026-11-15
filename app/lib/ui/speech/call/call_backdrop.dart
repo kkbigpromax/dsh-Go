@@ -15,7 +15,6 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../companion/companion_float.dart';
 import '../../../companion/companion_pack.dart';
-import '../../../companion/companion_state.dart';
 import '../../../l10n/l10n.dart';
 import '../../../speech/speech_audio.dart';
 import '../../../speech/speech_settings.dart';
@@ -223,8 +222,6 @@ class _BackdropChooserState extends ConsumerState<_BackdropChooser> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final settings = ref.watch(callSettingsProvider);
-    final her = companionReady(ref.watch(companionFloatAvailabilityProvider));
-    final name = ref.watch(companionNameProvider);
     final hasImage = settings.image.isNotEmpty && File(settings.image).existsSync();
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -262,23 +259,11 @@ class _BackdropChooserState extends ConsumerState<_BackdropChooser> {
                       : const _Placeholder(icon: AppIcons.addImage),
                 ),
               ),
-              Expanded(
-                child: _Card(
-                  key: const ValueKey('backdrop-companion'),
-                  label: (name ?? '').trim().isEmpty ? l10n.speechBackdropCompanion : name!.trim(),
-                  selected: settings.backdrop == CallBackdrop.companion,
-                  onTap: her ? () => unawaited(_set(settings.copyWith(backdrop: CallBackdrop.companion))) : null,
-                  preview: const _Placeholder(icon: AppIcons.companionVoice),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
-            _error ??
-                (her
-                    ? (hasImage ? l10n.speechBackdropHintChange : l10n.speechBackdropHint)
-                    : l10n.speechBackdropNoCompanion),
+            _error ?? (hasImage ? l10n.speechBackdropHintChange : l10n.speechBackdropHint),
             style: theme.textTheme.bodySmall?.copyWith(
               color: _error != null ? theme.colorScheme.error : DshColors.of(context).textTertiary,
             ),

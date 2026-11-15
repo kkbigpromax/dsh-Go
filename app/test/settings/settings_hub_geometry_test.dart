@@ -24,7 +24,7 @@ const _width = 390.0;
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('six groups on one grid', (tester) async {
+  testWidgets('five groups on one grid', (tester) async {
     tester.view.devicePixelRatio = 2;
     tester.view.physicalSize = const Size(_width * 2, 2600 * 2);
     addTearDown(tester.view.reset);
@@ -43,9 +43,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    for (final title in [appL10n.hubGroupHelp, appL10n.hubAbout, appL10n.botsPets, appL10n.phoneEngineDiagnostics]) {
+      expect(find.text(title), findsNothing);
+    }
 
     final sections = tester.widgetList<SettingsSection>(find.byType(SettingsSection)).toList();
-    expect([for (final s in sections) s.title], ['AI', '能力', '外观', '通用', '主机', '帮助与关于']);
+    expect([for (final s in sections) s.title], ['AI', '能力', '外观', '通用', '主机']);
 
     final capsule = tester.getRect(find.byType(SearchCapsuleButton));
     for (final section in find.byType(SettingsSection).evaluate()) {

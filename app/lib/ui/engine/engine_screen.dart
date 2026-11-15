@@ -17,12 +17,10 @@ import '../safe_mode/engine_failure_card.dart';
 import '../safe_mode/safe_mode_card.dart';
 import '../safe_mode/safe_mode_settings.dart';
 import '../settings/background_guide_page.dart';
-import '../settings/diagnostics_page.dart';
 import '../settings/settings_widgets.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
-import '../web/local_web_screen.dart';
 import 'engine_status.dart';
 import 'local_uninstall.dart';
 import 'log_view.dart';
@@ -89,13 +87,7 @@ class EngineScreen extends ConsumerWidget {
 
     return AppPage(
       title: l10n.phoneEngineTitle,
-      actions: [
-        GlassIconButton(
-          icon: AppIcons.webApp,
-          tooltip: l10n.commonWeb,
-          onPressed: status.phase == RuntimePhase.running ? () => _push(context, const LocalWebScreen()) : null,
-        ),
-      ],
+      actions: [],
       hero: PageHero(
         leading: EngineRing(tone: view.tone),
         title: l10n.phoneEngineLocal,
@@ -157,11 +149,6 @@ class EngineScreen extends ConsumerWidget {
                   spot: SettingsIndex.entry(SettingsPageId.background),
                   subtitle: l10n.phoneEngineKeepAliveHint,
                   onTap: () => _push(context, const BackgroundGuidePage()),
-                ),
-                SettingsTile(
-                  spot: SettingsIndex.entry(SettingsPageId.diagnostics),
-                  subtitle: l10n.phoneEngineDiagnosticsHint,
-                  onTap: () => _push(context, const DiagnosticsPage()),
                 ),
               ],
             ),

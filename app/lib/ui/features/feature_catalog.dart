@@ -317,25 +317,9 @@ final featureSections = <FeatureSection>[
       icon: AppIcons.voice,
       action: _backToChat,
       // l10n:keep DSH Web plugin title aliases used for deep-link matching
-      web: const DshWebTarget(pluginItem: ['语音输入', 'Voice input']),
     ),
   ]),
   FeatureSection.localized((l10n) => l10n.catalogCommunitySharingSection, [
-    FeatureItem.localized(
-      id: 'forum',
-      title: (l10n) => l10n.catalogForum,
-      summary: (l10n) => l10n.catalogForumSummary,
-      icon: AppIcons.forum,
-      native: (_) => const ForumHomePage(),
-    ),
-    FeatureItem.localized(
-      id: 'community',
-      title: (l10n) => l10n.catalogCommunity,
-      summary: (l10n) => l10n.catalogCommunitySummary,
-      icon: AppIcons.community,
-      tile: FeatureKind.community,
-      native: (_) => communityPage(),
-    ),
     FeatureItem.localized(
       id: 'ds-bot',
       title: (_) => 'DS Bot',
@@ -371,13 +355,6 @@ final featureSections = <FeatureSection>[
       icon: AppIcons.workspace,
       tile: FeatureKind.workspace,
       native: (_) => const WorkspacesPage(),
-    ),
-    FeatureItem.localized(
-      id: 'web',
-      title: (l10n) => l10n.commonWeb,
-      summary: (l10n) => l10n.catalogWebSummary,
-      icon: AppIcons.webApp,
-      web: const DshWebTarget(),
     ),
   ]),
   // The same pages as in 设置 (one home, one name), for people who look
@@ -428,7 +405,7 @@ final featureSectionsProvider = Provider.autoDispose<List<FeatureSection>>((ref)
   final bundles = ref.watch(installedPluginsProvider.select((s) => s.value));
   final inventory = ref.watch(seatInventoryProvider);
   final panels = [
-    for (final item in items)
+    for (final item in items.where((item) => item.mode != SeatMode.webLink))
       pluginPanelFeature(
         item,
         bundles: bundles,

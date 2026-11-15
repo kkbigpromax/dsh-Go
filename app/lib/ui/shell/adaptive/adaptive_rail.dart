@@ -110,13 +110,6 @@ class AdaptiveRail extends ConsumerWidget {
                   ),
                   gap,
                   GlassIconButton(
-                    key: const ValueKey('rail-web'),
-                    icon: AppIcons.webApp,
-                    tooltip: l10n.commonWeb,
-                    onPressed: onWeb,
-                  ),
-                  gap,
-                  GlassIconButton(
                     key: const ValueKey('rail-settings'),
                     icon: AppIcons.settings,
                     tooltip: l10n.commonSettings,

@@ -12,6 +12,7 @@ class RecoveryActions extends StatelessWidget {
     super.key,
     required this.primaryLabel,
     required this.onPrimary,
+    this.showPrimary = true,
     this.secondary = const [],
     this.onLog,
     this.onExport,
@@ -19,6 +20,7 @@ class RecoveryActions extends StatelessWidget {
 
   static const double gap = 8;
 
+  final bool showPrimary;
   final String primaryLabel;
   final VoidCallback? onPrimary;
   final List<({String label, VoidCallback? onPressed})> secondary;
@@ -52,6 +54,7 @@ class RecoveryActions extends StatelessWidget {
           final singleLine = fits(label, availableWidth: constraints.maxWidth, insets: insets);
           return Text(label, maxLines: singleLine ? 1 : null, textAlign: singleLine ? null : TextAlign.center);
         }
+
         Widget outlined(({String label, VoidCallback? onPressed}) action) =>
             OutlinedButton(onPressed: action.onPressed, child: labelText(action.label));
         final paired = secondary.length > 1 && secondary.every((a) => fits(a.label));
@@ -60,10 +63,7 @@ class RecoveryActions extends StatelessWidget {
           style: TextButton.styleFrom(minimumSize: const Size.fromHeight(50)),
           child: labelText(label),
         );
-        final links = [
-          if (onLog case final onLog?) link(l10n.commonViewLogs, onLog),
-          if (onExport case final onExport?) link(l10n.phoneDiagnosticsExport, onExport),
-        ];
+        final links = [if (onLog case final onLog?) link(l10n.commonViewLogs, onLog)];
         final linksPaired = links.length == 2 && fits(l10n.commonViewLogs) && fits(l10n.phoneDiagnosticsExport);
         final rows = <Widget>[
           if (paired)
@@ -84,7 +84,7 @@ class RecoveryActions extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            FilledButton(onPressed: onPrimary, child: labelText(primaryLabel, insets: 48)),
+            if (showPrimary) FilledButton(onPressed: onPrimary, child: labelText(primaryLabel, insets: 48)),
             for (final row in rows) ...[const SizedBox(height: gap), row],
             if (linksPaired) ...[
               const SizedBox(height: gap),

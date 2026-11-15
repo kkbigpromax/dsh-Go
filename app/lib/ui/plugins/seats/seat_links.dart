@@ -9,11 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../plugins/seams/seams.dart';
 import '../../../state/plugins_state.dart';
-import '../../common/empty_view.dart';
-import '../../common/list_page_row.dart';
-import '../../engine_settings/engine_settings_page.dart' show namespaceTitle;
-import '../../engine_settings/schema_form.dart' show SchemaUnsupportedField;
-import '../../theme/app_icons.dart';
 import '../../web/dsh_web_launcher.dart';
 import '../../web/web_target.dart';
 import 'plugin_seat_page.dart';
@@ -147,39 +142,6 @@ class SeatWebLink extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final o = item.occupant;
-    final bundle = seatBundleOf(ref.watch(installedPluginsProvider.select((s) => s.value)), o.package);
-    if (item.configNamespace case final ns?) {
-      final title =
-          bundle?.rows.where((row) => row.rowId == ns).firstOrNull?.meta?.title?.resolve() ?? namespaceTitle(ns);
-      return SchemaUnsupportedField(title: title, ns: ns);
-    }
-    final name = seatEntryTitle(o, inventory: ref.watch(seatInventoryProvider), bundle: bundle);
-    if (seat.placement == SeatPlacement.page || seat.placement == SeatPlacement.overlay) {
-      final target = seatWebTarget(o, sessionId: seat.sessionId, bundle: bundle);
-      // Like the pages' empty states: centred, a little high.
-      return Align(
-        alignment: const Alignment(0, -0.5),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: EmptyView(
-            icon: AppIcons.webApp,
-            title: name,
-            actionLabel: l10n.commonOpenInWeb,
-            onAction: () => ref.read(seatWebOpenerProvider)(context, ref, target),
-          ),
-        ),
-      );
-    }
-    final config = o.slot == Slots.bundleConfig || o.slot == Slots.rowConfig;
-    final entry = seatRowEntry(ref, seat, item, title: config ? (bundle?.title() ?? name) : name);
-    return ListPageRow(
-      icon: config ? AppIcons.configure : AppIcons.plugin,
-      title: config ? seatConfigTitle(o, bundle: bundle) : name,
-      meta: entry.web ? l10n.commonWeb : null,
-      chevron: true,
-      onTap: () => entry.open(context),
-    );
+    return const SizedBox.shrink();
   }
 }

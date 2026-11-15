@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../launch/launch_state.dart';
 import '../../runtime/local_footprint.dart';
 import '../../diagnostics/diagnostics_publish.dart';
-import '../../diagnostics/automatic_diagnostics.dart';
 import '../../runtime/runtime_bridge.dart';
 import '../../runtime/runtime_state.dart';
 import '../../share_code/guest_fs.dart';
@@ -22,7 +21,7 @@ import '../onboarding/onboarding_flow.dart';
 import '../onboarding/setup_progress.dart';
 import '../remote/remote_screen.dart';
 import '../theme/theme.dart';
-import '../web/mode_home.dart';
+import 'home_shell.dart';
 import 'brand_mark.dart';
 
 /// Where a launch should start, given what is installed and configured.
@@ -85,7 +84,7 @@ bool runtimeStepAsks(RuntimeStatus status) =>
 class RootGate extends ConsumerStatefulWidget {
   const RootGate({super.key, this.home});
 
-  /// Stands in for [ModeHome] (tests).
+  /// Stands in for [HomeShell] (tests).
   @visibleForTesting
   final Widget? home;
 
@@ -276,7 +275,6 @@ class _RootGateState extends ConsumerState<RootGate> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(automaticDiagnosticsProvider);
     final settings = ref.watch(settingsProvider);
     final runtime = ref.watch(localRuntimeProvider.select((s) => (status: s.status, loaded: s.loaded)));
     final prefs = ref.watch(onboardingPrefsProvider);
@@ -356,7 +354,7 @@ class _RootGateState extends ConsumerState<RootGate> {
           if (mounted) _maybeAutoStart();
         });
         // The native shell or the web page, by 界面 (ui_mode_state.dart).
-        child = widget.home ?? const ModeHome();
+        child = widget.home ?? const HomeShell();
       }
     }
     if (child is! _Splash && !_launchReady) {

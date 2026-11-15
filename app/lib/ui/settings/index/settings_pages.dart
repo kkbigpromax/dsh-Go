@@ -13,7 +13,6 @@ import '../../engine_settings/web_search_page.dart';
 import '../../features/agent_presets_page.dart';
 import '../../features/all_features_page.dart';
 import '../../features/permission_page.dart';
-import '../../pets/pet_settings_page.dart';
 import '../../phone/android_shell_page.dart';
 import '../../phone/app_rules_page.dart';
 import '../../phone/dnd_mode_page.dart';
@@ -24,10 +23,8 @@ import '../../plugins/plugins_screen.dart';
 import '../../providers/providers_page.dart';
 import '../../remote/remote_screen.dart';
 import '../../share_hosted/hosted_links_page.dart';
-import '../about_page.dart';
 import '../appearance/appearance_page.dart';
 import '../background_guide_page.dart';
-import '../diagnostics_page.dart';
 import '../interface_page.dart';
 import '../media_settings_page.dart';
 import '../notification_settings.dart';
@@ -49,7 +46,7 @@ export 'spots.dart';
 Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.hub => const SettingsScreen(),
   SettingsPageId.appearance => const AppearancePage(),
-  SettingsPageId.pets => const PetSettingsPage(),
+  SettingsPageId.pets => const SizedBox.shrink(),
   SettingsPageId.performance => const PerformancePage(),
   SettingsPageId.voice => const VoiceSettingsPage(),
   SettingsPageId.voiceReading => const CompanionVoicePage(shared: true),
@@ -64,7 +61,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.engine => const EngineScreen(),
   SettingsPageId.background => const BackgroundGuidePage(),
   SettingsPageId.systemAccess => const SystemAccessPage(),
-  SettingsPageId.diagnostics => const DiagnosticsPage(),
+  SettingsPageId.diagnostics => const SizedBox.shrink(),
   SettingsPageId.models => const ProvidersPage(),
   SettingsPageId.engineParams => const EngineSettingsHubPage(),
   SettingsPageId.subagent => const SubagentSettingsPage(),
@@ -82,7 +79,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.personalization => const PersonalizationPage(),
   SettingsPageId.interface => const InterfacePage(),
   SettingsPageId.privacy => const PrivacyPage(),
-  SettingsPageId.about => const AboutPage(),
+  SettingsPageId.about => const SizedBox.shrink(),
 };
 
 /// What a settings link id opens: a page (by any of its link ids), or the

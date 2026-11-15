@@ -52,7 +52,8 @@ class UiModeController extends Notifier<UiModeState> {
     var mode = UiMode.native;
     try {
       final prefs = await SharedPreferences.getInstance();
-      mode = UiMode.values.asNameMap()[prefs.getString(key)] ?? UiMode.native;
+      mode = UiMode.native;
+      if (prefs.getString(key) != UiMode.native.name) await prefs.setString(key, UiMode.native.name);
     } catch (_) {
       // No preferences backend (tests) or an unreadable store: native.
     }
@@ -62,6 +63,7 @@ class UiModeController extends Notifier<UiModeState> {
 
   /// Switches and remembers it for the next launch.
   Future<void> set(UiMode mode) async {
+    mode = UiMode.native;
     state = UiModeState(mode: mode, loaded: true);
     try {
       final prefs = await SharedPreferences.getInstance();

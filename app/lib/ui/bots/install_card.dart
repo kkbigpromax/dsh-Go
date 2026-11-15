@@ -58,12 +58,6 @@ class DsBotInstallCard extends ConsumerWidget {
       action: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          FilledButton.icon(
-            key: const ValueKey('dsbot-open-web'),
-            onPressed: () => ref.read(dsBotWebOpenerProvider)(context, ref),
-            icon: const Icon(AppIcons.webApp, size: 18),
-            label: Text(l10n.commonOpenInWeb),
-          ),
           const SizedBox(height: 8),
           if (_update)
             TextButton(

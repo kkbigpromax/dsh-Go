@@ -7,8 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/l10n.dart';
 import '../../state/engine_settings_state.dart';
 import '../theme/app_icons.dart';
-import '../web/dsh_web_launcher.dart';
-import '../web/web_target.dart';
 import 'field_sheets.dart';
 import 'schema_fields.dart';
 
@@ -187,11 +185,7 @@ class _SequenceFieldSheetState extends ConsumerState<SequenceFieldSheet> {
     }
     if (node.type == 'const') return ListTile(title: Text(title), subtitle: Text('${node.value}'));
     // Preserve unknown, nested and secret values. Never stringify a secret.
-    return ListTile(
-      title: Text(title),
-      subtitle: Text(context.l10n.engineFieldEditOnWeb),
-      onTap: () => openDshWeb(context, ref, target: DshWebTarget(pluginItem: [widget.namespace])),
-    );
+    return ListTile(title: Text(title), enabled: false);
   }
 
   @override

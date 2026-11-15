@@ -95,27 +95,6 @@ class AskAiLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final size = iconSizeFor(MediaQuery.textScalerOf(context));
-    final air = leadingAir * size / iconSize;
-    return TextButton(
-      key: const ValueKey('ask-ai-link'),
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        minimumSize: const Size(0, 40),
-        padding: EdgeInsetsDirectional.fromSTEB(inset - air, 6, inset, 6),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        foregroundColor: theme.colorScheme.primary,
-        textStyle: theme.textTheme.labelLarge,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(AppIcons.askAi, size: size),
-          const SizedBox(width: gap),
-          Flexible(child: Text(label ?? context.l10n.riskAskAi, textAlign: TextAlign.center)),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 }

@@ -37,11 +37,7 @@ final liveActivityProvider = Provider<LiveActivity?>((ref) {
 /// activity and the pet whose pictures it uses.
 final livePushProvider = Provider<LivePush>((ref) {
   final enabled = ref.watch(notifyPrefsProvider.select((p) => p.enabled && p.live));
-  return LivePush(
-    enabled: enabled,
-    packId: ref.watch(petStateProvider.select((s) => s.packId == noPetId ? null : s.packId)),
-    activity: enabled ? ref.watch(liveActivityProvider) : null,
-  );
+  return LivePush(enabled: enabled, packId: null, activity: enabled ? ref.watch(liveActivityProvider) : null);
 });
 
 /// Watch it to keep the live activity fed (with the pet overlay's bridge, in

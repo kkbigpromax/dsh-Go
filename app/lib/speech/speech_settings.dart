@@ -202,7 +202,7 @@ class CallSettingsController extends Notifier<CallSettings> {
         bargeIn: json['bargeIn'] != false,
         spoken: json['spoken'] != false,
         speaker: json['speaker'] != false,
-        backdrop: CallBackdrop.values.asNameMap()[json['backdrop']] ?? CallBackdrop.sea,
+        backdrop: json['backdrop'] == CallBackdrop.image.name ? CallBackdrop.image : CallBackdrop.sea,
         image: json['image'] is String ? json['image'] as String : '',
         cue: json['cue'] != false,
         visual: CallVisual.values.asNameMap()[json['visual']] ?? CallVisual.glass,

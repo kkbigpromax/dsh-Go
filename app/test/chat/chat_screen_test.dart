@@ -545,21 +545,15 @@ void main() {
       expect(find.text('自动允许中'), findsNothing);
     });
 
-    testWidgets('本对话都允许 › 问 AI leaves the request waiting and asks in a new chat', (tester) async {
+    testWidgets('本对话都允许 keeps approval pending without the retired AI-help entry', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final harness = ChatHarness(session: 's1', states: {'s1': conversationState()});
       await pumpScreen(tester, harness);
       await tester.tap(find.text('本对话都允许'));
       await pumpFrames(tester, 4);
-      await tester.tap(find.text('不确定？问 AI'));
-      await pumpFrames(tester, 8);
+      expect(find.text('不确定？问 AI'), findsNothing);
       expect(harness.controllers['s1']!.allowAllRequests, isEmpty);
-      expect(containerOf(tester).read(currentSessionProvider), isNull, reason: 'a new conversation');
-      final field = tester.widget<TextField>(
-        find.descendant(of: find.byType(Composer), matching: find.byType(TextField)),
-      );
-      expect(field.controller!.text, '/dsh-go-guide 「本对话都允许」会放行哪些操作？怎么关掉？');
-      // Waits for the person to send it.
+      expect(containerOf(tester).read(currentSessionProvider), 's1');
       expect(harness.sessions.creates, 0);
     });
 

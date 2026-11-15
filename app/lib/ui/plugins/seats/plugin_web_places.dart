@@ -8,11 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../plugins/seams/seams.dart';
-import '../../../state/sessions_state.dart';
-import '../../common/list_page_row.dart';
-import '../../theme/app_icons.dart';
 import '../../web/web_target.dart';
-import 'seat_links.dart' show seatWebOpenerProvider;
 
 /// A place in DSH Web, in the order the section lists them.
 enum WebPlace {
@@ -108,33 +104,6 @@ class PluginWebPlacesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final inventory = ref.watch(seatInventoryProvider);
-    if (inventory == null) return const SizedBox.shrink();
-    final places = pluginWebPlaces(inventory, package);
-    if (places.isEmpty) return const SizedBox.shrink();
-    final l10n = context.l10n;
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: ListPageCard(
-        key: const ValueKey('plugin-web-places'),
-        title: l10n.plugslotsWebPlacesTitle,
-        margin: EdgeInsets.zero,
-        children: [
-          for (final place in places)
-            ListPageRow(
-              key: ValueKey('web-place-${place.name}'),
-              icon: AppIcons.webApp,
-              title: place.label,
-              meta: l10n.commonWeb,
-              chevron: true,
-              onTap: () => ref.read(seatWebOpenerProvider)(
-                context,
-                ref,
-                place.target(sessionId: ref.read(currentSessionProvider), pluginNames: [...pluginNames, package]),
-              ),
-            ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 }

@@ -80,12 +80,12 @@ class AllFeaturesPage extends ConsumerWidget {
           FeatureGroupLabel(section.title),
           TileGrid(
             children: [
-              for (final item in section.items)
+              for (final item in section.items.where((item) => item.hasNative))
                 FeatureTileFor(
                   item: item,
                   enabled: !item.needsSession || sessionId != null,
                   onOpen: () => open(item),
-                  onOpenWeb: item.hasNative && item.web != null ? () => openWeb(item) : null,
+                  onOpenWeb: null,
                 ),
             ],
           ),

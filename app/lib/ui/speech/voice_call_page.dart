@@ -36,7 +36,6 @@ import '../../state/voice_settings.dart';
 import '../../state/voice_state.dart';
 import '../chat/voice/voice_bridge.dart';
 import '../companion/companion_ask.dart';
-import '../companion/companion_stage.dart';
 import '../fx/voice_ring/voice_ring.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
@@ -103,11 +102,6 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
   CallPhase _shown = CallPhase.starting;
 
   // Her, when she is the backdrop.
-  final _stage = CompanionStageController();
-  bool _stageReady = false;
-  bool _stageFailed = false;
-  double _mouthAt = 0;
-  bool _mouthOpen = false;
 
   /// A finger on the light: it gives a little.
   bool _pressed = false;
@@ -265,17 +259,6 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
       default:
         break;
     }
-    if (_stageReady) {
-      _stage.command('mood', {
-        'mood': switch (phase) {
-          CallPhase.thinking || CallPhase.starting => 'thinking',
-          CallPhase.speaking => 'speaking',
-          CallPhase.ended => 'idle',
-          _ => 'listening',
-        },
-      });
-      if (phase != CallPhase.speaking) _stage.command('quiet');
-    }
   }
 
   void _tick(double seconds) {
@@ -288,15 +271,6 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
       still: _still,
     );
     // Her mouth follows the voice, twenty times a second at most.
-    if (_stageReady && seconds - _mouthAt > 0.05) {
-      final speaking = _call.phase == CallPhase.speaking;
-      final open = speaking ? (_scene.level * 1.3).clamp(0.0, 1.0) : 0.0;
-      if (speaking || _mouthOpen) {
-        _stage.command('mouth', {'value': open});
-        _mouthOpen = open > 0;
-        _mouthAt = seconds;
-      }
-    }
   }
 
   @override
@@ -453,7 +427,6 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
         settings.backdrop == CallBackdrop.image && settings.image.isNotEmpty && File(settings.image).existsSync()
         ? settings.image
         : null;
-    final her = settings.backdrop == CallBackdrop.companion && !_stageFailed;
     final (status, dots) = _status(l10n);
     final error = _call.error;
     final sessionId = switch (widget.conversation) {
@@ -468,7 +441,7 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
     final reply = hearing ? '' : speakable(_call.caption).replaceAll('\n', ' ');
     final failing = ended ? null : error;
     // Light or dark as the theme is; a picture or her behind always reads as dark.
-    final dark = theme.brightness == Brightness.dark || image != null || her;
+    final dark = theme.brightness == Brightness.dark || image != null;
     final palette = CallPalette.of(theme.colorScheme, light: !dark);
     final ink = CallInk(dark: dark, child: const SizedBox());
 
@@ -483,50 +456,21 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
             child: Stack(
               fit: StackFit.expand,
               children: [
-                CallField(scene: _scene, palette: palette, center: her ? 0.66 : 0.4),
+                CallField(scene: _scene, palette: palette, center: 0.4),
                 // A new backdrop fades in over the old one.
                 AnimatedSwitcher(
                   duration: AppMotion.of(context, AppMotion.slow),
                   switchInCurve: AppMotion.enter,
                   switchOutCurve: AppMotion.exit,
-                  child: switch ((image, her)) {
-                    (final path?, _) => ImageBackdrop(key: ValueKey(path), path: path, blur: blur),
-                    (_, true) => CompanionBackdrop(
-                      key: const ValueKey('her'),
-                      controller: _stage,
-                      onReady: () {
-                        if (!mounted) return;
-                        setState(() => _stageReady = true);
-                        _arrived(_call.phase);
-                      },
-                      onFailed: () {
-                        if (mounted) {
-                          setState(() {
-                            _stageFailed = true;
-                            _stageReady = false;
-                          });
-                        }
-                      },
-                    ),
+                  child: switch (image) {
+                    final path? => ImageBackdrop(key: ValueKey(path), path: path, blur: blur),
+
                     _ => const SizedBox.expand(key: ValueKey('sea')),
                   },
                 ),
                 // The screen's edge glows only with the glass orb; the ring is light enough on its own.
                 if (settings.visual == CallVisual.glass) CallEdgeGlow(scene: _scene, palette: palette),
-                if (her)
-                  // Her feet fade into the water so the words below stay readable.
-                  const IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0x00030712), Color(0x00030712), Color(0xD9030712), Color(0xF2030712)],
-                          stops: [0, 0.46, 0.7, 1],
-                        ),
-                      ),
-                    ),
-                  ),
+
                 SafeArea(
                   child: Column(
                     children: [
@@ -546,21 +490,19 @@ class _VoiceCallPageState extends ConsumerState<VoiceCallPage> with WidgetsBindi
                         distance: -14,
                       ),
                       Expanded(
-                        child: her
-                            ? const SizedBox.expand()
-                            : LayoutBuilder(
-                                // The words below take the room they need; the light gives way (to 56 % at least).
-                                builder: (context, box) => Center(
-                                  child: Transform.scale(
-                                    scale: (box.maxHeight / (lightSize * 1.04)).clamp(0.56, 1.0),
-                                    child: OverflowBox(
-                                      maxWidth: lightSize,
-                                      maxHeight: lightSize,
-                                      child: _lightKey(l10n, status, settings.visual, palette, dark, lightSize),
-                                    ),
-                                  ),
-                                ),
+                        child: LayoutBuilder(
+                          // The words below take the room they need; the light gives way (to 56 % at least).
+                          builder: (context, box) => Center(
+                            child: Transform.scale(
+                              scale: (box.maxHeight / (lightSize * 1.04)).clamp(0.56, 1.0),
+                              child: OverflowBox(
+                                maxWidth: lightSize,
+                                maxHeight: lightSize,
+                                child: _lightKey(l10n, status, settings.visual, palette, dark, lightSize),
                               ),
+                            ),
+                          ),
+                        ),
                       ),
                       _rise(
                         0.3,

@@ -69,7 +69,7 @@ String? unavailableReason(WidgetRef ref, SpotCondition? condition, L10n l10n) {
     null => true,
     SpotCondition.localHost => ref.watch(activeHostProvider).isLocal,
     SpotCondition.phoneControlOn => ref.watch(phoneProvider.select((s) => !s.loaded || s.status.enabled)),
-    SpotCondition.nativeUi => ref.watch(askAiAvailableProvider),
+    SpotCondition.nativeUi => true,
     SpotCondition.openChat => ref.watch(currentSessionProvider) != null,
     SpotCondition.workshopBuilt => ref.watch(workshopOriginProvider) != null,
     SpotCondition.animationsOn =>

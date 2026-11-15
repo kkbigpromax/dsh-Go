@@ -191,7 +191,7 @@ class _VoiceSettingsPageState extends ConsumerState<VoiceSettingsPage> {
               value: Text(switch (call.backdrop) {
                 CallBackdrop.sea => l10n.speechBackdropSea,
                 CallBackdrop.image => l10n.speechBackdropImage,
-                CallBackdrop.companion => l10n.speechBackdropCompanion,
+                CallBackdrop.companion => l10n.speechBackdropSea,
               }),
               onTap: () => unawaited(showCallBackdropSheet(context)),
             ),

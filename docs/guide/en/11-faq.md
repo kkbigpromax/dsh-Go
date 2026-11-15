@@ -10,24 +10,10 @@ Check the host status at the bottom of the chat list.
 
 Reset and uninstall both delete data on this phone; you rarely need them to fix a problem.
 
-<!-- nav: commonSettings,phoneEngineDiagnostics -->
-`Settings › Diagnostics` · [Open](dshgo://open/diagnostics)
+<!-- nav: commonSettings,phoneEngineTitle -->
+`Settings › Local engine` · [Open](dshgo://open/engine)
 
-To report a problem, export a diagnostics bundle here. It includes the version, device, bounded engine logs and captured errors, not all system logs or a complete crash history. The app attempts to remove keys and tokens; still inspect the bundle before sharing it.
-
-To let the AI look into it, tap **Let the AI read diagnostics**. The app writes a bounded snapshot for the local engine, then ask the AI to "check the diagnostics". The bundled `dsh-go-support` skill walks the symptoms and drafts an issue you can paste.
-
-### Crashes and automatic failure analysis
-
-The app keeps bounded local records of error categories, a few app/framework source locations and voice stages, without exception bodies, recordings or chat content. On Android 11 and later it also attempts to read this app's historical process-exit reasons. Missing or empty system records do not prove there was no failure, and are not complete crash stacks.
-
-In an ordinary local chat, ask the AI to check the recent crash. Supported versions expose a diagnostics tool that refreshes and reads individual sections, without a manual export, enabling Phone control or granting accessibility. In Safe mode or with an older runtime, the published snapshot remains the fallback; export only if more evidence is needed.
-
-**Automatic failure analysis** is off by default. Enabling it explains that, after a failure and only while the app is foregrounded and connected to the working local engine, allowlisted versions, device/system facts, error categories, source locations, voice stages and exit reasons are sent to the model provider configured on that engine. Model charges may apply. Chat bodies, recordings, credentials, raw logs and system input-method evidence are excluded. After an app crash, analysis must wait until the app is reopened and connected.
-
-Analysis uses a separate tool-free conversation, without switching your current chat, performing repairs or publishing to GitHub. Matching failures are grouped; failed or ambiguous attempts are not retried automatically. Check its status here and tap the report entry to read the analysis. Disabling it, switching to a remote host or backgrounding the app prevents new requests and attempts to stop ongoing analysis; sent data and generated conversations cannot be retracted.
-
-If local analysis records cannot be read or saved, automatic analysis pauses and a recovery entry appears. Recovery is local only: it baselines already retained failures without resending old requests, then resumes handling future failures after a successful save. Failed recovery remains paused and is not retried in a loop.
+This edition removes the Diagnostics page, diagnostic exports and automatic failure analysis. Essential local error capture and engine logs remain; check status and logs on the engine page.
 
 ### Input-method or keyboard problems
 
@@ -81,13 +67,6 @@ If a task stopped midway: turning the screen off, locking the phone, or DSH maki
 ## The floating bar is in the way
 
 Hold and drag the bar out of the way (left, middle or right, at any height), or drag it off the screen's edge to shrink it to a ball; tapping the dot at its left end (or **Shrink to a ball** in its card) does that too. **Collapse when idle** is on by default, so an idle capsule shrinks to a ball by itself; an idle ball fades and slides half out of sight over the edge. Lower **Idle opacity** to fade it more.
-
-## The pet is gone
-
-- Not in chats: if the pet page is set to **None**, choose a pet; if it's hidden for an hour, tap **Show now**.
-- Not outside the app: check that **Show outside the app** is on and display over other apps is allowed. **When to show** defaults to **When active**, which hides the pet after 5 quiet minutes. If it was hidden for today, tap **Restore** on the pet page. It also hides while the app is in the foreground and during phone control tasks.
-
-See [Pets](06-pets.md).
 
 ## A plugin is installed but doesn't show up
 

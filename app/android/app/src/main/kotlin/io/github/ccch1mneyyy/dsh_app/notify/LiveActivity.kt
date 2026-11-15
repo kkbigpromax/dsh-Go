@@ -18,7 +18,6 @@ import android.provider.Settings
 import io.github.ccch1mneyyy.dsh_app.MainActivity
 import io.github.ccch1mneyyy.dsh_app.R
 import io.github.ccch1mneyyy.dsh_app.i18n.AppStrings
-import io.github.ccch1mneyyy.dsh_app.pet.PetOverlay
 import io.github.ccch1mneyyy.dsh_app.phone.PhoneControl
 import io.github.ccch1mneyyy.dsh_app.runtime.DshService
 import io.github.ccch1mneyyy.dsh_app.theme.ThemeAccent
@@ -267,14 +266,7 @@ object LiveActivity {
     }
 
     /** The pet doing what the activity says, in the shade and in HyperOS's island. */
-    private fun portraitOf(ctx: Context, pack: String, mood: String): Bitmap? {
-        val key = "$pack/$mood"
-        if (key == portraitKey) return portrait
-        val px = (PORTRAIT_DP * ctx.resources.displayMetrics.density).toInt().coerceIn(96, 256)
-        portrait = PetOverlay.portrait(pack, mood, px)
-        portraitKey = key
-        return portrait
-    }
+    private fun portraitOf(ctx: Context, pack: String, mood: String): Bitmap? = null
 
     private fun ensureChannel(ctx: Context, nm: NotificationManager) {
         if (nm.getNotificationChannel(CHANNEL) != null) return

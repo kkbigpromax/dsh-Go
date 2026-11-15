@@ -7,7 +7,6 @@ import '../../l10n/l10n.dart';
 import '../../runtime/local_footprint.dart';
 import '../../runtime/runtime_state.dart';
 import '../../state/account_state.dart';
-import '../../state/ask_ai.dart' show askAiAvailableProvider;
 import '../../state/balance_state.dart';
 import '../../state/connection_state.dart';
 import '../../state/engine_settings_state.dart';
@@ -17,12 +16,9 @@ import '../../state/phone_state.dart';
 import '../../state/plugins_state.dart';
 import '../../state/sessions_state.dart';
 import '../../state/settings_state.dart';
-import '../../state/ui_mode_state.dart';
-import '../../state/update_state.dart';
 import '../account/account_page.dart';
 import '../account/account_widgets.dart';
 import '../chat/balance_widgets.dart' show formatMoney;
-import '../common/ask_ai.dart';
 import '../common/overview_card.dart';
 import '../common/search_capsule.dart';
 import '../common/status_chip.dart';
@@ -31,11 +27,9 @@ import '../engine/engine_status.dart';
 import '../engine_settings/engine_settings_hub.dart';
 import '../engine_settings/web_search_page.dart';
 import 'media_settings_page.dart';
-import '../features/feature_catalog.dart' show communityPage;
 import '../features/feature_format.dart' show permissionName;
 import '../features/permission_page.dart';
 import '../onboarding/api_key_page.dart' show maskApiKey;
-import '../pets/pet_settings_page.dart';
 import '../phone/phone_control_screen.dart';
 import '../plugins/plugins_screen.dart';
 import '../plugins/seats/plugin_settings_tiles.dart';
@@ -47,10 +41,8 @@ import '../shell/brand_mark.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
-import 'about_page.dart';
 import 'appearance/appearance_page.dart';
 import 'background_guide_page.dart';
-import 'diagnostics_page.dart';
 import 'interface_page.dart';
 import 'language_tile.dart';
 import 'notification_settings.dart';
@@ -73,8 +65,7 @@ abstract final class SettingsHues {
 }
 
 /// Settings hub: search, the overview card (account, balance, engine), then
-/// six groups by what people come to do — AI, 能力, 外观, 通用, 主机, 帮助与
-/// 关于 (docs/design/settings-ia.md §4.2). Every row that opens a page says
+/// five groups by what people come to do — AI, 能力, 外观, 通用, 主机 (docs/design/settings-ia.md §4.2). Every row that opens a page says
 /// where it stands; nothing here loosens a safeguard or deletes anything:
 /// those live on their own pages.
 class SettingsScreen extends ConsumerWidget {
@@ -91,7 +82,6 @@ class SettingsScreen extends ConsumerWidget {
     final engine = EngineStatusView.of(runtime);
     final colors = DshColors.of(context);
     final notifier = ref.read(settingsProvider.notifier);
-    final uiMode = ref.watch(uiModeProvider.select((s) => s.mode));
     final host = ref.watch(activeHostProvider);
     Widget? text(String? value, {Color? color}) =>
         value == null ? null : Text(value, style: color == null ? null : TextStyle(color: color));
@@ -121,8 +111,6 @@ class SettingsScreen extends ConsumerWidget {
     // 主机.
     final ssh = ref.watch(hostsProvider.select((s) => s.ssh.length));
     final hostName = host.isLocal ? l10n.commonThisPhone : ref.watch(hostNameProvider(host)) ?? l10n.commonRemoteHost;
-    // 帮助与关于.
-    final update = ref.watch(appUpdateProvider);
 
     final page = AppPage.list(
       title: l10n.commonSettings,
@@ -219,7 +207,6 @@ class SettingsScreen extends ConsumerWidget {
               value: settings.foldCompletedTurns,
               onChanged: (v) => unawaited(notifier.setFoldCompletedTurns(v)),
             ),
-            const PetEntryTile(tint: SettingsHues.appearance),
           ],
         ),
         SettingsSection(
@@ -229,7 +216,7 @@ class SettingsScreen extends ConsumerWidget {
               icon: AppIcons.swap,
               tint: SettingsHues.general,
               spot: SettingsIndex.entry(SettingsPageId.interface),
-              value: Text(uiMode.label),
+
               onTap: () => _push(context, const InterfacePage()),
             ),
             const LanguageSettingsTile(tint: SettingsHues.general),
@@ -286,39 +273,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
         ),
-        SettingsSection(
-          title: l10n.hubGroupHelp,
-          children: [
-            if (ref.watch(askAiAvailableProvider))
-              SettingsTile(
-                key: const ValueKey('settings-ask-ai'),
-                icon: AppIcons.askAi,
-                tint: SettingsHues.help,
-                spot: Spots.askAi,
-                value: Text(l10n.askAiTooltip),
-                onTap: () => unawaited(askAi(context, AskAiTopic.overview)),
-              ),
-            SettingsTile(
-              icon: AppIcons.community,
-              tint: SettingsHues.help,
-              spot: Spots.community,
-              onTap: () => _push(context, communityPage()),
-            ),
-            SettingsTile(
-              icon: AppIcons.diagnostics,
-              tint: SettingsHues.help,
-              spot: SettingsIndex.entry(SettingsPageId.diagnostics),
-              onTap: () => _push(context, const DiagnosticsPage()),
-            ),
-            SettingsTile(
-              icon: AppIcons.info,
-              tint: SettingsHues.help,
-              spot: SettingsIndex.entry(SettingsPageId.about),
-              value: Text(update.current.name, style: AppType.tabular(Theme.of(context).textTheme.bodyMedium!)),
-              onTap: () => _push(context, const AboutPage()),
-            ),
-          ],
-        ),
+
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Center(child: BrandMark(size: 18, color: colors.textDisabled)),

@@ -5,12 +5,8 @@ import '../../l10n/l10n.dart';
 import '../../remote/ssh/ssh_link.dart';
 import '../../state/connection_state.dart';
 import '../../state/hosts_state.dart';
-import '../../state/plugins_state.dart' show installedPluginsProvider;
-import '../../state/settings_state.dart';
-import '../../state/ui_mode_state.dart';
 import 'local_web_screen.dart';
 import 'web_target.dart';
-import 'web_view_page.dart';
 
 /// Where the active host's DSH Web can be opened from.
 sealed class DshWebAccess {
@@ -79,36 +75,4 @@ class DshWebOpenScope extends InheritedWidget {
 /// Opens the active host's official DSH Web, landing on [target]. In
 /// 网页模式 the home page itself goes there (no second page on top). Inside
 /// a [DshWebOpenScope] the page around decides.
-void openDshWeb(BuildContext context, WidgetRef ref, {DshWebTarget target = const DshWebTarget()}) {
-  if (DshWebOpenScope.maybeOf(context) case final scope?) {
-    scope.onOpen(target);
-    return;
-  }
-  // A plugin's entry id is no name its card has: name its bundle.
-  if (target.pluginItem.isNotEmpty) target = target.withPluginNames(ref.read(installedPluginsProvider).value);
-  if (ref.read(uiModeProvider).web) {
-    ref.read(webOpenProvider.notifier).request(target);
-    return;
-  }
-  final Widget page;
-  switch (ref.read(dshWebAccessProvider)) {
-    case LocalDshWeb():
-      page = LocalWebScreen(target: target);
-    case SshDshWeb(:final url, :final hostName):
-      page = WebViewPage(
-        url: url,
-        title: context.l10n.webTitle,
-        subtitle: hostName,
-        externalDisabledReason: context.l10n.webSshAppOnly,
-        // Android suspends the page in the background and its socket drops.
-        reloadAfterBackground: const Duration(seconds: 60),
-        dshWeb: true,
-        phoneLayout: ref.read(settingsProvider).webPhoneLayout,
-        openTarget: target,
-      );
-    case NoDshWeb(:final reason):
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(reason)));
-      return;
-  }
-  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
-}
+void openDshWeb(BuildContext context, WidgetRef ref, {DshWebTarget target = const DshWebTarget()}) {}

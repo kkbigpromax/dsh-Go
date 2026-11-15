@@ -17,7 +17,10 @@ class ChatSuggestion {
       _prompt = prompt,
       _defaultIndex = null;
 
-  const ChatSuggestion._default(this.icon, this._defaultIndex, this.tint) : _label = null, _prompt = null, _detail = null;
+  const ChatSuggestion._default(this.icon, this._defaultIndex, this.tint)
+    : _label = null,
+      _prompt = null,
+      _detail = null;
 
   final IconData icon;
   final SuggestionTint tint;
@@ -78,13 +81,10 @@ List<String> defaultTips() => [
   appL10n.viewTipSearch,
   appL10n.viewTipSettingsSearch,
   appL10n.viewTipModelHere,
-  appL10n.viewTipQuickPanel,
   appL10n.viewTipFolderNewChat,
   appL10n.viewTipSwitchHost,
   appL10n.viewTipPasteImage,
   appL10n.viewTipLauncher,
-  appL10n.viewTipPetBubble,
-  appL10n.viewTipPetPlay,
   appL10n.viewTipActivityStrip,
   appL10n.viewTipImageZoom,
   appL10n.viewTipQueuedRecall,
@@ -93,7 +93,6 @@ List<String> defaultTips() => [
   appL10n.viewTipShareSelect,
   appL10n.viewTipChartDrag,
   appL10n.viewTipCopyPath,
-  appL10n.viewTipCompanion,
   appL10n.viewTipAnswerInline,
   appL10n.viewTipWallpaper,
 ];
@@ -314,10 +313,7 @@ class ChatEmptyState extends StatelessWidget {
                   ),
                 ),
               ],
-              if (connected && options != null) ...[
-                const SizedBox(height: optionsGap),
-                enter(Center(child: options!)),
-              ],
+              if (connected && options != null) ...[const SizedBox(height: optionsGap), enter(Center(child: options!))],
               if (suggestions.isNotEmpty || tipList.isNotEmpty)
                 ExpandReveal(
                   open: retry == null && idle == null,

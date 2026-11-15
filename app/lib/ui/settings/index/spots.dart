@@ -411,20 +411,13 @@ final _pages = <SettingsPageMeta>[
     freq: Freq.medium,
     links: const ['appearance'],
   ),
-  SettingsPageMeta(
-    SettingsPageId.pets,
-    title: (l) => l.botsPets,
-    group: _look,
-    keywords: (l) => l.searchKwPets,
-    freq: Freq.medium,
-    links: const ['pets'],
-  ),
+
   // 通用
   SettingsPageMeta(
     SettingsPageId.interface,
     title: (l) => l.hubSettingsInterface,
     group: _general,
-    keywords: (l) => l.searchKwInterface,
+    keywords: (l) => [l.hubChatSuggestions, l.hubHardwareEnterSends, l.hubTableTint].join(','),
     links: const ['interface'],
   ),
   SettingsPageMeta(
@@ -546,20 +539,7 @@ final _pages = <SettingsPageMeta>[
     row: false,
   ),
   // 帮助与关于
-  SettingsPageMeta(
-    SettingsPageId.diagnostics,
-    title: (l) => l.phoneEngineDiagnostics,
-    group: _help,
-    keywords: (l) => l.searchKwDiagnostics,
-    links: const ['diagnostics'],
-  ),
-  SettingsPageMeta(
-    SettingsPageId.about,
-    title: (l) => l.hubAbout,
-    group: _help,
-    keywords: (l) => l.searchKwAbout,
-    links: const ['about'],
-  ),
+
   // The overview card.
   SettingsPageMeta(
     SettingsPageId.account,
@@ -1088,8 +1068,6 @@ final _rows = <SettingSpot>[
   Spots.chatTextSize,
   Spots.foldTurns,
   Spots.language,
-  Spots.askAi,
-  Spots.community,
   Spots.addProvider,
   Spots.permissionCurrent,
   Spots.permissionDefault,
@@ -1110,24 +1088,9 @@ final _rows = <SettingSpot>[
   Spots.iconShortcut,
   Spots.launchScreen,
   Spots.wallpaper,
-  Spots.petSize,
-  Spots.petQuiet,
-  Spots.petOutsideApp,
-  Spots.petDisplayWhen,
-  Spots.petOverlayShows,
-  Spots.petOverlayFraming,
-  Spots.workshop,
-  Spots.uiMode,
   Spots.hardwareEnterSends,
   Spots.chatSuggestions,
-  Spots.quickPanel,
   Spots.tableTint,
-  Spots.webApp,
-  Spots.openWeb,
-  Spots.webPhoneLayout,
-  Spots.webCodingView,
-  Spots.webCollapse,
-  Spots.webBusySend,
   Spots.refreshRate,
   Spots.blur,
   Spots.animations,
@@ -1153,6 +1116,4 @@ final _rows = <SettingSpot>[
   Spots.parallelCalls,
   Spots.commandTimeout,
   Spots.version,
-  Spots.star,
-  Spots.licenses,
 ];

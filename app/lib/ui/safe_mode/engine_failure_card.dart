@@ -8,7 +8,6 @@ import '../../runtime/runtime_bridge.dart';
 import '../../runtime/runtime_state.dart';
 import '../../state/safe_mode_state.dart';
 import '../common/status_chip.dart';
-import '../engine/diagnostics_export_card.dart';
 import '../engine/engine_status.dart';
 import '../remote/remote_screen.dart';
 import '../settings/background_guide_page.dart';
@@ -210,7 +209,6 @@ class EngineFailureCard extends ConsumerWidget {
                   if (action != FailureAction.showLog) (label: action.label, onPressed: () => run(action)),
               ],
               onLog: () => run(FailureAction.showLog),
-              onExport: () => unawaited(showDiagnosticsExportSheet(context)),
             ),
           ],
         ),

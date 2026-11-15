@@ -34,7 +34,6 @@ import '../common/smooth_size.dart';
 import '../common/read_list_status.dart';
 import '../common/status_dot.dart';
 import '../onboarding/local_install.dart';
-import '../modes/mode_switch.dart';
 import '../remote/host_status.dart';
 import '../remote/host_switcher.dart' show showHostSheet;
 import '../remote/network_details_sheet.dart' show showRemoteNetworkDetails;
@@ -43,7 +42,6 @@ import '../safe_mode/safe_mode_banner.dart';
 import '../share/share_entry.dart';
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
-import '../web/mode_home.dart';
 import '../workspace/text_prompt.dart';
 import '../workspace/workspace_switcher.dart';
 import '../workspace/workspaces_page.dart';
@@ -167,25 +165,9 @@ class SessionsDrawer extends ConsumerWidget {
                           child: FittedBox(fit: BoxFit.scaleDown, child: BrandLockup(height: 19)),
                         ),
                       ),
-                      // Hide both switch keys in this fork's drawer; keep their implementations.
-                      const Visibility(
-                        visible: false,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ModeKey(),
-                            SizedBox(width: 8),
-                            WebModeKey(tier: GlassTier.pill),
-                            SizedBox(width: 8),
-                          ],
-                        ),
-                      ),
                       // When even the lockup's room is not enough, 新对话
                       // keeps its glyph and lets its words go.
-                      NewChatButton(
-                        onTap: newChat,
-                        compact: NewChatButton.widthOf(context) > box.maxWidth,
-                      ),
+                      NewChatButton(onTap: newChat, compact: NewChatButton.widthOf(context) > box.maxWidth),
                     ],
                   ),
                 ),

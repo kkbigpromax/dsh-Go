@@ -77,7 +77,7 @@ class SessionPluginsTab extends ConsumerWidget {
       children: [
         ListPageCard(
           children: [
-            for (final item in items)
+            for (final item in items.where((item) => item.mode != SeatMode.webLink))
               Builder(
                 key: ValueKey('${item.occupant.slot}|${item.occupant.package}|${item.occupant.cell}'),
                 builder: (context) {
