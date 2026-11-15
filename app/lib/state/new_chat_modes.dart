@@ -6,16 +6,24 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dsh_client/dsh_client.dart' show ModelSelection;
+import 'package:dsh_client/dsh_client.dart' show AgentPresetInfo, ModelSelection;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'hosts_state.dart' show HostRef;
 import 'models_state.dart' show modelSelectionScopeProvider;
 
-/// Presets a new chat never offers: the companion room's own preset is set up
-/// by the room, not chosen for an ordinary conversation.
-const hiddenNewChatPresets = {'dsh-go-companion-full'};
+/// Presets belonging to features removed from this fork. Match stable IDs,
+/// so custom user presets with similar names remain available.
+const retiredAgentPresetIds = {'dsh-go-companion', 'dsh-go-companion-full', 'dsh-go-diagnostics'};
+const hiddenNewChatPresets = retiredAgentPresetIds;
+
+/// Every app picker uses the same policy; keep the unfiltered Host catalog
+/// for resolving a retired Host default before the first prompt.
+List<AgentPresetInfo> selectableAgentPresets(Iterable<AgentPresetInfo> presets) => [
+  for (final preset in presets)
+    if (!retiredAgentPresetIds.contains(preset.id)) preset,
+];
 
 /// What the new-chat screen asked for. Null fields keep the Host's default.
 class NewChatModes {
@@ -49,7 +57,7 @@ class PendingNewChatModes extends Notifier<NewChatModes> {
   }
 
   /// Picks [preset]; null (or the Host default) keeps the default.
-  void selectPreset(String? preset) => state = state.withPreset(preset);
+  void selectPreset(String? preset) => state = state.withPreset(retiredAgentPresetIds.contains(preset) ? null : preset);
 
   /// Picks [permission]; null (or the effective default) keeps the default.
   void selectPermission(String? permission) => state = state.withPermission(permission);
@@ -81,7 +89,7 @@ class OwedSetup {
     final preset = json['preset'];
     final permission = json['permission'];
     return OwedSetup(
-      preset: preset is String ? preset : null,
+      preset: preset is String ? (retiredAgentPresetIds.contains(preset) ? 'standard' : preset) : null,
       permission: permission is String ? permission : null,
       model: ModelSelection.fromJson(json['model']),
     );

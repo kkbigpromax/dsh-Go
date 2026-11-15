@@ -6,6 +6,7 @@
 import 'dart:io';
 
 import 'package:dsh_app/runtime/runtime_state.dart';
+import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/state/connection_state.dart';
 import 'package:dsh_app/state/schedule_editor_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
@@ -158,10 +159,7 @@ void main() {
     await tester.tap(find.text('Healthy preset'));
     await tester.pumpAndSettle();
     // The list row shows the description too; look inside the sheet only.
-    expect(
-      find.descendant(of: find.byType(BottomSheet), matching: find.text('Saved custom preset')),
-      findsOneWidget,
-    );
+    expect(find.descendant(of: find.byType(BottomSheet), matching: find.text('Saved custom preset')), findsOneWidget);
   });
 
   testWidgets('新建: creator mode gets the bundle, the chat opens', (tester) async {
@@ -261,6 +259,38 @@ void main() {
     await tester.pumpAndSettle();
     expect(carrier.argsOf('pluginManager/removeBundle').single, {'name': '@local/dsh-preset-review'});
     expect(find.text('已删除'), findsOneWidget);
+  });
+
+  List<Map<String, Object?>> catalogWithRetiredPresets() => [
+    {'id': 'standard', 'isDefault': true},
+    {'id': 'cordis'},
+    {'id': 'dsh-go-companion', 'name': '伙伴'},
+    {'id': 'dsh-go-companion-full', 'name': '伙伴·完整'},
+    {'id': 'dsh-go-diagnostics', 'name': 'Diagnostics'},
+    {'id': 'my-companion', 'name': '我自己的伙伴预设'},
+  ];
+
+  testWidgets('settings preset list omits retired engine rows', (tester) async {
+    carrier.handlers['agentPresets/list'] = (_) => {'presets': catalogWithRetiredPresets()};
+    await pump(tester, const AgentPresetsPage());
+    for (final name in ['伙伴', '伙伴·完整', 'Diagnostics']) {
+      expect(find.text(name), findsNothing);
+    }
+    expect(find.text('标准模式'), findsOneWidget);
+    expect(find.text('我自己的伙伴预设'), findsOneWidget);
+  });
+
+  testWidgets('preset editor base picker also omits retired engine rows', (tester) async {
+    carrier.handlers['agentPresets/list'] = (_) => {'presets': catalogWithRetiredPresets()};
+    await pump(tester, const PresetEditorPage());
+    final basedOn = find.text(appL10n.featuresPresetBasedOn);
+    await tester.ensureVisible(basedOn);
+    await tester.tap(basedOn);
+    await tester.pumpAndSettle();
+    for (final name in ['伙伴', '伙伴·完整', 'Diagnostics']) {
+      expect(find.text(name), findsNothing);
+    }
+    expect(find.text('我自己的伙伴预设'), findsOneWidget);
   });
 
   testWidgets('built-in presets offer no 编辑 / 删除', (tester) async {

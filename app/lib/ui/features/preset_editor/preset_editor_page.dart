@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../state/connection_state.dart';
 import '../../../state/features_state.dart';
+import '../../../state/new_chat_modes.dart' show selectableAgentPresets;
 import '../../../state/hosts_state.dart';
 import '../../../state/preset_editor_state.dart';
 import '../../../state/read_list_identity.dart';
@@ -252,8 +253,9 @@ class _PresetEditorPageState extends ConsumerState<PresetEditorPage> {
     final scheme = theme.colorScheme;
     final colors = DshColors.of(context);
     final connected = ref.watch(readListLiveConnectionProvider) != null;
-    final presets = ref.watch(agentPresetsProvider).value ?? const <AgentPresetInfo>[];
-    final taken = {for (final p in presets) p.id};
+    final all = ref.watch(agentPresetsProvider).value ?? const <AgentPresetInfo>[];
+    final presets = selectableAgentPresets(all);
+    final taken = {for (final p in all) p.id};
     final doc = ref.watch(agentPresetDocumentProvider(_base));
     if (doc case AsyncData(:final value) when _loadedBase != _base) {
       final firstLoad = _loadedBase == null;

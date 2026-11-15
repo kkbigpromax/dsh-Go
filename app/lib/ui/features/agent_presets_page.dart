@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/l10n.dart';
 import '../../state/connection_state.dart';
 import '../../state/features_state.dart';
+import '../../state/new_chat_modes.dart' show selectableAgentPresets;
 import '../../state/preset_editor_state.dart';
 import '../common/app_dialog.dart';
 import '../common/app_sheet.dart';
@@ -209,7 +210,8 @@ class AgentPresetsPage extends ConsumerWidget {
     final l10n = context.l10n;
     final connected = ref.watch(activeConnectionProvider).value != null;
     final presets = ref.watch(agentPresetsProvider);
-    final list = presets.value;
+    final all = presets.value;
+    final list = all == null ? null : selectableAgentPresets(all);
     return AppPage.list(
       title: l10n.featuresAgentPresets,
       subtitle: Text(l10n.featuresAgentPresetsSubtitle),

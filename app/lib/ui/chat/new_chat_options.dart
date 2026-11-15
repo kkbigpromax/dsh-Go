@@ -31,10 +31,8 @@ import 'empty_actions.dart';
 const _itemMaxWidth = 200.0;
 
 /// Presets a new chat can start with, in the Host's order.
-List<AgentPresetInfo> newChatPresets(List<AgentPresetInfo>? all) => [
-  for (final preset in all ?? const <AgentPresetInfo>[])
-    if (!hiddenNewChatPresets.contains(preset.id)) preset,
-];
+List<AgentPresetInfo> newChatPresets(List<AgentPresetInfo>? all) =>
+    selectableAgentPresets(all ?? const <AgentPresetInfo>[]);
 
 /// The Host's default preset among [presets] (the first when none is marked,
 /// or when the marked one is hidden from new chats).
@@ -52,7 +50,7 @@ AgentPresetInfo? defaultPreset(List<AgentPresetInfo> presets) {
 /// explicitly: the session would otherwise start in the hidden one. Null
 /// keeps the Host default.
 String? newChatPresetToApply(List<AgentPresetInfo>? all, String? picked) {
-  if (all == null) return picked;
+  if (all == null) return retiredAgentPresetIds.contains(picked) ? 'standard' : picked;
   final presets = newChatPresets(all);
   if (picked != null && presets.any((p) => p.id == picked && p.broken == null)) return picked;
   final hiddenDefault = all.any((p) => p.isDefault && hiddenNewChatPresets.contains(p.id));
