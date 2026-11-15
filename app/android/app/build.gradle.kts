@@ -1,3 +1,5 @@
+import java.security.KeyStore
+import java.security.MessageDigest
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.Properties
@@ -18,6 +20,21 @@ val keyProps = Properties().apply {
 val hasWholeReleaseKey = listOf("storeFile", "keyAlias").all { !keyProps.getProperty(it).isNullOrBlank() } &&
     listOf("storePassword", "keyPassword").all { !keyProps.getProperty(it).isNullOrEmpty() } &&
     file(keyProps.getProperty("storeFile")).exists()
+
+// Fork releases must keep the installed app's signing identity, including plain assemble builds.
+tasks.matching { it.name.startsWith("validateSigning") && it.name.endsWith("Release") }.configureEach {
+    doFirst {
+        require(hasWholeReleaseKey) { "Fixed fork release signing key is missing; restore it instead of generating a new key." }
+        val certificate = KeyStore.getInstance(
+            file(keyProps.getProperty("storeFile")), keyProps.getProperty("storePassword").toCharArray()
+        ).getCertificate(keyProps.getProperty("keyAlias"))
+        val fingerprint = MessageDigest.getInstance("SHA-256")
+            .digest(certificate.encoded).joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        require(fingerprint == "9376cf6df2238c82e37e79bb6911c4590dcbccb0440207dd4c65f1c2fa244bdb") {
+            "Fork signing certificate changed; release build stopped."
+        }
+    }
+}
 
 // Per-ABI runtime bundles produced by runtime/build-runtime.sh.
 val runtimeOut = rootProject.file("../../runtime/out")

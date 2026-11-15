@@ -85,11 +85,11 @@ jobs:
           print('Bundled engine includes the session-log removal patch.')
           PY
       - name: Build release APK
-        run: bash tooling/build-apk.sh --flavor arm64 --build-name 1.1.0-fork.1 --keep-daemon
+        run: bash tooling/build-apk.sh --flavor arm64 --build-name 1.1.0 --keep-daemon
       - name: Prepare download
         run: |
           mkdir -p dist
-          cp app/build/app/outputs/flutter-apk/app-arm64-release.apk dist/dsh-go-1.1.0-fork.1-arm64.apk
+          cp app/build/app/outputs/flutter-apk/app-arm64-release.apk dist/dsh-go-1.1.0-arm64.apk
           cd dist
           sha256sum ./*.apk > SHA256SUMS
       - name: Upload APK

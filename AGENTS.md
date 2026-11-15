@@ -74,6 +74,14 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 - 未经要求不 commit、不 push、不打 tag、不发布。
 - 不 force push `main` 或重写共享历史，除非用户在当前对话里明确要求；重写后必须重建受影响的分支与 PR。
 
+### 本 fork 的 APK 构建
+
+- 版本名称与当前上游版本保持一致（取 `app/pubspec.yaml` 中的版本，不加 fork 后缀）；内部构建号按现有规则递增以支持覆盖安装。
+- 用户要求以后所有本机 APK 沿用固定签名；证书 SHA256 为 `9376cf6df2238c82e37e79bb6911c4590dcbccb0440207dd4c65f1c2fa244bdb`。
+- 本工作区的密钥在仓库旁 `../signing/dsh-go-fork.p12`，私有配置在 `../signing/key.properties`；使用 `../build_local_apk.py` 构建。密钥或配置缺失、指纹不符必须停止并恢复原文件，禁止新建密钥或退回 debug 签名；交付前核对 APK 证书与上一本机包一致。
+- 固定密钥和配置另有私有备份：`~/Documents/Codex/private-signing/dsh-go/`。恢复时先核对上述证书指纹，不能换签名。
+- 密钥、密码、配置和备份不得提交 Git 或放入公开输出。
+
 ### 真机验证
 
 - Flutter widget 测试需要对应架构的 Flutter 引擎；只有桌面端（x86_64）而设备是 arm64 时，明确写"未运行"及原因。
