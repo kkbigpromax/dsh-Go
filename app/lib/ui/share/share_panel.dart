@@ -21,7 +21,9 @@ import '../../share_code/conversation_html.dart';
 import '../../share_code/conversation_redact.dart' show markdownWithoutImages, redactText;
 import '../../share_code/conversation_share.dart';
 import '../../share_hosted/hosted_client.dart' show HostedShareException;
+import '../../share_hosted/hosted_links_state.dart' show HostedStorageException;
 import '../../state/app_info.dart';
+import '../../state/android_features.dart';
 import '../../state/artifact_files.dart';
 import '../../state/artifacts.dart';
 import '../../state/chat_state.dart';
@@ -333,6 +335,8 @@ class SharePanelModel extends ChangeNotifier {
   bool get isEmpty => conversation != null && !loading && shareable.isEmpty;
 
   /// The links this app can make (null: none).
+  bool get _harmony => _ref.read(operatingSystemProvider) == 'ohos';
+
   ConversationLinkMaker? get linkMaker => conversation == null ? null : _ref.read(conversationLinkMakerProvider);
 
   void chatChanged() {
@@ -350,7 +354,11 @@ class SharePanelModel extends ChangeNotifier {
   SharePrivacy get privacy => _privacy;
 
   /// The scopes this conversation offers: 「这条回复」 only with a reply.
-  List<ShareScope> get scopes => [if (conversation?.reply != null) ShareScope.reply, ShareScope.picked, ShareScope.whole];
+  List<ShareScope> get scopes => [
+    if (conversation?.reply != null) ShareScope.reply,
+    ShareScope.picked,
+    ShareScope.whole,
+  ];
 
   /// What 「选中消息」 starts with: the picks so far, else the reply and its
   /// question, else the last exchange.
@@ -419,13 +427,7 @@ class SharePanelModel extends ChangeNotifier {
     final state = chat;
     final reply = anchor;
     if (_scope == ShareScope.reply && reply != null) {
-      return shareContentForReply(
-        state,
-        reply,
-        sessionId: _sessionId,
-        images: _privacy.images,
-        tools: _privacy.tools,
-      );
+      return shareContentForReply(state, reply, sessionId: _sessionId, images: _privacy.images, tools: _privacy.tools);
     }
     return shareContentForItems(state, keys, sessionId: _sessionId, images: _privacy.images, tools: _privacy.tools);
   }
@@ -439,9 +441,7 @@ class SharePanelModel extends ChangeNotifier {
         if (keys.contains(item.key)) item,
     ];
     final whole = _scope == ShareScope.whole;
-    final turns = {
-      for (final reply in picked.whereType<AssistantChatItem>()) ?turnOf(state.turns, reply.seq),
-    };
+    final turns = {for (final reply in picked.whereType<AssistantChatItem>()) ?turnOf(state.turns, reply.seq)};
     var tools = 0;
     if (_privacy.tools) {
       for (final item in state.items) {
@@ -661,11 +661,16 @@ class SharePanelModel extends ChangeNotifier {
       final link = await maker.upload(conversationFileBytes(built.file.text), _expiry, title: built.share.title);
       HapticFeedback.lightImpact();
       _link = link;
+      if (_harmony) _error = link.locallySaved ? null : appL10n.remoteHostedCreatedUnsaved;
       _linkFor = key;
       _stopped = null;
       _stopTimer?.cancel();
     } catch (e) {
-      _error = e is HostedShareException ? e.message : appL10n.viewShareLinkFailed;
+      _error = _harmony && e is HostedStorageException
+          ? appL10n.remoteHostedLoadFailed
+          : e is HostedShareException
+          ? e.message
+          : appL10n.viewShareLinkFailed;
     }
   });
 
@@ -675,7 +680,18 @@ class SharePanelModel extends ChangeNotifier {
     final link = this.link;
     if (maker == null || link == null) return;
     final key = _linkFor!;
-    await maker.revoke(link);
+    if (_harmony) {
+      try {
+        await maker.revoke(link);
+      } catch (_) {
+        _error = appL10n.remoteHostedStopFailed;
+        _notify();
+        return;
+      }
+      _error = null;
+    } else {
+      await maker.revoke(link);
+    }
     _link = null;
     _linkFor = null;
     _stopped = (link: link, key: key);
@@ -692,8 +708,22 @@ class SharePanelModel extends ChangeNotifier {
     final maker = linkMaker;
     final stopped = _stopped;
     if (maker == null || stopped == null) return;
-    _stopTimer?.cancel();
-    await maker.restore(stopped.link);
+    if (_harmony) {
+      try {
+        await maker.restore(stopped.link);
+        _error = null;
+      } on ConversationLinkRestoreUnsaved {
+        _error = appL10n.remoteHostedUndoUnsaved;
+      } catch (_) {
+        _error = appL10n.remoteHostedUndoFailed;
+        _notify();
+        return;
+      }
+      _stopTimer?.cancel();
+    } else {
+      _stopTimer?.cancel();
+      await maker.restore(stopped.link);
+    }
     _stopped = null;
     _link = stopped.link;
     _linkFor = stopped.key;
@@ -758,6 +788,7 @@ class SharePanelModel extends ChangeNotifier {
         _notify();
       });
     } on PlatformException catch (e) {
+      if (saveWindowDismissed(e)) return;
       _error = e.code == 'permission' ? appL10n.viewShareNoPermission : appL10n.commonSaveFailedRetry;
     } catch (e) {
       _error = artifact != null ? artifactErrorText(e) : appL10n.commonSaveFailedRetry;

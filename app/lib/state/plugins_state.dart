@@ -13,6 +13,7 @@ import '../l10n/l10n.dart';
 import '../runtime/runtime_state.dart';
 import '../share_code/share_net.dart';
 import '../update/version.dart';
+import 'android_features.dart';
 import 'app_info.dart';
 import 'connection_state.dart';
 import 'market_sidecar.dart';
@@ -20,6 +21,7 @@ import 'market_sidecar.dart';
 export 'market_sidecar.dart';
 import 'read_list_cache.dart';
 import 'read_list_identity.dart';
+import 'runtime_capabilities_state.dart';
 import 'engine_error_text.dart';
 import 'hosts_state.dart';
 

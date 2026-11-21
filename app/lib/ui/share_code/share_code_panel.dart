@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../state/artifacts.dart' show saveWindowDismissed;
 import '../../share_code/share_code_state.dart';
 import '../../share_code/share_codec.dart';
 import '../../share_code/share_link.dart';
@@ -171,6 +172,10 @@ class _ShareCodePanelState extends ConsumerState<ShareCodePanel> {
     try {
       await out.save(_fileName, encodeShareFile(widget.payload, code: _code));
     } on PlatformException catch (e) {
+      if (saveWindowDismissed(e)) {
+        if (mounted) setState(() => _saving = false);
+        return;
+      }
       error = e.code == 'permission' ? appL10n.pluginsSavePermissionDenied : appL10n.commonSaveFailedRetry;
     } catch (_) {
       error = appL10n.commonSaveFailedRetry;
