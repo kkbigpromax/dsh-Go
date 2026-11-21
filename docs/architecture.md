@@ -193,6 +193,8 @@ HomeShell = [ChatScreen] + [SessionsDrawer 左] + [QuickPanel 右] + [SystemEntr
 
 ### 3.2 引擎运行时（`.../runtime/`）
 
+Android/iOS 后台执行的机制、系统回收恢复和三方方案取舍见 [后台运行](design/background-execution.md)。
+
 | 文件 | 职责 |
 |---|---|
 | `RuntimePlugin.kt` | `dsh/runtime` + `dsh/runtime/events`：install/start/stop/reset/safe/LKG |
@@ -319,6 +321,11 @@ DshConnection      单个 Host 的物理连接：launch-token → cookie、Host 
 `RelayTransport`（控制 WS）→ Noise IK `SecureChannel` → `WebRtcTransport`（LAN/P2P/TURN）或 relay →
 `RemoteRpcClient` → `RemoteTunnelCarrier`（实现 `DshCarrier`，交给普通 `DshClient`）。
 端点白名单 `harnessRemoteAllowlist` 与上游 Host 插件版本耦合，新增端点前先看它。
+
+对话备份走 `RemoteSessionTransfer` 的顶层 `session.transfer.*` Noise RPC，不经 Harness 端点白名单。
+`state/session_backup_state.dart` 连接当前会话与私有备份存储，`ui/remote/session_backup_page.dart` 提供单条／工作区备份和恢复；
+`remote/session_backup/backup_store.dart` 用系统安全存储中的随机密钥加密文件和清单，提交前持久保存待核对记录。
+Remote 一次只连一台主机，跨主机复制采用先备份、再切换恢复，不另建第二套设备身份。
 
 ### 4.3 dsh_tavern / dartssh2
 

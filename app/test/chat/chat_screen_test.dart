@@ -376,13 +376,17 @@ void main() {
     expect(find.text('每条消息最多 9 个附件'), findsOneWidget);
   });
 
-  testWidgets('new conversation header action clears the selection', (tester) async {
+  testWidgets('new conversation header action clears the selection and keeps the voice call button', (tester) async {
     await pumpScreen(tester, ChatHarness(session: 's1'));
-    expect(find.byKey(const ValueKey('chat-new-chat')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('chat-new-chat')));
+    final newChat = find.byKey(const ValueKey('chat-new-chat'));
+    final voiceCall = find.byKey(const ValueKey('chat-call'));
+    expect(newChat, findsOneWidget);
+    expect(voiceCall, findsOneWidget);
+    await tester.tap(newChat);
     await pumpFrames(tester);
     expect(containerOf(tester).read(currentSessionProvider), isNull);
-    expect(find.byKey(const ValueKey('chat-new-chat')), findsNothing);
+    expect(newChat, findsNothing);
+    expect(voiceCall, findsOneWidget);
   });
 
   testWidgets('while a reply generates, auto-approve sits beside the activity strip, not on a row of its own', (

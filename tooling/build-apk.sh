@@ -18,6 +18,8 @@
 #   --build-name X.Y.Z               version name instead of app/pubspec.yaml's
 #   --keep-daemon                    leave the Gradle daemon running afterwards
 #   --beta                           embed the beta channel token (internal builds only)
+#   --side                           test build that installs next to the released app
+#                                    (package ...dsh_app.test, named DSH Go 测试, own data)
 #   --dry-run                        print what would run
 #
 # The version name comes from app/pubspec.yaml; its `+N` is only a placeholder.
@@ -35,7 +37,7 @@ OUT="$APP/build/app/outputs/flutter-apk"
 usage() { sed -n '2,23p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 die() { echo "build-apk: $*" >&2; exit 1; }
 
-flavor=arm64 mode=release target='' code='' name='' dry=0 keep_daemon=0 want_beta=0
+flavor=arm64 mode=release target='' code='' name='' dry=0 keep_daemon=0 want_beta=0 side=0
 extra=()
 while (($#)); do
   case "$1" in
@@ -50,6 +52,7 @@ while (($#)); do
     --build-name=*) name=${1#*=}; shift ;;
     --keep-daemon) keep_daemon=1; shift ;;
     --beta) want_beta=1; shift ;;
+    --side) side=1; shift ;;
     --dry-run) dry=1; shift ;;
     -h | --help) usage; exit 0 ;;
     --) shift; extra=("$@"); break ;;
@@ -62,7 +65,8 @@ case "$flavor" in
   all) flavors=(arm64 x64) ;;
   *) die "flavor is arm64, x64 or all: $flavor" ;;
 esac
-for arg in "${extra[@]}"; do
+# macOS Bash 3 treats an empty array as unset under nounset.
+for arg in ${extra[@]+"${extra[@]}"}; do
   case "$arg" in
     # The selected mode also controls the runtime preflight below.
     --build-number* | --build-name* | --flavor* | --target-platform* | \
@@ -119,11 +123,18 @@ for f in "${flavors[@]}"; do
     --build-name "$name" --build-number "$code" "--dart-define=DSH_APP_VERSION=$name+$code")
   [[ -n $target ]] && cmd+=(-t "$target")
   ((beta)) && cmd+=("--dart-define-from-file=$beta_json")
-  cmd+=("${extra[@]}")
+  cmd+=(${extra[@]+"${extra[@]}"})
   commands+=("$(printf '%q ' "${cmd[@]}")")
 done
 
-echo "dsh-go $name ($code, $when) · $mode · ${flavors[*]}$( ((beta)) && echo ' · beta channel')"
+# Side builds use a separate package (app/build.gradle.kts) and keep their own app data.
+if ((side)); then
+  [[ $mode == release ]] || die "--side is for release builds"
+  export DSH_SIDE_BUILD=1
+else
+  unset DSH_SIDE_BUILD
+fi
+echo "dsh-go $name ($code, $when) · $mode · ${flavors[*]}$( ((beta)) && echo ' · beta channel')$( ((side)) && echo ' · side (dsh_app.test)')"
 if ((dry)); then
   for c in "${commands[@]}"; do echo "(cd app && ${c% })"; done
   ((keep_daemon)) || echo "(cd app/android && ./gradlew --stop)"
@@ -156,7 +167,7 @@ if ((beta)); then
     "$beta_file" >"$beta_json")
 fi
 
-# libtawcroot.so for the opt-in tawcroot launch method, from the pinned tawc commit.
+# libtawcroot.so for the tawcroot launch method (the default where available), from the pinned tawc commit.
 # Release builds must carry it; other builds go on without it (the option shows unavailable).
 if ! python3 -I "$ROOT/runtime/tawcroot/build.py"; then
   [[ $mode == release ]] && die "tawcroot: libtawcroot.so did not build"
