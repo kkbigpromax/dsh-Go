@@ -4,10 +4,10 @@
 
 ## 当前基线
 
-- 上游 `ccch1mneyyy/dsh-Go` 已合入 `v1.3.0`，提交 `da798027013851328f83f59af4adb52c3afaab23`。上一基线为 `v1.2.0`（`c1a84e3f833ad59ff07a5027994dae3935907a2d`）。
+- 上游 `ccch1mneyyy/dsh-Go` 已合入 `v1.4.0`，发版提交 `5bb72e26e`（合并时上游尚未打 `v1.4.0` 标签）。上一基线为 `v1.3.0`（`da798027013851328f83f59af4adb52c3afaab23`）。
 - fork：`kkbigpromax/dsh-Go`，唯一维护分支为 `main`（2026-11-25 由原 `remove-anonymous-usage-stats` 快进合并而来，旧分支已删除）。不另开长期分支；临时工作分支合入 `main` 后删除。
 - 最近的功能修正：`513d469b87d4df6684ab012917fb8cb1cac7450f`，补齐设置、预设编辑器和新对话中的已移除预设过滤。
-- 最近一次本机交付包为 `1.3.0`，内部构建号 `11211048`，仅 `arm64-v8a`。
+- 最近一次本机交付包为 `1.3.0`，内部构建号 `11211048`，仅 `arm64-v8a`。`1.4.0` 只合并源码，未构建。
 
 ## 必须保留的 fork 改动
 
@@ -20,6 +20,8 @@
 | 伙伴和诊断预设过滤 | `dsh-go-companion`、`dsh-go-companion-full`、`dsh-go-diagnostics` 不得出现在任何预设选择列表。共享规则位于 `app/lib/state/new_chat_modes.dart`；原始引擎目录保留用于识别旧默认值，首次发送前选用有效的保留预设，旧未完成设置恢复到标准模式。按稳定 ID 过滤，不误删用户自己创建的同名预设。参考 `513d469b` 和 `app/test/features/retired_presets_test.dart`。 |
 | 关闭自更新 | 不自动检查或提示官方新版，隐藏检查更新及自动更新入口。用户自行编译和安装；现有更新框架可保留，不重新接入启动流程。参考 `3a4a739d`（曾限制为 fork）、`d3f2fcd4`（随后停用更新）。 |
 | 保留核心能力与数据 | 保留原生聊天、引擎、本机/远程主机、语音、手机操控、聊天状态通知和内部错误捕获；保留用户现有会话、配置和运行时升级兼容性。不要按目录名批量删除共享模块。个人偏好、可视化回复、常规 Agent 预设继续保留。 |
+| 酒馆冻结 | 酒馆不在入口可达范围内。`packages/dsh_tavern`、`app/lib/tavern`、`app/lib/ui/tavern`、`app/test/tavern` 及 `tavern*_*.arb` 保持 fork 现状，合并时直接取 fork 版本、删去上游新增文件，不吸收上游酒馆改动。 |
+| 伙伴小屋只断入口 | 伙伴相关 Dart 代码随上游更新（共享模块需要），但抽屉固定行、启动入口、深链、主机切换和 `app.dart` 常驻监听都不接入；`DshFlutterEngine.kt` 不注册伙伴小组件、提醒、地图、向量、通知、常驻插件；manifest 不声明伙伴组件和对应权限。 |
 | 版本、签名与交付 | 版本名称与本次合入的上游一致，不加 fork 后缀；内部构建号递增。仅本机构建并验证的 arm64 APK。重启后生成新固定证书，其后的新版沿用该证书。不自动发布 Release，也不下载线上包再上传。许可声明和必要署名继续保留。 |
 
 当前移除的是 App 自身的统计和 DeepSeek 日志上传；没有承诺删除 Google ML Kit SDK 自身的统计行为。不要在维护或交付说明中扩大承诺。
@@ -54,6 +56,15 @@
 - 构建缓存、运行时归档和历史 APK 都是本机产物。重新构建时按 `CONTRIBUTING.md` 安装对应 Flutter／Android 工具链。用 `runtime/build-runtime.sh arm64-v8a` 在 Linux 上从锁定输入重建运行时，再从仓库根目录运行 `tooling/build-apk.sh --flavor arm64`。保持精简资源和日志上传禁用，并核对运行时 patch pins。
 - 旧签名退役。用户恢复项目时重新生成一把固定发布签名，并按 `AGENTS.md` 更新构建的指纹守卫。旧签名 APK 无法用新签名包直接覆盖。需要迁移旧版数据时先在设备上备份。
 - 最近交付的 `1.3.0` APK 通过了签名、包名、架构、构建号和运行时文件验证，尚未做真机覆盖安装验证。构建、签名与清理记录均不包含密钥、密码或设备数据。
+
+## v1.4.0 合并记录（2026-11-25）
+
+- 用户决定：纳入 OpenAI 订阅登录、新模型默认图片输入和四档思考、手机操控外观（顶部悬浮岛、系统灵动岛、边缘光带、贴边小球）、远程主机页账号置顶。手机技能是 1.3.0 已有功能的重写，按用户选择采用新版但「学习」默认关闭（`PhoneControl.learnsSkills` 默认值，指南同步）。拒绝 Android 可选后台保护、主题包与创意工坊。
+- 排除：#1671 匿名日活与用量统计（App、manifest、share-worker 接口全部去掉）；求 star 提示与 `tooling/star-prompt-on.json`；#1772 后台保护整体反向应用（原生、设置页、文案、指南，位置与后台定位权限不声明）；主题包与创意工坊只去掉外观页入口，主题接缝已织进聊天渲染，保留其共用部分；伙伴小屋的抽屉行、启动入口、数字助理、留意通知、提醒、常驻、看屏及屏幕录制／应用使用情况／日历权限；Remote 主机的 DSH Web。
+- 引擎：`series` 与 `pins.json` 取上游，再补回 `remove-deepseek-session-log.diff`（两个 targetSets 中位置不变），与上游新补丁无文件重叠。桥里的本地用量计数需要 App 续租才计数，本 fork 没有续租方，不外发。
+- 处理 119 个冲突文件：被 fork 删除的 51 个保持删除；酒馆整体取 fork 版本；`chat_screen.dart` 以上游为底重新去掉 `PetStage` 与统计；`MainActivity.kt` 采用上游 `DshFlutterEngine` 后去掉数字助理、日历和后台保护；文案与内置指南重新生成。
+- 验证：`flutter analyze` 无问题；`dsh_client` 1705 项、`dsh_remote` 605 项通过；构建与工具脚本测试 138 + 116 项通过；文案、指南生成检查通过；按 CI 方式装临时 DSH 0.2.2-rc.1 并对 Android 目标打全部补丁成功（含禁传日志补丁）。全量 Flutter 测试 14658 项通过、548 项失败，其中 530 项在合并前 `main` 上同样失败（针对已移除功能的测试与部分截图对比）；新增失败 18 项均属伙伴小屋、Web 兜底入口、酒馆／宠物截图等已排除范围。运行时 Node 测试的失败在合并前同样存在或属伙伴引擎测试（root 运行环境、PDF 工作线程）。
+- 未验证：本环境拿不到 Android SDK，改动的 Kotlin（`MainActivity`、`DshFlutterEngine`、`EntryActivity`、`DshService`／`RuntimePlugin`／`RuntimeController` 的后台保护反向、`PhoneControl`）未编译，只做了引用核对；未构建 APK，未做真机验证。
 
 ## 上游预检（2026-11-25）
 

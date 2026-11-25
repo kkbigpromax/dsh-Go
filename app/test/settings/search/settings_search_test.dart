@@ -68,7 +68,7 @@ void main() {
       var keywords = 0;
       final spot = SettingSpot(
         'counted',
-        page: SettingsPageId.about,
+        page: SettingsPageId.privacy,
         title: (_) {
           titles++;
           return 'Alpha';
