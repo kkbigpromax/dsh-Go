@@ -12,6 +12,7 @@ import '../../../state/plugins_state.dart';
 import '../../web/dsh_web_launcher.dart';
 import '../../web/web_target.dart';
 import 'plugin_seat_page.dart';
+import 'seat_island.dart' show seatIslandLabels;
 
 /// Opens DSH Web on a target (in 网页模式 the web home itself goes there);
 /// tests swap it for a recorder.
@@ -64,15 +65,13 @@ String seatConfigTitle(SlotOccupant o, {PluginBundle? bundle}) {
 }
 
 /// Where [o] lands in DSH Web. The open bridge (`assets/web/dsh_web_open.js`)
-/// has no ids for a third-party settings section, panel or tab, so those land
-/// one step short: the settings dialog, the sidebar with its panel list, the
-/// conversation.
-DshWebTarget seatWebTarget(SlotOccupant o, {String? sessionId, PluginBundle? bundle}) {
+/// opens a settings section by its registered names (not its bundle title).
+/// Third-party panels and tabs still land one step short.
+DshWebTarget seatWebTarget(SlotOccupant o, {String? sessionId, PluginBundle? bundle, List<String> labels = const []}) {
   switch (o.slot) {
     case Slots.settingsSection:
-      return DshWebTarget(
-        settings: DshWebSettings.values.where((s) => s.key == o.cell).firstOrNull ?? DshWebSettings.general,
-      );
+      if (o.cell.isEmpty) return const DshWebTarget(settings: DshWebSettings.general);
+      return DshWebTarget(settingsSection: o.cell, settingsPackage: o.package, settingsLabels: [?o.label, ...labels]);
     case Slots.generalItem:
       return const DshWebTarget(settings: DshWebSettings.general);
     case Slots.settingsPluginsTab:
@@ -124,7 +123,12 @@ SeatRowEntry seatRowEntry(WidgetRef ref, SeatContext seat, SeatItem item, {requi
     );
   }
   final bundle = seatBundleOf(ref.watch(installedPluginsProvider.select((s) => s.value)), o.package);
-  final target = seatWebTarget(o, sessionId: seat.sessionId, bundle: bundle);
+  final target = seatWebTarget(
+    o,
+    sessionId: seat.sessionId,
+    bundle: bundle,
+    labels: seatIslandLabels([item], ref.watch(bridgeInventoryProvider.select((s) => s.value))),
+  );
   return SeatRowEntry(web: true, open: (context) => ref.read(seatWebOpenerProvider)(context, ref, target));
 }
 

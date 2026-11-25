@@ -318,8 +318,10 @@ DshConnection      单个 Host 的物理连接：launch-token → cookie、Host 
 ### 4.2 dsh_remote
 
 `RemoteAccount`（登录/设备/Host 目录/key pinning）→ `RemoteServerApi`（REST）+
-`RelayTransport`（控制 WS）→ Noise IK `SecureChannel` → `WebRtcTransport`（LAN/P2P/TURN）或 relay →
+`RelayTransport`（控制 WS）→ `WebRtcTransport`（LAN/P2P/TURN）或 Relay 数据面 → Noise IK `SecureChannel` →
 `RemoteRpcClient` → `RemoteTunnelCarrier`（实现 `DshCarrier`，交给普通 `DshClient`）。
+Control 已确认 lease 且独立数据面仍存活时，仅恢复 Control，保留 Noise/RPC/事件流；数据面断开或 recovery 被拒绝时，
+由既有 mux 建立新 tunnel、新 Noise 与新 `$events` 世代，不重放结果未知的 RPC。票据仅在 transport 内存保存，关闭/换 Host/登出时清除。
 端点白名单 `harnessRemoteAllowlist` 与上游 Host 插件版本耦合，新增端点前先看它。
 
 对话备份走 `RemoteSessionTransfer` 的顶层 `session.transfer.*` Noise RPC，不经 Harness 端点白名单。
@@ -433,6 +435,7 @@ DSH npm 前缀（runtime/locks）→ rtbuild 按 series 应用目标平台的补
 | 新建页面/设置项 | `docs/design/settings-ia.md`、§2.2 | `ui/features/feature_catalog.dart`、`settings/index/spots.dart` | 同上 + 截图 |
 | 文案/本地化 | §2.5 | `l10n/parts/*.arb`（中英） | `python3 app/tool/l10n_merge.py --check` |
 | 用户指南 | §8 | `docs/guide/**` | `python3 app/tool/guide_sync.py --check` |
+| 匿名使用统计 | [埋点与报表设计](design/usage-metrics.md) | `app/lib/usage/`、`services/share-worker/` | App 日账本、Worker 接收与报表测试；新来源另做端到端对账 |
 | 原生插件协议/座位 | `docs/design/native-plugins.md`、`plugin-seams.md` | `plugins/native/`、`plugins/seams/`、`sdk/plugin-kit` | `cd sdk/plugin-kit && npm test` |
 | 桥路由 | `docs/design/bridge-contract.md` | `runtime/bridge/**`、`dsh_client dsh_go_api.dart` | `node --test runtime/tests/*.test.mjs` |
 | 引擎补丁/升级 | §5.4/§5.5、`docs/maintenance/*-contract.md` | `runtime/patches/**`、`runtime/build-runtime.sh` | `python3 -I runtime/tests/test_patch_dsh.py`（构建需 x86_64 主机） |

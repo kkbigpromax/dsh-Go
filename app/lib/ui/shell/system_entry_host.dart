@@ -145,6 +145,10 @@ class _SystemEntryHostState extends ConsumerState<SystemEntryHost> {
         // one from switching away on a cold start (as notification taps do).
         ref.read(activeHostProvider.notifier).select(host);
         ref.read(currentSessionProvider.notifier).select(sessionId);
+      // 伙伴小屋 is not part of this build (docs/fork-maintenance.md): its
+      // native senders are not registered, so these never arrive.
+      case OpenCompanionTaskEntry() || CompanionAssistantEntry() || OpenCompanionEntry():
+        break;
     }
   }
 

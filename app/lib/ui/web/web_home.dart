@@ -25,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../companion/companion_state.dart' show companionSessionFilterProvider, companionSessionsProvider;
 import '../../l10n/l10n.dart';
 import '../../links/app_links.dart';
 import '../../links/launcher_entries.dart';
@@ -39,6 +40,8 @@ import '../../state/settings_state.dart';
 import '../../state/ui_mode_state.dart';
 import '../common/discard_guard.dart';
 import '../common/empty_view.dart';
+import '../companion/companion_tasks_page.dart';
+import '../companion/companion_page.dart';
 import '../forum/forum_link_host.dart';
 import '../notify/chat_alert_host.dart';
 import '../pets/pet_settings_page.dart';
@@ -79,6 +82,11 @@ class _WebHomeState extends ConsumerState<WebHome> {
       _webSession = target.sessionId;
       unawaited(_link.open(target));
     }
+    // Another host's page has not opened anything yet: a conversation chosen
+    // there opens even when its id is the one this page last showed.
+    ref.listenManual(activeHostProvider, (previous, next) {
+      if (previous != next) _webSession = null;
+    });
     // Something chose a conversation (a notification, a recent shortcut, the
     // banner): the page goes there, once it has been rebuilt for the host.
     ref.listenManual(currentSessionProvider, (_, next) {
@@ -109,7 +117,11 @@ class _WebHomeState extends ConsumerState<WebHome> {
   }
 
   Future<void> _open(WebOpenRequest request) async {
-    await _link.open(request.target);
+    // A DSH Remote host's page takes no scripts (remote_web_page.dart), nor
+    // does the empty page while it is away: it stays where it is, and a share
+    // falls back at once, not in 30 seconds or on some later host's page.
+    final scripted = ref.read(activeHostProvider).kind != HostKind.relay;
+    if (scripted) await _link.open(request.target);
     final compose = request.compose;
     if (compose == null) return;
     final problems = [...compose.problems];
@@ -125,7 +137,7 @@ class _WebHomeState extends ConsumerState<WebHome> {
     }
     final text = compose.text.trim();
     if (text.isEmpty && files.isEmpty) return _tell(problems);
-    final result = await _link.compose(text, files: files);
+    final result = scripted ? await _link.compose(text, files: files) : const WebComposeResult();
     if (text.isNotEmpty && !result.text) {
       await Clipboard.setData(ClipboardData(text: text));
       problems.insert(0, appL10n.webTextCopied);
@@ -216,7 +228,8 @@ class _PetHostState extends ConsumerState<_PetHost> {
   }
 }
 
-/// The active host has no web page the app can reach (a DSH Remote host):
+/// The active host has no web page the app can reach right now (not yet
+/// connected, a DSH Remote host without DSH Web, HarmonyOS over DSH Remote):
 /// say so, with the handle's ways out at hand.
 class _NoWeb extends StatelessWidget {
   const _NoWeb({required this.reason, required this.handle});
@@ -307,6 +320,12 @@ class _WebEntryHostState extends ConsumerState<WebEntryHost> {
   }
 
   Future<void> _onEntry(LauncherEntry entry) async {
+    if (entry is OpenChatEntry) {
+      // A cold start may still be reading her saved sessions.
+      await ref.read(companionSessionsProvider.notifier).ready;
+      if (!mounted) return;
+      entry = entry.forCompanion(ref.read(companionSessionFilterProvider), active: ref.read(activeHostProvider));
+    }
     switch (entry) {
       case NewChatEntry(:final text):
         // Dictation is the native composer's; Siri's supplied text still
@@ -334,6 +353,19 @@ class _WebEntryHostState extends ConsumerState<WebEntryHost> {
         // The page follows the current conversation (WebHome).
         ref.read(activeHostProvider.notifier).select(host);
         ref.read(currentSessionProvider.notifier).select(sessionId);
+      case OpenCompanionTaskEntry(:final taskId, :final taskRev):
+        if (mounted) {
+          await Navigator.of(context, rootNavigator: true).push(
+            MaterialPageRoute<void>(
+              builder: (_) => CompanionTasksPage(taskId: taskId, openedRevision: taskRev),
+            ),
+          );
+        }
+      case CompanionAssistantEntry():
+        if (mounted) await openCompanionAssistant(context, ref, entry);
+      case OpenCompanionEntry(:final room):
+        // As on the native home: her room, never the page's conversation.
+        if (room && mounted) await showCompanionRoom(context, ref);
     }
   }
 
