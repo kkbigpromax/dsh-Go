@@ -254,7 +254,17 @@
                 android:value="Runs the user's local DeepSeek Harness agent server" />
         </service>
 
-<!-- 手机操控: reads and drives the main screen, owns the status bar / confirm overlay (phone/a11y). -->
+        <!-- Helps keep the active remote connection running in the background. -->
+        <service
+            android:name=".remote.RemoteBackgroundService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Helps keep the user's active remote host connection running in the background" />
+        </service>
+
+        <!-- 手机操控: reads and drives the main screen, owns the status bar / confirm overlay (phone/a11y). -->
         <service
             android:name=".phone.a11y.PhoneA11yService"
             android:label="@string/phone_a11y_label"

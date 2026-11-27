@@ -9,6 +9,7 @@ import 'package:dsh_app/ui/settings/settings_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../shell/golden_harness.dart';
 
@@ -27,6 +28,8 @@ void main() {
   const location = ValueKey('background-protection-location');
   const task = ValueKey('background-protection-task');
   const status = ValueKey('background-protection-status');
+  const remoteAudio = ValueKey('remote-background-audio');
+  const remoteLocation = ValueKey('remote-background-location');
   late Map<String, Object?>? actual;
   late List<MethodCall> calls;
   late FutureOr<Object?> Function(MethodCall) update;
@@ -35,6 +38,7 @@ void main() {
   var opens = true;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     actual = {'supported': true};
     calls = [];
     runtime = _Runtime();
@@ -218,11 +222,13 @@ void main() {
     expect(find.text(l10n.backgroundProtectionAudioActive), findsOneWidget);
   });
 
-  testWidgets('HarmonyOS uses one switch and cannot fix ACL eligibility in settings', (tester) async {
+  testWidgets('HarmonyOS keeps remote audio separate from local ACL eligibility', (tester) async {
     actual = {'supported': true, 'permissionStatus': 'eligible'};
     await pump(tester, os: 'ohos');
-    expect(find.byType(SettingsSwitchTile), findsOneWidget);
+    expect(find.byType(SettingsSwitchTile), findsNWidgets(2));
     expect(toggle(tester, task).value, isFalse);
+    expect(toggle(tester, remoteAudio).value, isFalse);
+    expect(find.byKey(remoteLocation), findsNothing);
     update = (call) {
       actual = {
         'supported': true,

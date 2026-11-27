@@ -4,10 +4,10 @@
 
 ## 当前基线
 
-- 上游 `ccch1mneyyy/dsh-Go` 已合入 `v1.4.0`，发版提交 `5bb72e26e`（合并时上游尚未打 `v1.4.0` 标签）。上一基线为 `v1.3.0`（`da798027013851328f83f59af4adb52c3afaab23`）。
+- 上游 `ccch1mneyyy/dsh-Go` 已合入 `v1.4.1`（`3b9fbbbb5`）。上一基线为 `v1.4.0`（`5bb72e26e`）。
 - fork：`kkbigpromax/dsh-Go`，唯一维护分支为 `main`（2026-11-25 由原 `remove-anonymous-usage-stats` 快进合并而来，旧分支已删除）。不另开长期分支；临时工作分支合入 `main` 后删除。
 - 最近的功能修正：`513d469b87d4df6684ab012917fb8cb1cac7450f`，补齐设置、预设编辑器和新对话中的已移除预设过滤。
-- 最近一次本机交付包为 `1.3.0`，内部构建号 `11211048`，仅 `arm64-v8a`。`1.4.0` 只合并源码，未构建。
+- 最近一次本机交付包为 `1.3.0`，内部构建号 `11211048`，仅 `arm64-v8a`。`1.4.0`、`1.4.1` 只合并源码，未构建。
 
 ## 必须保留的 fork 改动
 
@@ -56,6 +56,13 @@
 - 构建缓存、运行时归档和历史 APK 都是本机产物。重新构建时按 `CONTRIBUTING.md` 安装对应 Flutter／Android 工具链。用 `runtime/build-runtime.sh arm64-v8a` 在 Linux 上从锁定输入重建运行时，再从仓库根目录运行 `tooling/build-apk.sh --flavor arm64`。保持精简资源和日志上传禁用，并核对运行时 patch pins。
 - 旧签名退役。用户恢复项目时重新生成一把固定发布签名，并按 `AGENTS.md` 更新构建的指纹守卫。旧签名 APK 无法用新签名包直接覆盖。需要迁移旧版数据时先在设备上备份。
 - 最近交付的 `1.3.0` APK 通过了签名、包名、架构、构建号和运行时文件验证，尚未做真机覆盖安装验证。构建、签名与清理记录均不包含密钥、密码或设备数据。
+
+## v1.4.1 合并记录（2026-11-27）
+
+- 纳入：对话解码速度（tokens/秒）、tawcroot `/dev/shm` 共享修复、OpenAI 订阅渠道发图片、DS Bot 走中继、长按消息直接显示编辑后重发、远程主机状态显示（主机连接与会话同步分开）、鸿蒙修复。
+- 远程后台保活只保留独立前台服务（`remote/RemoteBackgroundService.kt`，唤醒锁 + `specialUse`）。去掉它的静音音频和后台定位：manifest 不带 `location` 类型，`AndroidBackgroundResources.kt` 删除，`RuntimePlugin.kt` 保持 fork 版本，Android 后台运行页不显示远程保活开关；`remote_background.dart` 只在鸿蒙发送静音音频选项。
+- 排除：首次启动的统计隐私说明（#2076，连同其测试辅助的改动）、更新检查改进（`app/lib/update`、`update_state`、`ui/update` 及测试保持 fork 版本）、创意工坊主题投稿入口。
+- 验证：`flutter analyze` 无问题；聊天、远程、会话、引导、状态、后台运行页等目录 3841 项通过，失败均为 1.4.0 合并时已记录的既有失败；`dsh_remote` 610 项通过；tawcroot 构建测试 10 项、构建脚本测试 18 项通过；文案与指南检查通过；临时 DSH 0.2.2-rc.1 在 Android 目标打全部补丁成功（含禁传日志补丁）。Kotlin 未编译（本环境无 Android SDK），未构建 APK，未做真机验证。
 
 ## v1.4.0 合并记录（2026-11-25）
 

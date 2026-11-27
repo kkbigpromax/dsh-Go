@@ -2003,6 +2003,20 @@ class L10nEn extends L10n {
       'Could not update background protection. Check the current status and try again.';
 
   @override
+  String get remoteBackgroundProtectionTitle => 'Remote connection protection';
+
+  @override
+  String get remoteBackgroundAudioHint =>
+      'Plays silent audio in the background and may use more battery. The system may still suspend the connection.';
+
+  @override
+  String get remoteBackgroundLocationHint =>
+      'Uses only approximate location and requires background access. Coordinates aren’t saved or sent. This may use more battery.';
+
+  @override
+  String get remoteBackgroundLocationPermission => 'Allow background location access, then turn this option on.';
+
+  @override
   String get botsFolderGone => 'This folder is gone';
 
   @override
@@ -11101,6 +11115,9 @@ class L10nEn extends L10n {
 
   @override
   String get hubSessionNotStarted => 'Not started';
+
+  @override
+  String get hubSessionTokenSpeed => 'tokens/sec';
 
   @override
   String get hubSessionTurnUsage => 'Usage by turn';
@@ -29805,7 +29822,7 @@ class L10nEn extends L10n {
   String get workshopTitle => 'Workshop';
 
   @override
-  String get workshopSubtitle => 'Pets and companions made by others. Install the ones you like';
+  String get workshopSubtitle => 'Themes, pets and companions made by others. Install the ones you like';
 
   @override
   String get workshopEntrySubtitle => 'Find pets and companions made by others';
@@ -30522,17 +30539,17 @@ class L10nEn extends L10n {
   String get workshopPublishCompanionCurrent => 'Your current companion';
 
   @override
-  String get workshopPublishSourcesEmptyTitle => 'Nothing to submit yet';
+  String get workshopPublishSourcesEmptyTitle => 'Nothing on this phone to submit';
 
   @override
   String get workshopPublishSourcesEmptyMessage =>
-      'Pixel pets you imported and your current companion can be submitted, or pick a file directly.';
+      'Submit a local theme, pixel pet, or companion, or pick a ZIP directly.';
 
   @override
   String get workshopPublishFromFile => 'Choose a file';
 
   @override
-  String get workshopPublishFromFileHint => 'A pet or companion zip; no need to import it first';
+  String get workshopPublishFromFileHint => 'A theme, pet, or companion ZIP; no need to import it first';
 
   @override
   String get workshopPublishTitleEnHelper => 'Optional; the Chinese name is used if empty';
@@ -30545,6 +30562,9 @@ class L10nEn extends L10n {
 
   @override
   String get workshopPublishSourcesIssue => 'Couldn\'t read what can be submitted from this phone.';
+
+  @override
+  String get workshopPublishThemesIssue => 'Couldn\'t read the theme packs on this phone.';
 
   @override
   String get workshopPublishPetsIssue => 'Couldn\'t read the pixel pets on this phone.';

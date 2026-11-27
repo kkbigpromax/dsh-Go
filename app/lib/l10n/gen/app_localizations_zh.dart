@@ -1894,6 +1894,18 @@ class L10nZh extends L10n {
   String get backgroundProtectionUpdateFailed => '未能更新后台保护，请查看当前状态后重试。';
 
   @override
+  String get remoteBackgroundProtectionTitle => '远程连接保活';
+
+  @override
+  String get remoteBackgroundAudioHint => '退到后台时播放静音音频，可能增加耗电；系统仍可能暂停连接。';
+
+  @override
+  String get remoteBackgroundLocationHint => '仅使用大致位置，需后台授权；不保存或发送坐标，可能增加耗电。';
+
+  @override
+  String get remoteBackgroundLocationPermission => '请授予后台位置权限，再开启此选项。';
+
+  @override
   String get botsFolderGone => '这个文件夹已经不在了';
 
   @override
@@ -10495,6 +10507,9 @@ class L10nZh extends L10n {
 
   @override
   String get hubSessionNotStarted => '未开始';
+
+  @override
+  String get hubSessionTokenSpeed => 'tokens/秒';
 
   @override
   String get hubSessionTurnUsage => '每轮用量';
@@ -28244,7 +28259,7 @@ class L10nZh extends L10n {
   String get workshopTitle => '创意工坊';
 
   @override
-  String get workshopSubtitle => '大家做的宠物和伙伴，挑喜欢的装上';
+  String get workshopSubtitle => '大家做的主题、宠物和伙伴，挑喜欢的装上';
 
   @override
   String get workshopEntrySubtitle => '找别人做的宠物和伙伴';
@@ -28930,16 +28945,16 @@ class L10nZh extends L10n {
   String get workshopPublishCompanionCurrent => '现在的伙伴';
 
   @override
-  String get workshopPublishSourcesEmptyTitle => '还没有可以投稿的';
+  String get workshopPublishSourcesEmptyTitle => '本机没有可投稿的内容';
 
   @override
-  String get workshopPublishSourcesEmptyMessage => '自己导入的像素宠物和现在的伙伴可以投稿，也可以直接从文件选一个。';
+  String get workshopPublishSourcesEmptyMessage => '可以投稿本机的主题、像素宠物或伙伴，也可以直接选择 ZIP。';
 
   @override
   String get workshopPublishFromFile => '从文件选择';
 
   @override
-  String get workshopPublishFromFileHint => '宠物或伙伴的 zip，不用先导入';
+  String get workshopPublishFromFileHint => '主题、宠物或伙伴的 ZIP，不用先导入';
 
   @override
   String get workshopPublishTitleEnHelper => '选填，留空就用中文名称';
@@ -28952,6 +28967,9 @@ class L10nZh extends L10n {
 
   @override
   String get workshopPublishSourcesIssue => '没能读出本机可以投稿的内容。';
+
+  @override
+  String get workshopPublishThemesIssue => '没能读出本机的主题包。';
 
   @override
   String get workshopPublishPetsIssue => '没能读出本机的像素宠物。';
