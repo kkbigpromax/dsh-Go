@@ -33,6 +33,11 @@ class BuildApkRuntimeTest(unittest.TestCase):
         tawcroot = self.root / "runtime/tawcroot"
         tawcroot.mkdir(parents=True)
         (tawcroot / "build.py").write_text("import os, sys\nsys.exit(int(os.environ.get('TAWCROOT_EXIT', '0')))\n")
+        # Stand-in for runtime/xray/build.sh: XRAY_EXIT decides whether it "builds".
+        xray = self.root / "runtime/xray"
+        xray.mkdir(parents=True)
+        (xray / "build.sh").write_text('#!/usr/bin/env bash\nexit "${XRAY_EXIT:-0}"\n')
+        (xray / "build.sh").chmod(0o755)
         # Stand-in for tooling/check_apk_jni.py: notes each APK; JNI_CHECK_EXIT decides whether it passes.
         self.jni_file = self.root / "jni-checks.txt"
         (self.root / "tooling/check_apk_jni.py").write_text(
@@ -231,6 +236,15 @@ apk.write_bytes(b'fake APK: shell flow only')
         result = self.run_script("--debug", "-f", "arm64")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("tawcroot launch option will be unavailable", result.stderr)
+        self.assertEqual(len(self.calls()), 1)
+
+    def test_release_needs_libxray_and_debug_goes_on_without_it(self):
+        self.make_bundle("arm64", 2)
+        self.env["XRAY_EXIT"] = "1"
+        self.assert_blocked(self.run_script("--release", "-f", "arm64"), "libxray.so did not build")
+        result = self.run_script("--debug", "-f", "arm64")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("the proxy will be unavailable", result.stderr)
         self.assertEqual(len(self.calls()), 1)
 
     def test_debug_and_profile_keep_allowing_no_runtime(self):
