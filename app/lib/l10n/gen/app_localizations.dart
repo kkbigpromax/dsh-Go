@@ -20223,7 +20223,7 @@ abstract class L10n {
   /// No description provided for @hubAboutAuthor.
   ///
   /// In zh, this message translates to:
-  /// **'Agentello 原作者'**
+  /// **'DSH Go 原作者'**
   String get hubAboutAuthor;
 
   /// No description provided for @hubAboutBilibili.

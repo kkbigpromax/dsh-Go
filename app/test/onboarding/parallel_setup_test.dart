@@ -97,7 +97,7 @@ void main() {
   group('本机: set up while it unpacks', () {
     testWidgets('starts the unpack once, then 外观 with the unpack in a capsule', (tester) async {
       final rig = await pumpGate(tester);
-      expect(find.text('想怎么用 dsh-Go？'), findsOneWidget);
+      expect(find.text('想怎么用 Agentello？'), findsOneWidget);
       expect(find.byKey(_capsule), findsNothing);
 
       await chooseThisPhone(tester);
@@ -131,14 +131,14 @@ void main() {
       expect(rig.runtime.calls, ['install']);
     });
 
-    testWidgets('after 外观, what DSH Go should do: step 3 of 4, beside the unpack, kept on a relaunch', (tester) async {
+    testWidgets('after 外观, what Agentello should do: step 3 of 4, beside the unpack, kept on a relaunch', (tester) async {
       final rig = await pumpGate(tester);
       await chooseThisPhone(tester);
       rig.runtime.unpack(0.3);
       await tester.tap(find.widgetWithText(FilledButton, '继续'));
       await frames(tester);
       expect(find.byType(AccessStepPage), findsOneWidget);
-      expect(find.text('想让 DSH Go 帮你做哪些事'), findsOneWidget);
+      expect(find.text('想让 Agentello 帮你做哪些事'), findsOneWidget);
       expect(find.bySemanticsLabel('第 3 步，共 4 步'), findsOneWidget);
       expect(_capsuleText('运行环境 30%'), findsOneWidget);
       expect(rig.prefs.setupStep, SetupStep.access);
