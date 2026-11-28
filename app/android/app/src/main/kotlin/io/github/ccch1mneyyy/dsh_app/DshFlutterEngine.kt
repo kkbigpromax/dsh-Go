@@ -4,12 +4,10 @@ import android.content.Context
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.plugin.common.MethodChannel
 import io.github.ccch1mneyyy.dsh_app.files.FilesPlugin
 import io.github.ccch1mneyyy.dsh_app.links.LinksPlugin
 import io.github.ccch1mneyyy.dsh_app.notify.NotifyPlugin
 import io.github.ccch1mneyyy.dsh_app.phone.PhonePlugin
-import io.github.ccch1mneyyy.dsh_app.remote.RemoteBackgroundService
 import io.github.ccch1mneyyy.dsh_app.runtime.RuntimePlugin
 import io.github.ccch1mneyyy.dsh_app.share.SharePlugin
 import io.github.ccch1mneyyy.dsh_app.shortcuts.ShortcutsPlugin
@@ -51,23 +49,6 @@ object DshFlutterEngine {
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.companion.CompanionVoicePlugin())
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.speech.SpeechPlugin())
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.proxy.ProxyPlugin())
-            // A disconnect can arrive after MainActivity has detached from this cached engine.
-            MethodChannel(
-                engine.dartExecutor.binaryMessenger, "io.github.ccch1mneyyy.dsh_app/remote_background",
-            ).setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "setRemoteActive" -> {
-                        val enabled = call.arguments as? Boolean
-                        if (enabled == null) {
-                            result.error("bad_args", "Expected a boolean", null)
-                        } else {
-                            RemoteBackgroundService.setRemoteActive(appContext, enabled)
-                            result.success(null)
-                        }
-                    }
-                    else -> result.notImplemented()
-                }
-            }
             engine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
             cache.put(ENGINE_ID, engine)
         }

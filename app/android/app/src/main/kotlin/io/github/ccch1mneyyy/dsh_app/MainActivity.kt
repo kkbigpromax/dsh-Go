@@ -19,7 +19,6 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
 import io.github.ccch1mneyyy.dsh_app.launch.LaunchScreen
 import io.github.ccch1mneyyy.dsh_app.launch.LaunchThemeSync
-import io.github.ccch1mneyyy.dsh_app.remote.RemoteBackgroundService
 import io.github.ccch1mneyyy.dsh_app.runtime.LaunchStart
 import io.github.ccch1mneyyy.dsh_app.text.CachedTextActions
 import java.lang.ref.WeakReference
@@ -80,16 +79,6 @@ class MainActivity : FlutterActivity() {
         LaunchThemeSync.sync(this)
         // The language: other apps' text actions are named in it.
         textActions?.forget()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        RemoteBackgroundService.onHostStarted(applicationContext)
-    }
-
-    override fun onStop() {
-        RemoteBackgroundService.onHostStopped()
-        super.onStop()
     }
 
     override fun onResume() {
