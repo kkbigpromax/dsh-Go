@@ -60,11 +60,13 @@ data class ProxyConfig(
     }
 
     /**
-     * The Xray configuration: an HTTP proxy on 127.0.0.1:[localPort] that sends everything
-     * to the server. [dns] resolve the server's own name inside Xray (the core's Go
-     * resolver has no system resolv.conf on Android); destinations go to the server by name.
+     * The Xray configuration: an HTTP proxy that sends everything to the server. It listens
+     * on the abstract Unix socket [socket] only (no TCP port another app could find or
+     * use) and asks for [auth]. [dns] resolve the server's own name inside Xray (the
+     * core's Go resolver has no system resolv.conf on Android); destinations go to the
+     * server by name.
      */
-    fun xray(localPort: Int, dns: List<String>): JSONObject {
+    fun xray(socket: String, auth: Pair<String, String>, dns: List<String>): JSONObject {
         val vless = JSONObject()
             .put("address", address.trim())
             .put("port", port)
@@ -97,7 +99,8 @@ data class ProxyConfig(
             .put(
                 "inbounds",
                 JSONArray().put(
-                    JSONObject().put("tag", "http").put("listen", LOOPBACK).put("port", localPort).put("protocol", "http"),
+                    JSONObject().put("tag", "http").put("listen", "@$socket").put("port", 0).put("protocol", "http")
+                        .put("settings", JSONObject().put("accounts", JSONArray().put(JSONObject().put("user", auth.first).put("pass", auth.second)))),
                 ),
             )
             .put(
@@ -141,23 +144,56 @@ data class ProxyConfig(
             )
         }
 
+        /** Env names the engine's preload reads, then removes from its own environment. */
+        const val ENV_PORT = "AGENTELLO_NET_PORT"
+        const val ENV_SOCKET = "AGENTELLO_NET_SOCKET"
+        private val PROXY_NAMES = listOf("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy")
+
+        /**
+         * Runs first in every Node process of the engine (NODE_OPTIONS --import, inline so no
+         * path differs between launch methods): connections to the made-up loopback [ENV_PORT]
+         * go to the core's abstract socket instead, and once Node has read its proxy settings
+         * they leave the environment, so the commands the agent runs (curl, git, pip) never
+         * see a proxy that only Node can reach.
+         */
+        val PRELOAD = """
+            import net from 'node:net'
+            import 'node:http'
+            import 'node:https'
+            const port = Number(process.env.$ENV_PORT), path = '\0' + process.env.$ENV_SOCKET
+            for (const k of [${(PROXY_NAMES + listOf("NODE_USE_ENV_PROXY", ENV_PORT, ENV_SOCKET)).joinToString(", ") { "'$it'" }}]) delete process.env[k]
+            const loopback = new Set([undefined, 'localhost', '127.0.0.1', '::1'])
+            const redirect = (o) => {
+              if (!o || typeof o !== 'object' || Number(o.port) !== port || !loopback.has(o.host) || o.path) return o
+              const { port: _p, host: _h, family: _f, localAddress: _l, localPort: _lp, autoSelectFamily: _a, autoSelectFamilyAttemptTimeout: _t, ...rest } = o
+              return { ...rest, path }
+            }
+            const connect = net.Socket.prototype.connect
+            net.Socket.prototype.connect = function (...args) {
+              if (Array.isArray(args[0])) args[0][0] = redirect(args[0][0])
+              else args[0] = redirect(args[0])
+              return connect.apply(this, args)
+            }
+        """.trimIndent()
+
         /**
          * What the engine gets while the proxy runs: Node 24's own proxy support
-         * (NODE_USE_ENV_PROXY) for DSH's model requests, and the usual names for the
-         * tools it runs. Loopback stays direct: the app talks to the engine there.
+         * (NODE_USE_ENV_PROXY) pointed at a loopback [port] nothing listens on, which
+         * [PRELOAD] turns into the core's [socket]. Loopback itself stays direct: the app
+         * talks to the engine there. [nodeOptions] is what the launch already has.
          */
-        fun engineEnv(localPort: Int): Map<String, String> {
-            val url = "http://$LOOPBACK:$localPort"
+        fun engineEnv(port: Int, socket: String, auth: Pair<String, String>, nodeOptions: String?): Map<String, String> {
+            val url = "http://${auth.first}:${auth.second}@$LOOPBACK:$port"
             val direct = "localhost,127.0.0.1,::1"
-            return linkedMapOf(
+            val preload = "--import=data:text/javascript," + java.net.URLEncoder.encode(PRELOAD, "UTF-8").replace("+", "%20")
+            val env = linkedMapOf(
                 "NODE_USE_ENV_PROXY" to "1",
-                "HTTP_PROXY" to url,
-                "HTTPS_PROXY" to url,
-                "NO_PROXY" to direct,
-                "http_proxy" to url,
-                "https_proxy" to url,
-                "no_proxy" to direct,
+                ENV_PORT to port.toString(),
+                ENV_SOCKET to socket,
+                "NODE_OPTIONS" to listOfNotNull(nodeOptions?.ifBlank { null }, preload).joinToString(" "),
             )
+            for (name in PROXY_NAMES) env[name] = if (name.lowercase() == "no_proxy") direct else url
+            return env
         }
     }
 }

@@ -637,7 +637,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 val launchProxy = XrayProxy.startForEngine(app) { log(it, "system") }
                 proxy = launchProxy
                 if (launchProxy != null) {
-                    env.putAll(launchProxy.env)
+                    env.putAll(launchProxy.engineEnv(env["NODE_OPTIONS"]))
                     log("[dsh-app] proxy on: model requests go through the configured server", "system")
                 }
                 // startProcess advances runGen under this same monitor. Publish only while

@@ -17953,7 +17953,7 @@ class L10nEn extends L10n {
 
   @override
   String get proxySwitchHint =>
-      'When on, the engine\'s model requests (ChatGPT / Claude subscriptions included) go through the server below; local addresses stay direct.';
+      'When on, the engine\'s model requests (ChatGPT / Claude subscriptions included) go through the server below. It works for this app only: no VPN, no system proxy and no open port, so other apps can neither see nor use it; local addresses and the command-line tools the engine runs stay direct.';
 
   @override
   String get proxyUnavailable => 'This build doesn\'t include the proxy core, so the proxy can\'t be used.';

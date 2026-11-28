@@ -325,7 +325,7 @@ Libraries.dev metal-fx, translated to Flutter GLSL.
 
 ### Xray-core 精简版（MPL-2.0）
 
-「设置 › 代理」用的 `libxray.so`，由 `runtime/xray/build.sh` 从 [kkbigpromax/xray-core](https://github.com/kkbigpromax/xray-core)（fork 自 [XTLS/Xray-core](https://github.com/XTLS/Xray-core)，只保留 VLESS + REALITY）固定提交 `293050e6896b1afce280ab53b81bd46523f80424` 原样编译，未做修改。按 MPL-2.0，全部源码在该提交公开。
+「设置 › 代理」用的 `libnetcore.so`（为避免按文件名识别，未沿用 `libxray.so`），由 `runtime/xray/build.sh` 从 [kkbigpromax/xray-core](https://github.com/kkbigpromax/xray-core)（fork 自 [XTLS/Xray-core](https://github.com/XTLS/Xray-core)，只保留 VLESS + REALITY）固定提交 `293050e6896b1afce280ab53b81bd46523f80424` 原样编译，未做修改。按 MPL-2.0，全部源码在该提交公开。
 
 - 版权：Project X / XTLS 及贡献者
 - 许可：Mozilla Public License 2.0；静态链接的 25 个 Go 模块（quic-go、utls、reality、golang.org/x/* 等，分别为 MIT、BSD、Apache-2.0、MPL-2.0，及带静态链接例外的 LGPL-3.0 juju/ratelimit）的许可全文与 Xray 的 MPL 全文一起随 APK 附在 `assets/licenses/xray-core-NOTICE.txt`，App 内「开源许可」页的 `Xray-core` 条目即此文件。固定提交变化后用 `runtime/xray/licenses.py` 重新生成。

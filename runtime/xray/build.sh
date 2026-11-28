@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Builds libxray.so (the trimmed Xray core: VLESS + REALITY, RAW/Vision and XHTTP)
+# Builds libnetcore.so (the trimmed Xray core: VLESS + REALITY, RAW/Vision and XHTTP)
 # for the APK from the commit pinned in source.json.
 #
 #   runtime/xray/build.sh            both ABIs
 #   runtime/xray/build.sh arm64-v8a  one ABI
 #
-# Output: runtime/out-xray/jniLibs/<abi>/libxray.so, picked up by
+# Output: runtime/out-xray/jniLibs/<abi>/libnetcore.so (a plain name on purpose), picked up by
 # app/android/app/build.gradle.kts. It is an ordinary executable named lib*.so so
 # Android extracts it to nativeLibraryDir, where the app may run it (XrayProxy.kt).
 # Needs git and Go (the core's go.mod asks for 1.27; GOTOOLCHAIN=auto fetches it).
@@ -43,5 +43,5 @@ for abi in "${abis[@]}"; do
   mkdir -p "$OUT/$abi"
   echo "xray: building $abi from ${commit:0:12}"
   (cd "$SRC" && CGO_ENABLED=0 GOOS=$goos GOARCH=$arch \
-    go build -o "$OUT/$abi/libxray.so" -trimpath -buildvcs=false -ldflags="-s -w -buildid=" ./main)
+    go build -o "$OUT/$abi/libnetcore.so" -trimpath -buildvcs=false -ldflags="-s -w -buildid=" ./main)
 done

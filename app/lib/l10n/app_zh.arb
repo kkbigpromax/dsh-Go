@@ -10060,7 +10060,7 @@
   "proxyTitle": "代理",
   "proxySubtitle": "让模型请求经由你的 VLESS + REALITY 服务器",
   "proxySwitch": "使用代理",
-  "proxySwitchHint": "开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）都经由下面的服务器；本机地址直连。",
+  "proxySwitchHint": "开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）经由下面的服务器。只作用于本 App：不用 VPN，不改系统代理，也不开放任何端口，其他应用看不到也用不了；本机地址和引擎里运行的命令行工具保持直连。",
   "proxyUnavailable": "这个安装包没有带代理内核，无法使用代理。",
   "proxyStatusOn": "运行中",
   "proxyStatusOff": "未开启",

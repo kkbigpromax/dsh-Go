@@ -18,11 +18,16 @@ class ProxyConfigTest {
     )
 
     @Test fun visionOverRawIsAnHttpProxyToOneRealityServer() {
-        val json = vision.xray(10809, listOf("223.5.5.5"))
-        val inbound = json.getJSONArray("inbounds").getJSONObject(0)
+        val json = vision.xray("a1b2c3", "u" to "p", listOf("223.5.5.5"))
+        val inbounds = json.getJSONArray("inbounds")
+        assertEquals(1, inbounds.length())
+        val inbound = inbounds.getJSONObject(0)
         assertEquals("http", inbound.getString("protocol"))
-        assertEquals("127.0.0.1", inbound.getString("listen"))
-        assertEquals(10809, inbound.getInt("port"))
+        // An abstract Unix socket, not a TCP port another app could find, and credentials.
+        assertEquals("@a1b2c3", inbound.getString("listen"))
+        val account = inbound.getJSONObject("settings").getJSONArray("accounts").getJSONObject(0)
+        assertEquals("u", account.getString("user"))
+        assertEquals("p", account.getString("pass"))
         val outbounds = json.getJSONArray("outbounds")
         assertEquals(1, outbounds.length())
         val out = outbounds.getJSONObject(0)
@@ -46,7 +51,7 @@ class ProxyConfigTest {
 
     @Test fun xhttpDropsTheRawOnlyFlowAndCarriesItsSettings() {
         val config = vision.copy(network = ProxyConfig.NETWORK_XHTTP, xhttpPath = "/abc", xhttpMode = "packet-up", xhttpHost = "cdn.example.com")
-        val out = config.xray(1080, emptyList()).getJSONArray("outbounds").getJSONObject(0)
+        val out = config.xray("s", "u" to "p", emptyList()).getJSONArray("outbounds").getJSONObject(0)
         assertFalse(out.getJSONObject("settings").has("flow"))
         val xhttp = out.getJSONObject("streamSettings").getJSONObject("xhttpSettings")
         assertEquals("/abc", xhttp.getString("path"))
@@ -70,10 +75,20 @@ class ProxyConfigTest {
         assertFalse(ProxyConfig().enabled)
     }
 
-    @Test fun theEngineKeepsLoopbackDirect() {
-        val env = ProxyConfig.engineEnv(20000)
+    @Test fun theEngineReachesTheSocketThroughItsPreloadAndKeepsLoopbackDirect() {
+        val env = ProxyConfig.engineEnv(20000, "a1b2c3", "u" to "p", "--max-old-space-size=512")
         assertEquals("1", env["NODE_USE_ENV_PROXY"])
-        assertEquals("http://127.0.0.1:20000", env["HTTPS_PROXY"])
+        assertEquals("http://u:p@127.0.0.1:20000", env["HTTPS_PROXY"])
+        assertEquals(env["HTTPS_PROXY"], env["https_proxy"])
         assertTrue(env.getValue("NO_PROXY").split(',').containsAll(listOf("localhost", "127.0.0.1", "::1")))
+        assertEquals("20000", env[ProxyConfig.ENV_PORT])
+        assertEquals("a1b2c3", env[ProxyConfig.ENV_SOCKET])
+        val options = env.getValue("NODE_OPTIONS")
+        // The launch's own flags stay first; the preload is one space-free argument.
+        assertTrue(options.startsWith("--max-old-space-size=512 --import=data:text/javascript,"))
+        assertEquals(2, options.split(' ').size)
+        // It removes every name it was given, so the commands the agent runs see no proxy.
+        for (name in env.keys - "NODE_OPTIONS") assertTrue(name, ProxyConfig.PRELOAD.contains("'$name'"))
+        assertEquals(env.getValue("NODE_OPTIONS").substringAfter(' '), ProxyConfig.engineEnv(1, "s", "a" to "b", null).getValue("NODE_OPTIONS"))
     }
 }

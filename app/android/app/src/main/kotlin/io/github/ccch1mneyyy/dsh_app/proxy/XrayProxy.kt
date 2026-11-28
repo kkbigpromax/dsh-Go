@@ -2,32 +2,40 @@ package io.github.ccch1mneyyy.dsh_app.proxy
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.LocalSocket
+import android.net.LocalSocketAddress
+import android.util.Base64
 import java.io.Closeable
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.ServerSocket
-import java.net.Socket
-import java.net.URL
+import java.io.IOException
+import java.security.SecureRandom
 import java.util.ArrayDeque
 import java.util.concurrent.TimeUnit
 import org.json.JSONObject
 
 /**
- * The bundled Xray core (libxray.so, runtime/xray) as a local HTTP proxy for the engine.
+ * The bundled Xray core ([BINARY], runtime/xray) as this app's own proxy, for the engine only.
  *
- * One process per engine launch: [start] before DSH starts, [close] when it exits
- * (RuntimeController). The process is a child of the app, so it also goes when the
- * system kills the app's process group. A fresh loopback port each time: nothing to clean up.
+ * Nothing about it is system-wide: no VPN, no system proxy setting, no TCP port. The core
+ * listens on an abstract Unix socket with a random name and random credentials, fresh
+ * for every launch; Android keeps another app's processes from connecting to it, and the
+ * credentials stop anything that reaches it anyway. Its configuration goes in through
+ * stdin and never touches the disk.
+ *
+ * One process per engine launch: [startForEngine] before DSH starts, [close] when it exits
+ * (RuntimeController). The process is a child of the app, so it also goes when the system
+ * kills the app's process group.
  */
 class XrayProxy private constructor(
     private val process: Process,
-    val port: Int,
+    private val socket: String,
+    private val auth: Pair<String, String>,
     private val tail: ArrayDeque<String>,
 ) : Closeable {
 
-    val env: Map<String, String> get() = ProxyConfig.engineEnv(port)
+    /** The engine's environment additions; [nodeOptions] is what the launch already has. */
+    fun engineEnv(nodeOptions: String?): Map<String, String> =
+        ProxyConfig.engineEnv(10_000 + random.nextInt(50_000), socket, auth, nodeOptions)
 
     override fun close() {
         process.destroy()
@@ -35,7 +43,10 @@ class XrayProxy private constructor(
     }
 
     companion object {
+        /** A plain name: what the core is shows in no file name. */
+        const val BINARY = "libnetcore.so"
         private const val PREFS = "proxy"
+        private val random = SecureRandom()
         private const val KEY = "config"
         private const val READY_MS = 5_000L
         private const val TAIL_LINES = 20
@@ -46,7 +57,7 @@ class XrayProxy private constructor(
         @Volatile var running: XrayProxy? = null
             private set
 
-        fun binary(context: Context) = File(context.applicationInfo.nativeLibraryDir, "libxray.so")
+        fun binary(context: Context) = File(context.applicationInfo.nativeLibraryDir, BINARY)
 
         fun available(context: Context) = binary(context).canExecute()
 
@@ -84,39 +95,45 @@ class XrayProxy private constructor(
 
         /**
          * Connects through [config] once without saving it: a temporary core, one request
-         * to [TEST_URL]. Returns the time in ms; throws with the reason.
+         * for [TEST_HOST]'s generate_204 sent over the core's socket. Returns the time in ms;
+         * throws with the reason.
          */
         fun test(context: Context, config: ProxyConfig): Long = launch(context, config).use { proxy ->
             val started = System.nanoTime()
-            val connection = URL(TEST_URL).openConnection(Proxy(Proxy.Type.HTTP, InetSocketAddress(ProxyConfig.LOOPBACK, proxy.port))) as HttpURLConnection
-            connection.connectTimeout = 10_000
-            connection.readTimeout = 10_000
-            try {
-                val code = connection.responseCode
-                if (code !in 200..399) throw IllegalStateException("HTTP $code")
-            } catch (e: java.io.IOException) {
+            val status = try {
+                proxy.open().use { local ->
+                    local.soTimeout = 10_000
+                    val credentials = Base64.encodeToString("${proxy.auth.first}:${proxy.auth.second}".toByteArray(), Base64.NO_WRAP)
+                    local.outputStream.write(
+                        ("GET http://$TEST_HOST/generate_204 HTTP/1.1\r\nHost: $TEST_HOST\r\n" +
+                            "Proxy-Authorization: Basic $credentials\r\nConnection: close\r\n\r\n").toByteArray(),
+                    )
+                    local.outputStream.flush()
+                    local.inputStream.bufferedReader().readLine().orEmpty()
+                }
+            } catch (e: IOException) {
                 throw IllegalStateException(proxy.reason() ?: e.message ?: e.javaClass.simpleName)
-            } finally {
-                connection.disconnect()
             }
+            val code = status.split(' ').getOrNull(1)?.toIntOrNull()
+            if (code == null || code !in 200..399) throw IllegalStateException(proxy.reason() ?: status.ifEmpty { "no answer" })
             (System.nanoTime() - started) / 1_000_000
         }
 
-        const val TEST_URL = "https://www.gstatic.com/generate_204"
+        const val TEST_HOST = "www.gstatic.com"
+
+        private fun token(bytes: Int) = ByteArray(bytes).also { random.nextBytes(it) }.joinToString("") { "%02x".format(it) }
 
         private fun launch(context: Context, config: ProxyConfig): XrayProxy {
             config.problem()?.let { throw IllegalArgumentException("invalid $it") }
             val binary = binary(context)
-            if (!binary.canExecute()) throw IllegalStateException("libxray.so missing from this build")
-            val port = ServerSocket(0, 1, java.net.InetAddress.getByName(ProxyConfig.LOOPBACK)).use { it.localPort }
-            val dir = File(context.noBackupFilesDir, "xray").apply { mkdirs() }
-            // Private to the app; holds the server's credentials.
-            val file = File(dir, "config-$port.json")
-            file.writeText(config.xray(port, dns(context)).toString())
-            val process = ProcessBuilder(binary.absolutePath, "run", "-c", file.absolutePath)
-                .directory(dir)
+            if (!binary.canExecute()) throw IllegalStateException("the proxy core is missing from this build")
+            val socket = token(12)
+            val auth = token(12) to token(16)
+            val process = ProcessBuilder(binary.absolutePath, "run", "-c", "stdin:")
+                .directory(context.noBackupFilesDir)
                 .redirectErrorStream(true)
                 .start()
+            process.outputStream.use { it.write(config.xray(socket, auth, dns(context)).toString().toByteArray()) }
             val tail = ArrayDeque<String>()
             Thread({
                 process.inputStream.bufferedReader().forEachLine { line ->
@@ -126,29 +143,23 @@ class XrayProxy private constructor(
                     }
                 }
             }, "xray-log").apply { isDaemon = true }.start()
-            val proxy = XrayProxy(process, port, tail)
+            val proxy = XrayProxy(process, socket, auth, tail)
             val deadline = System.currentTimeMillis() + READY_MS
             while (true) {
-                if (!process.isAlive) {
-                    file.delete()
-                    throw IllegalStateException(proxy.reason() ?: "xray exited (${process.exitValue()})")
-                }
+                if (!process.isAlive) throw IllegalStateException(proxy.reason() ?: "the proxy core exited (${process.exitValue()})")
                 val listening = try {
-                    Socket().use { it.connect(InetSocketAddress(ProxyConfig.LOOPBACK, port), 200); true }
-                } catch (_: java.io.IOException) {
+                    proxy.open().close()
+                    true
+                } catch (_: IOException) {
                     false
                 }
-                if (listening) break
+                if (listening) return proxy
                 if (System.currentTimeMillis() > deadline) {
                     proxy.close()
-                    file.delete()
-                    throw IllegalStateException("xray did not start listening")
+                    throw IllegalStateException("the proxy core did not start listening")
                 }
                 Thread.sleep(100)
             }
-            // Xray has read it; the credentials need not stay on disk.
-            file.delete()
-            return proxy
         }
 
         /** The phone's resolvers for the server's own name, then public ones. */
@@ -158,6 +169,16 @@ class XrayProxy private constructor(
                 cm.getLinkProperties(cm.activeNetwork)?.dnsServers?.mapNotNull { it.hostAddress } ?: emptyList()
             }.getOrDefault(emptyList())
             return (phone + ProxyConfig.FALLBACK_DNS).distinct()
+        }
+    }
+
+    /** A connection to the core's abstract socket. */
+    private fun open(): LocalSocket = LocalSocket().apply {
+        try {
+            connect(LocalSocketAddress(socket, LocalSocketAddress.Namespace.ABSTRACT))
+        } catch (e: IOException) {
+            close()
+            throw e
         }
     }
 

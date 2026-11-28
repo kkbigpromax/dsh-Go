@@ -1,6 +1,6 @@
 Xray-core (trimmed: VLESS + REALITY), 26.11.9
 Source: https://github.com/kkbigpromax/xray-core at commit 293050e6896b1afce280ab53b81bd46523f80424
-Built as libxray.so by runtime/xray/build.sh; it runs as the local proxy behind 设置 › 代理.
+Built as libnetcore.so by runtime/xray/build.sh; it runs as the local proxy behind 设置 › 代理.
 Licensed under the Mozilla Public License 2.0; the source of every file is at the commit above.
 
 Mozilla Public License Version 2.0
@@ -378,7 +378,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 
 
-The Go modules linked into libxray.so, each under its own licence:
+The Go modules linked into libnetcore.so, each under its own licence:
 
 
 ----- github.com/apernet/quic-go v0.65.1-0.20261109005002-2895f039137a -----

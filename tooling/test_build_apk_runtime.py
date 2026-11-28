@@ -241,7 +241,7 @@ apk.write_bytes(b'fake APK: shell flow only')
     def test_release_needs_libxray_and_debug_goes_on_without_it(self):
         self.make_bundle("arm64", 2)
         self.env["XRAY_EXIT"] = "1"
-        self.assert_blocked(self.run_script("--release", "-f", "arm64"), "libxray.so did not build")
+        self.assert_blocked(self.run_script("--release", "-f", "arm64"), "libnetcore.so did not build")
         result = self.run_script("--debug", "-f", "arm64")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("the proxy will be unavailable", result.stderr)

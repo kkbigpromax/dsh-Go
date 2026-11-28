@@ -31365,7 +31365,7 @@ abstract class L10n {
   /// No description provided for @proxySwitchHint.
   ///
   /// In zh, this message translates to:
-  /// **'开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）都经由下面的服务器；本机地址直连。'**
+  /// **'开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）经由下面的服务器。只作用于本 App：不用 VPN，不改系统代理，也不开放任何端口，其他应用看不到也用不了；本机地址和引擎里运行的命令行工具保持直连。'**
   String get proxySwitchHint;
 
   /// No description provided for @proxyUnavailable.
