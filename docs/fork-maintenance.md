@@ -23,6 +23,7 @@
 | 保留核心能力与数据 | 保留原生聊天、本机引擎、自定义渠道与订阅登录、插件、语音、手机操控、聊天状态通知和内部错误捕获；保留用户现有会话、配置和运行时升级兼容性。不要按目录名批量删除共享模块。个人偏好、可视化回复、常规 Agent 预设继续保留。 |
 | 酒馆冻结 | 酒馆不在入口可达范围内。`packages/dsh_tavern`、`app/lib/tavern`、`app/lib/ui/tavern`、`app/test/tavern` 及 `tavern*_*.arb` 保持 fork 现状，合并时直接取 fork 版本、删去上游新增文件，不吸收上游酒馆改动。 |
 | 伙伴小屋只断入口 | 伙伴相关 Dart 代码随上游更新（共享模块需要），但抽屉固定行、启动入口、深链、主机切换和 `app.dart` 常驻监听都不接入；`DshFlutterEngine.kt` 不注册伙伴小组件、提醒、地图、向量、通知、常驻插件；manifest 不声明伙伴组件和对应权限。 |
+| 改名 Agentello | 显示名 `Agentello`（测试侧装版 `Agentello 测试`），`applicationId` 为 `io.github.kkbigpromax.agentello`，与原 DSH Go 是两个应用，可并存，旧数据不迁移。Kotlin `namespace` 和源码包仍是 `io.github.ccch1mneyyy.dsh_app`（类名、组件名、通道名不变，减少合并冲突）；代表「本应用包名」的常量须跟随 `applicationId`：`SafetyRules.OWN_PACKAGE`、`PrivilegedProtocol.APP_PACKAGE`、`SystemImeEvidence.APP_PACKAGE`、`shortcuts.xml` 的 `targetPackage` 及 `build.gradle.kts` 侧装版改写。图标为圆角 A 形加圆点，由 `app/assets/brand/*.svg` 生成 `brand_glyph.g.dart`（`app/tool/make_brand_mark.py`），启动器 PNG、主题图标与通知图标同形。合并上游时不得恢复旧名称、旧包名或旧图标。 |
 | 版本、签名与交付 | 版本名称与本次合入的上游一致，不加 fork 后缀；内部构建号递增。仅本机构建并验证的 arm64 APK。重启后生成新固定证书，其后的新版沿用该证书。不自动发布 Release，也不下载线上包再上传。许可声明和必要署名继续保留。 |
 
 当前移除的是 App 自身的统计和 DeepSeek 日志上传；没有承诺删除 Google ML Kit SDK 自身的统计行为。不要在维护或交付说明中扩大承诺。
@@ -63,6 +64,13 @@
 - 用户决定：把 App 作为纯本机 agent 客户端，移除远程主机和 DeepSeek 账号入口，断开 DS Bot，保留订阅登录。
 - 代码：删除远程传输、页面、远程备份、远程保活与对应测试；四个远程依赖移出 `pubspec.yaml`，manifest 去掉相机权限和远程保活服务；`MainActivity` 去掉扫码初始化通道。文字识别仍用 ML Kit。用户指南同步：第 2、3 章去掉 DeepSeek 账号和远程主机，第 12 章说明不含 DS Bot，常见问题去掉远程内容。
 - 验证：`flutter analyze` 无问题；全量 Flutter 测试 13922 项通过、513 项失败，失败全部是改动前就存在的（与 1.4.0 合并记录及当前 `main` 对照），没有新增失败。依赖远程主机切换的测试用例按参数精确删除，其余本机场景保留；DeepSeek 账号、首启和设置页相关测试改为新行为，改动界面的截图已重新生成。构建与工具脚本测试 138 + 116 项、文案与指南检查通过。发现并修复一处问题：新首启页在运行环境解压中不再启动引擎。Kotlin 未编译（本环境无 Android SDK），未构建 APK，未做真机验证。
+
+## 改名 Agentello（2026-11-28）
+
+- 用户决定：App 改名 Agentello，换掉原图标，改包名（与原 DSH Go 并存，不迁移数据）。
+- 改动：`applicationId`、显示名、Android 字符串资源、通知与快捷方式名称、界面文案（中英 ARB）、用户指南中的 App 名；`AppInfo.name` 与应用内字标统一为 Agentello。新图标覆盖四套桌面图标变体（雾蓝、夜幕、霜白、墨）的前景与旧式 PNG、主题单色层、通知小图标、应用内品牌标记。
+- 未改：下载与相册目录（`Download/DSH-Go`、`Pictures/DSH Go`，引擎提示词和测试依赖这些路径）、引擎名 DSH、`.dshgo` 分享格式与 `dshgo://` 深链、README 与宣传图、鸿蒙和 iOS 宿主资源。
+- 验证：见本节下方提交说明。
 
 ## v1.4.1 合并记录（2026-11-27）
 

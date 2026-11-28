@@ -2,8 +2,8 @@
 <!-- Native UI text (notifications, overlays, foreground service, toasts), read through
      i18n/AppStrings.kt so it follows the app language. English here, Chinese in values-zh/. -->
 <resources>
-    <string name="self_update_confirm_title">Install this DSH Go update?</string>
-    <string name="self_update_confirm">Channel: %1$s (UID %2$d)\nVersion: %3$s (%4$d)\nSHA-256: %5$s\n\nAllow only this verified DSH Go update. The app will close and running tasks may be interrupted. Existing app data is kept. System signature and security policies still apply; the system can still refuse installation.</string>
+    <string name="self_update_confirm_title">Install this Agentello update?</string>
+    <string name="self_update_confirm">Channel: %1$s (UID %2$d)\nVersion: %3$s (%4$d)\nSHA-256: %5$s\n\nAllow only this verified Agentello update. The app will close and running tasks may be interrupted. Existing app data is kept. System signature and security policies still apply; the system can still refuse installation.</string>
     <string name="self_update_allow_once">Install this update</string>
     <string name="self_update_wait_title">End this installation wait?</string>
     <string name="self_update_wait_confirm">The previous request may still be running in the system installer. Clearing this local record does not cancel it. First check that no installation is in progress. Nothing is installed or retried by clearing this record.</string>
@@ -127,7 +127,7 @@
     <string name="pet_probe_public">A turn finished</string>
     <string name="pet_ask">Ask</string>
     <string name="pet_new_chat">New chat</string>
-    <string name="pet_screenshot">Screenshot &amp; ask DSH-Go</string>
+    <string name="pet_screenshot">Screenshot &amp; ask Agentello</string>
     <string name="pet_wheel_screenshot">Screenshot</string>
     <string name="pet_wheel_stop">Stop</string>
     <string name="pet_wheel_hosts">Hosts</string>
@@ -147,8 +147,8 @@
     <string name="pet_companion_unwatched">She stopped watching the screen. Turn it back on in her room’s settings.</string>
     <string name="pet_companion_hidden">She’ll be back in an hour</string>
     <string name="pet_screenshot_unsupported">Screenshots need Android 11 or later.</string>
-    <string name="pet_screenshot_accessibility">Enable DSH-Go accessibility in the App’s phone control settings first.</string>
-    <string name="pet_screenshot_secure">This screen blocks screenshots. DSH-Go won’t bypass its protection.</string>
+    <string name="pet_screenshot_accessibility">Enable Agentello accessibility in the App’s phone control settings first.</string>
+    <string name="pet_screenshot_secure">This screen blocks screenshots. Agentello won’t bypass its protection.</string>
     <string name="pet_screenshot_busy">Another screenshot is in progress. Try again shortly.</string>
     <string name="pet_screenshot_timeout">The screenshot timed out. Try again.</string>
     <string name="pet_screenshot_failed">Couldn’t capture this screen. Try again.</string>

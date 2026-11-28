@@ -19,7 +19,7 @@
 #   --keep-daemon                    leave the Gradle daemon running afterwards
 #   --beta                           embed the beta channel token (internal builds only)
 #   --side                           test build that installs next to the released app
-#                                    (package ...dsh_app.test, named DSH Go 测试, own data)
+#                                    (package ...agentello.test, named Agentello 测试, own data)
 #   --dry-run                        print what would run
 #
 # The version name comes from app/pubspec.yaml; its `+N` is only a placeholder.
@@ -134,7 +134,7 @@ if ((side)); then
 else
   unset DSH_SIDE_BUILD
 fi
-echo "dsh-go $name ($code, $when) · $mode · ${flavors[*]}$( ((beta)) && echo ' · beta channel')$( ((side)) && echo ' · side (dsh_app.test)')"
+echo "dsh-go $name ($code, $when) · $mode · ${flavors[*]}$( ((beta)) && echo ' · beta channel')$( ((side)) && echo ' · side (agentello.test)')"
 if ((dry)); then
   for c in "${commands[@]}"; do echo "(cd app && ${c% })"; done
   ((keep_daemon)) || echo "(cd app/android && ./gradlew --stop)"
