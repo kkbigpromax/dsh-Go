@@ -50,6 +50,7 @@ object DshFlutterEngine {
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.icons.PictureShortcutPlugin())
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.companion.CompanionVoicePlugin())
             engine.plugins.add(io.github.ccch1mneyyy.dsh_app.speech.SpeechPlugin())
+            engine.plugins.add(io.github.ccch1mneyyy.dsh_app.proxy.ProxyPlugin())
             // A disconnect can arrive after MainActivity has detached from this cached engine.
             MethodChannel(
                 engine.dartExecutor.binaryMessenger, "io.github.ccch1mneyyy.dsh_app/remote_background",

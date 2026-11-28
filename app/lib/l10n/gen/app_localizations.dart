@@ -31344,6 +31344,282 @@ abstract class L10n {
   /// **'第 {index} 张'**
   String plugViewGalleryPicture(int index);
 
+  /// No description provided for @proxyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'代理'**
+  String get proxyTitle;
+
+  /// No description provided for @proxySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'让模型请求经由你的 VLESS + REALITY 服务器'**
+  String get proxySubtitle;
+
+  /// No description provided for @proxySwitch.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用代理'**
+  String get proxySwitch;
+
+  /// No description provided for @proxySwitchHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）都经由下面的服务器；本机地址直连。'**
+  String get proxySwitchHint;
+
+  /// No description provided for @proxyUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个安装包没有带代理内核，无法使用代理。'**
+  String get proxyUnavailable;
+
+  /// No description provided for @proxyStatusOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'运行中'**
+  String get proxyStatusOn;
+
+  /// No description provided for @proxyStatusOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'未开启'**
+  String get proxyStatusOff;
+
+  /// No description provided for @proxyStatusWaiting.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存后重启引擎生效'**
+  String get proxyStatusWaiting;
+
+  /// No description provided for @proxyLastError.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次启动代理失败，引擎已直连：{error}'**
+  String proxyLastError(String error);
+
+  /// No description provided for @proxyServer.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器'**
+  String get proxyServer;
+
+  /// No description provided for @proxyAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址'**
+  String get proxyAddress;
+
+  /// No description provided for @proxyPort.
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get proxyPort;
+
+  /// No description provided for @proxyId.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户 ID（UUID）'**
+  String get proxyId;
+
+  /// No description provided for @proxyEncryption.
+  ///
+  /// In zh, this message translates to:
+  /// **'加密'**
+  String get proxyEncryption;
+
+  /// No description provided for @proxyFlow.
+  ///
+  /// In zh, this message translates to:
+  /// **'流控'**
+  String get proxyFlow;
+
+  /// No description provided for @proxyFlowNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'无'**
+  String get proxyFlowNone;
+
+  /// No description provided for @proxyTransport.
+  ///
+  /// In zh, this message translates to:
+  /// **'传输'**
+  String get proxyTransport;
+
+  /// No description provided for @proxyNetwork.
+  ///
+  /// In zh, this message translates to:
+  /// **'传输协议'**
+  String get proxyNetwork;
+
+  /// No description provided for @proxyXhttpHost.
+  ///
+  /// In zh, this message translates to:
+  /// **'伪装域名（host）'**
+  String get proxyXhttpHost;
+
+  /// No description provided for @proxyXhttpPath.
+  ///
+  /// In zh, this message translates to:
+  /// **'路径（path）'**
+  String get proxyXhttpPath;
+
+  /// No description provided for @proxyXhttpMode.
+  ///
+  /// In zh, this message translates to:
+  /// **'模式（mode）'**
+  String get proxyXhttpMode;
+
+  /// No description provided for @proxyFlowXhttpNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'XHTTP 不使用流控；流控只对 TCP 生效。'**
+  String get proxyFlowXhttpNote;
+
+  /// No description provided for @proxyReality.
+  ///
+  /// In zh, this message translates to:
+  /// **'REALITY'**
+  String get proxyReality;
+
+  /// No description provided for @proxySni.
+  ///
+  /// In zh, this message translates to:
+  /// **'SNI'**
+  String get proxySni;
+
+  /// No description provided for @proxyFingerprint.
+  ///
+  /// In zh, this message translates to:
+  /// **'指纹（Fingerprint）'**
+  String get proxyFingerprint;
+
+  /// No description provided for @proxyPublicKey.
+  ///
+  /// In zh, this message translates to:
+  /// **'公钥（PublicKey）'**
+  String get proxyPublicKey;
+
+  /// No description provided for @proxyShortId.
+  ///
+  /// In zh, this message translates to:
+  /// **'ShortId'**
+  String get proxyShortId;
+
+  /// No description provided for @proxySpiderX.
+  ///
+  /// In zh, this message translates to:
+  /// **'SpiderX'**
+  String get proxySpiderX;
+
+  /// No description provided for @proxyMldsa65.
+  ///
+  /// In zh, this message translates to:
+  /// **'Mldsa65Verify'**
+  String get proxyMldsa65;
+
+  /// No description provided for @proxyUnset.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置'**
+  String get proxyUnset;
+
+  /// No description provided for @proxyOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'可选'**
+  String get proxyOptional;
+
+  /// No description provided for @proxyTest.
+  ///
+  /// In zh, this message translates to:
+  /// **'测试连接'**
+  String get proxyTest;
+
+  /// No description provided for @proxyTesting.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在测试…'**
+  String get proxyTesting;
+
+  /// No description provided for @proxyTestOk.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接成功，{ms} 毫秒'**
+  String proxyTestOk(int ms);
+
+  /// No description provided for @proxyTestFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败：{error}'**
+  String proxyTestFailed(String error);
+
+  /// No description provided for @proxySave.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get proxySave;
+
+  /// No description provided for @proxySaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存'**
+  String get proxySaved;
+
+  /// No description provided for @proxySavedRestarting.
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存，正在重启引擎'**
+  String get proxySavedRestarting;
+
+  /// No description provided for @proxyUnsaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'有未保存的修改'**
+  String get proxyUnsaved;
+
+  /// No description provided for @proxyDiscardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'放弃修改？'**
+  String get proxyDiscardTitle;
+
+  /// No description provided for @proxyDiscardBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'刚才的修改还没有保存。'**
+  String get proxyDiscardBody;
+
+  /// No description provided for @proxyDiscard.
+  ///
+  /// In zh, this message translates to:
+  /// **'放弃'**
+  String get proxyDiscard;
+
+  /// No description provided for @proxyMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先填写：{field}'**
+  String proxyMissing(String field);
+
+  /// No description provided for @proxyPortInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'端口是 1 到 65535 之间的整数'**
+  String get proxyPortInvalid;
+
+  /// No description provided for @proxyFooter.
+  ///
+  /// In zh, this message translates to:
+  /// **'只支持 VLESS + REALITY，传输方式为 TCP（可选 Vision 流控）或 XHTTP。参数请照服务器配置逐项填写。测试连接不会保存。'**
+  String get proxyFooter;
+
+  /// No description provided for @searchKwProxy.
+  ///
+  /// In zh, this message translates to:
+  /// **'代理,翻墙,科学上网,VLESS,REALITY,Xray,Vision,XHTTP,梯子,ChatGPT,Claude,网络'**
+  String get searchKwProxy;
+
   /// No description provided for @readListUpdating.
   ///
   /// In zh, this message translates to:

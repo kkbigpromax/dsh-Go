@@ -175,6 +175,14 @@ if ! python3 -I "$ROOT/runtime/tawcroot/build.py"; then
   echo "build-apk: building without libtawcroot.so; the tawcroot launch option will be unavailable" >&2
 fi
 
+# libxray.so for 设置 › 代理, from the pinned trimmed Xray commit (runtime/xray/source.json).
+# Release builds must carry it; other builds go on without it (the proxy page says it is missing).
+if ! "$ROOT/runtime/xray/build.sh"; then
+  [[ $mode == release ]] && die "xray: libxray.so did not build"
+  rm -rf "$ROOT/runtime/out-xray"
+  echo "build-apk: building without libxray.so; the proxy will be unavailable" >&2
+fi
+
 # aapt2 to read back what was built (optional).
 aapt2=$(command -v aapt2 || true)
 if [[ -z $aapt2 ]]; then

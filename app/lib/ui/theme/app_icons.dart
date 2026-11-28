@@ -246,6 +246,7 @@ abstract final class AppIcons {
   static const remoteHost = DshGlyphs.devices;
   static const remoteHosts = DshGlyphs.devices;
   static const webConsole = DshGlyphs.globe;
+  static const proxy = DshGlyphs.globe;
   static const checkUpdate = DshGlyphs.arrowCircleUp;
   static const autoUpdate = DshGlyphs.clockClockwise;
 

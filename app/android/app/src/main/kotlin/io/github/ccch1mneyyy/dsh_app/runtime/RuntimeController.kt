@@ -1,5 +1,6 @@
 package io.github.ccch1mneyyy.dsh_app.runtime
 
+import io.github.ccch1mneyyy.dsh_app.proxy.XrayProxy
 import io.github.ccch1mneyyy.dsh_app.i18n.AppStrings
 import io.github.ccch1mneyyy.dsh_app.R
 import android.content.Context
@@ -581,6 +582,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
         worker.execute {
             var launched: DshProcess? = null
             var siwcStore: SiwcStoreBridge? = null
+            var proxy: XrayProxy? = null
             try {
                 try {
                     installer.cleanupCommittedUpgrade()
@@ -631,6 +633,13 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 siwcStore = launchStore
                 if (launchStore != null) env[SiwcStoreBridge.ENV] = launchStore.endpoint
                 else if (authOverlay) log("[dsh-app] OpenAI SIWC secure storage not mounted", "system")
+                // 设置 › 代理: the engine's requests go through the bundled Xray core.
+                val launchProxy = XrayProxy.startForEngine(app) { log(it, "system") }
+                proxy = launchProxy
+                if (launchProxy != null) {
+                    env.putAll(launchProxy.env)
+                    log("[dsh-app] proxy on: model requests go through the configured server", "system")
+                }
                 // startProcess advances runGen under this same monitor. Publish only while
                 // this queued launch still owns that generation; once published, its non-null
                 // process prevents another start from advancing the generation underneath it.
@@ -641,6 +650,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                         object : DshProcess.Listener by this@RuntimeController {
                             override fun onExit(source: DshProcess, code: Int, expected: Boolean) {
                                 launchStore?.close()
+                                XrayProxy.engineStopped(launchProxy)
                                 this@RuntimeController.onExit(source, code, expected)
                             }
 
@@ -663,6 +673,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                     }
                 } ?: run {
                     launchStore?.close()
+                    XrayProxy.engineStopped(launchProxy)
                     PhoneControl.get(app).onEngineStopped()
                     return@execute
                 }
@@ -680,6 +691,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 if (phone) PhoneControl.get(app).launched(p.phoneMounted)
             } catch (e: Throwable) {
                 siwcStore?.close()
+                XrayProxy.engineStopped(proxy)
                 // Keep ownership while the old UID sweep runs, including a
                 // failure after spawning but before the waiter was allocated.
                 launched?.launchDiagnostics?.failed("startFailed")

@@ -32,6 +32,7 @@ import '../notification_settings.dart';
 import '../performance_page.dart';
 import '../personalization_page.dart';
 import '../privacy_page.dart';
+import '../proxy_page.dart';
 import '../linux_environment_page.dart';
 import '../reply_prefs_page.dart';
 import '../settings_screen.dart';
@@ -69,6 +70,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.systemAccess => const SystemAccessPage(),
   SettingsPageId.diagnostics => const SizedBox.shrink(),
   SettingsPageId.models => const ProvidersPage(),
+  SettingsPageId.proxy => const ProxyPage(),
   SettingsPageId.engineParams => const EngineSettingsHubPage(),
   SettingsPageId.subagent => const SubagentSettingsPage(),
   SettingsPageId.agentLoop => const AgentLoopSettingsPage(),

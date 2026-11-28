@@ -18,6 +18,7 @@ Shows your DeepSeek account or API key and balance; tap it to open your account.
 ## AI
 
 - **Models**: see [Models and providers](02-models.md).
+- **Proxy** (Android only): sends the engine's model requests (including those made after ChatGPT / Claude subscription sign-in) through your own VLESS + REALITY server, for using these models from networks that block them. Only VLESS + REALITY is supported, over TCP (flow optionally `xtls-rprx-vision`) or XHTTP (with path and mode). Type in **Address**, **Port**, **User ID (UUID)**, **SNI**, **Fingerprint**, **PublicKey**, **ShortId** and the rest from your server's configuration; there is no import or QR scanning. **Test connection** tries the values as typed once without saving; turn on **Use proxy** and tap **Save**, and a running engine restarts to apply it. Local addresses always stay direct. The ChatGPT / Claude sign-in page in your browser does not go through this proxy. [Open](dshgo://open/proxy)
 - **Permissions**: how new chats run commands and change files; see Permissions below.
 - **Personalization**:
   - **Personal preferences**: instructions for the AI; new chats follow them. Clear and save to remove them.

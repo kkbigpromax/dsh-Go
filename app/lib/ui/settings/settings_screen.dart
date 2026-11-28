@@ -43,6 +43,7 @@ import 'notification_settings.dart';
 import 'performance_page.dart';
 import 'personalization_page.dart';
 import 'privacy_page.dart';
+import 'proxy_page.dart';
 import 'search/settings_search_page.dart';
 import 'settings_widgets.dart';
 import 'system_access_page.dart';
@@ -127,6 +128,7 @@ class SettingsScreen extends ConsumerWidget {
               spot: SettingsIndex.entry(SettingsPageId.models),
               onTap: () => _push(context, const ProvidersPage()),
             ),
+            if (android) const ProxyTile(tint: SettingsHues.ai),
             SettingsTile(
               icon: AppIcons.permissions,
               tint: SettingsHues.ai,

@@ -1,0 +1,76 @@
+{
+  "proxyTitle": "代理",
+  "proxySubtitle": "让模型请求经由你的 VLESS + REALITY 服务器",
+  "proxySwitch": "使用代理",
+  "proxySwitchHint": "开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）都经由下面的服务器；本机地址直连。",
+  "proxyUnavailable": "这个安装包没有带代理内核，无法使用代理。",
+  "proxyStatusOn": "运行中",
+  "proxyStatusOff": "未开启",
+  "proxyStatusWaiting": "保存后重启引擎生效",
+  "proxyLastError": "上次启动代理失败，引擎已直连：{error}",
+  "@proxyLastError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "proxyServer": "服务器",
+  "proxyAddress": "地址",
+  "proxyPort": "端口",
+  "proxyId": "用户 ID（UUID）",
+  "proxyEncryption": "加密",
+  "proxyFlow": "流控",
+  "proxyFlowNone": "无",
+  "proxyTransport": "传输",
+  "proxyNetwork": "传输协议",
+  "proxyXhttpHost": "伪装域名（host）",
+  "proxyXhttpPath": "路径（path）",
+  "proxyXhttpMode": "模式（mode）",
+  "proxyFlowXhttpNote": "XHTTP 不使用流控；流控只对 TCP 生效。",
+  "proxyReality": "REALITY",
+  "proxySni": "SNI",
+  "proxyFingerprint": "指纹（Fingerprint）",
+  "proxyPublicKey": "公钥（PublicKey）",
+  "proxyShortId": "ShortId",
+  "proxySpiderX": "SpiderX",
+  "proxyMldsa65": "Mldsa65Verify",
+  "proxyUnset": "未设置",
+  "proxyOptional": "可选",
+  "proxyTest": "测试连接",
+  "proxyTesting": "正在测试…",
+  "proxyTestOk": "连接成功，{ms} 毫秒",
+  "@proxyTestOk": {
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
+  },
+  "proxyTestFailed": "连接失败：{error}",
+  "@proxyTestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "proxySave": "保存",
+  "proxySaved": "已保存",
+  "proxySavedRestarting": "已保存，正在重启引擎",
+  "proxyUnsaved": "有未保存的修改",
+  "proxyDiscardTitle": "放弃修改？",
+  "proxyDiscardBody": "刚才的修改还没有保存。",
+  "proxyDiscard": "放弃",
+  "proxyMissing": "请先填写：{field}",
+  "@proxyMissing": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "proxyPortInvalid": "端口是 1 到 65535 之间的整数",
+  "proxyFooter": "只支持 VLESS + REALITY，传输方式为 TCP（可选 Vision 流控）或 XHTTP。参数请照服务器配置逐项填写。测试连接不会保存。",
+  "searchKwProxy": "代理,翻墙,科学上网,VLESS,REALITY,Xray,Vision,XHTTP,梯子,ChatGPT,Claude,网络"
+}

@@ -17029,6 +17029,152 @@ class L10nZh extends L10n {
   }
 
   @override
+  String get proxyTitle => '代理';
+
+  @override
+  String get proxySubtitle => '让模型请求经由你的 VLESS + REALITY 服务器';
+
+  @override
+  String get proxySwitch => '使用代理';
+
+  @override
+  String get proxySwitchHint => '开启后，引擎发出的模型请求（含 ChatGPT／Claude 订阅）都经由下面的服务器；本机地址直连。';
+
+  @override
+  String get proxyUnavailable => '这个安装包没有带代理内核，无法使用代理。';
+
+  @override
+  String get proxyStatusOn => '运行中';
+
+  @override
+  String get proxyStatusOff => '未开启';
+
+  @override
+  String get proxyStatusWaiting => '保存后重启引擎生效';
+
+  @override
+  String proxyLastError(String error) {
+    return '上次启动代理失败，引擎已直连：$error';
+  }
+
+  @override
+  String get proxyServer => '服务器';
+
+  @override
+  String get proxyAddress => '地址';
+
+  @override
+  String get proxyPort => '端口';
+
+  @override
+  String get proxyId => '用户 ID（UUID）';
+
+  @override
+  String get proxyEncryption => '加密';
+
+  @override
+  String get proxyFlow => '流控';
+
+  @override
+  String get proxyFlowNone => '无';
+
+  @override
+  String get proxyTransport => '传输';
+
+  @override
+  String get proxyNetwork => '传输协议';
+
+  @override
+  String get proxyXhttpHost => '伪装域名（host）';
+
+  @override
+  String get proxyXhttpPath => '路径（path）';
+
+  @override
+  String get proxyXhttpMode => '模式（mode）';
+
+  @override
+  String get proxyFlowXhttpNote => 'XHTTP 不使用流控；流控只对 TCP 生效。';
+
+  @override
+  String get proxyReality => 'REALITY';
+
+  @override
+  String get proxySni => 'SNI';
+
+  @override
+  String get proxyFingerprint => '指纹（Fingerprint）';
+
+  @override
+  String get proxyPublicKey => '公钥（PublicKey）';
+
+  @override
+  String get proxyShortId => 'ShortId';
+
+  @override
+  String get proxySpiderX => 'SpiderX';
+
+  @override
+  String get proxyMldsa65 => 'Mldsa65Verify';
+
+  @override
+  String get proxyUnset => '未设置';
+
+  @override
+  String get proxyOptional => '可选';
+
+  @override
+  String get proxyTest => '测试连接';
+
+  @override
+  String get proxyTesting => '正在测试…';
+
+  @override
+  String proxyTestOk(int ms) {
+    return '连接成功，$ms 毫秒';
+  }
+
+  @override
+  String proxyTestFailed(String error) {
+    return '连接失败：$error';
+  }
+
+  @override
+  String get proxySave => '保存';
+
+  @override
+  String get proxySaved => '已保存';
+
+  @override
+  String get proxySavedRestarting => '已保存，正在重启引擎';
+
+  @override
+  String get proxyUnsaved => '有未保存的修改';
+
+  @override
+  String get proxyDiscardTitle => '放弃修改？';
+
+  @override
+  String get proxyDiscardBody => '刚才的修改还没有保存。';
+
+  @override
+  String get proxyDiscard => '放弃';
+
+  @override
+  String proxyMissing(String field) {
+    return '请先填写：$field';
+  }
+
+  @override
+  String get proxyPortInvalid => '端口是 1 到 65535 之间的整数';
+
+  @override
+  String get proxyFooter => '只支持 VLESS + REALITY，传输方式为 TCP（可选 Vision 流控）或 XHTTP。参数请照服务器配置逐项填写。测试连接不会保存。';
+
+  @override
+  String get searchKwProxy => '代理,翻墙,科学上网,VLESS,REALITY,Xray,Vision,XHTTP,梯子,ChatGPT,Claude,网络';
+
+  @override
   String get readListUpdating => '更新中 · 上次结果';
 
   @override

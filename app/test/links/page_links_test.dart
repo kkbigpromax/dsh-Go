@@ -208,7 +208,8 @@ void main() {
           for (final id in SettingsIndex.linkIds)
             if (SettingsIndex.androidOnlyLink(SettingsIndex.ohosLink(id))) id,
         };
-        expect(left, {'phone-files'});
+        // 代理 runs the bundled Xray core, which only the Android build carries.
+        expect(left, {'phone-files', 'proxy'});
       });
 
       testWidgets('a page nobody has is still the router\'s to say', (tester) async {

@@ -63,6 +63,8 @@ abstract class SideShortcuts : DefaultTask() {
 val runtimeOut = rootProject.file("../../runtime/out")
 // libtawcroot.so for the tawcroot launch method (runtime/tawcroot/build.py; missing = unavailable).
 val tawcrootOut = rootProject.file("../../runtime/out-tawcroot")
+// libxray.so, the trimmed Xray core behind 设置 › 代理 (runtime/xray/build.sh; missing = unavailable).
+val xrayOut = rootProject.file("../../runtime/out-xray")
 
 // versionCode is the build minute, same encoding as tooling/build_number.py:
 // (year - 2026) * 10^8 + MMDDhhmm at UTC+8. tooling/build-apk.sh passes it as
@@ -116,6 +118,7 @@ android {
     sourceSets {
         getByName("main") {
             jniLibs.srcDir(File(tawcrootOut, "jniLibs"))
+            jniLibs.srcDir(File(xrayOut, "jniLibs"))
         }
         getByName("arm64") {
             assets.srcDir(File(runtimeOut, "arm64-v8a/assets"))
@@ -138,7 +141,7 @@ android {
             // Dart uses the Sherpa C API; the C++ wrapper has no app consumer.
             excludes += "lib/*/libsherpa-onnx-cxx-api.so"
             // Keep the Termux binaries byte-identical to runtime/out (their hashes are in the manifest).
-            keepDebugSymbols += listOf("**/libproot.so", "**/libproot-loader.so", "**/libtalloc.so", "**/libandroid-shmem.so", "**/libtawcroot.so")
+            keepDebugSymbols += listOf("**/libproot.so", "**/libproot-loader.so", "**/libtalloc.so", "**/libandroid-shmem.so", "**/libtawcroot.so", "**/libxray.so")
         }
         // BouncyCastle's Picnic signature tables (1.2 MB compressed): nothing here registers the PQC provider.
         resources.excludes += listOf(

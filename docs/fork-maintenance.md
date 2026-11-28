@@ -24,6 +24,7 @@
 | 酒馆冻结 | 酒馆不在入口可达范围内。`packages/dsh_tavern`、`app/lib/tavern`、`app/lib/ui/tavern`、`app/test/tavern` 及 `tavern*_*.arb` 保持 fork 现状，合并时直接取 fork 版本、删去上游新增文件，不吸收上游酒馆改动。 |
 | 伙伴小屋只断入口 | 伙伴相关 Dart 代码随上游更新（共享模块需要），但抽屉固定行、启动入口、深链、主机切换和 `app.dart` 常驻监听都不接入；`DshFlutterEngine.kt` 不注册伙伴小组件、提醒、地图、向量、通知、常驻插件；manifest 不声明伙伴组件和对应权限。 |
 | 改名 Agentello | 显示名 `Agentello`（测试侧装版 `Agentello 测试`），`applicationId` 为 `io.github.kkbigpromax.agentello`，与原 DSH Go 是两个应用，可并存，旧数据不迁移。Kotlin `namespace` 和源码包仍是 `io.github.ccch1mneyyy.dsh_app`（类名、组件名、通道名不变，减少合并冲突）；代表「本应用包名」的常量须跟随 `applicationId`：`SafetyRules.OWN_PACKAGE`、`PrivilegedProtocol.APP_PACKAGE`、`SystemImeEvidence.APP_PACKAGE`、`shortcuts.xml` 的 `targetPackage` 及 `build.gradle.kts` 侧装版改写。图标为圆角 A 形加圆点，由 `app/assets/brand/*.svg` 生成 `brand_glyph.g.dart`（`app/tool/make_brand_mark.py`），启动器 PNG、主题图标与通知图标同形。合并上游时不得恢复旧名称、旧包名或旧图标。 |
+| 内置代理（Xray 精简版） | 设置 › AI › 代理（仅 Android）：手动填写一台 VLESS + REALITY 服务器（TCP + 可选 Vision 流控，或 XHTTP），引擎启动时由 App 拉起 `libxray.so` 作本机 HTTP 代理，并给引擎设置 `HTTP(S)_PROXY`、`NO_PROXY`（本机地址）和 `NODE_USE_ENV_PROXY=1`。内核来自 [kkbigpromax/xray-core](https://github.com/kkbigpromax/xray-core)，固定提交写在 `runtime/xray/source.json`，`runtime/xray/build.sh` 编译到 `runtime/out-xray`（不入库），发布构建缺少它即失败；许可全文 `app/assets/licenses/xray-core-NOTICE.txt` 由 `runtime/xray/licenses.py` 生成。代码：`proxy/{XrayConfig,XrayProxy,ProxyPlugin}.kt`、`RuntimeController` 启停、`app/lib/state/proxy_state.dart`、`app/lib/ui/settings/proxy_page.dart`。合并上游时保留；升级内核只改 `source.json` 并重新生成许可文件。 |
 | 版本、签名与交付 | 版本名称与本次合入的上游一致，不加 fork 后缀；内部构建号递增。仅本机构建并验证的 arm64 APK。重启后生成新固定证书，其后的新版沿用该证书。不自动发布 Release，也不下载线上包再上传。许可声明和必要署名继续保留。 |
 
 当前移除的是 App 自身的统计和 DeepSeek 日志上传；没有承诺删除 Google ML Kit SDK 自身的统计行为。不要在维护或交付说明中扩大承诺。
@@ -64,6 +65,12 @@
 - 用户决定：把 App 作为纯本机 agent 客户端，移除远程主机和 DeepSeek 账号入口，断开 DS Bot，保留订阅登录。
 - 代码：删除远程传输、页面、远程备份、远程保活与对应测试；四个远程依赖移出 `pubspec.yaml`，manifest 去掉相机权限和远程保活服务；`MainActivity` 去掉扫码初始化通道。文字识别仍用 ML Kit。用户指南同步：第 2、3 章去掉 DeepSeek 账号和远程主机，第 12 章说明不含 DS Bot，常见问题去掉远程内容。
 - 验证：`flutter analyze` 无问题；全量 Flutter 测试 13922 项通过、513 项失败，失败全部是改动前就存在的（与 1.4.0 合并记录及当前 `main` 对照），没有新增失败。依赖远程主机切换的测试用例按参数精确删除，其余本机场景保留；DeepSeek 账号、首启和设置页相关测试改为新行为，改动界面的截图已重新生成。构建与工具脚本测试 138 + 116 项、文案与指南检查通过。发现并修复一处问题：新首启页在运行环境解压中不再启动引擎。Kotlin 未编译（本环境无 Android SDK），未构建 APK，未做真机验证。
+
+## 内置代理（2026-11-28）
+
+- 用户决定：合入自己的精简版 Xray（只支持 VLESS + REALITY，传输 TCP+Vision 与 XHTTP），设置里加代理页，参数手动填写（参照 v2rayNG），不做导入和扫码；开启后让模型请求走代理，以便在国内使用 ChatGPT 和 Claude。
+- 实现：内核按固定提交编译进 APK（`libxray.so`，arm64 用 GOOS=android，x86_64 模拟器用静态 linux 构建）。每次引擎启动时，代理开着就拉起一份 Xray（随机本机端口，配置写入后即删除），引擎环境加 `HTTP_PROXY`／`HTTPS_PROXY`／`NO_PROXY` 与 `NODE_USE_ENV_PROXY=1`（Node 24 自带的环境代理，覆盖 `fetch` 与 `http(s)`），引擎退出时关闭；保存设置后自动重启运行中的引擎。服务器域名由 Xray 内置 DNS 解析（手机 DNS，后备 223.5.5.5、119.29.29.29），因为 Android 上 Go 程序读不到系统 resolv.conf。代理起不来时记录原因，引擎直连，设置页显示原因。浏览器里的订阅登录页面不经过此代理。
+- 验证：Kotlin 配置生成单元测试 5 项在 JVM 上编译并通过（Android 部分未编译，本环境无 Android SDK）；生成的 Vision 与 XHTTP 配置经 `xray run -test` 校验通过；本机搭 VLESS + REALITY 服务端端到端测试，两种传输经 HTTP 代理都取回内容；Node 24.22 在 `NODE_USE_ENV_PROXY=1` 下 `fetch` 与 `http.get` 都经代理到达服务端，本机地址直连。Flutter：`flutter analyze` 无问题，代理页测试 6 项通过，设置、链接、功能相关测试无新增失败，设置首页截图因新增入口重新生成；文案与指南检查通过。未构建 APK，未做真机验证（手机上 xray 能否执行、DNS 解析与引擎实际走代理需真机确认）。
 
 ## 改名 Agentello（2026-11-28）
 

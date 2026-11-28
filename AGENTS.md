@@ -90,6 +90,7 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 
 - 用户保留现在的原生聊天主界面；移除宠物、原版 DSH 网页界面、酒馆、伙伴小屋、左滑快捷面板，以及“帮助与关于”整组。
 - 只用本机引擎：远程主机（SSH、DSH Remote 中继、扫码配对、远程备份、远程保活）连同 `flutter_webrtc`、`mobile_scanner`、`dartssh2`、`dsh_remote` 依赖已移除；DeepSeek 账号入口和 DS Bot 入口断开，DeepSeek 模型按自定义渠道接入。ChatGPT／Claude 订阅登录与 OpenAI 官方渠道保留。合并上游时不得重新接入这些功能或依赖。
+- 设置 › AI › 代理（仅 Android）用内置的精简 Xray（`runtime/xray`，固定提交见 `source.json`）让引擎的模型请求走用户手填的 VLESS + REALITY 服务器；这是本 fork 的保留功能，合并上游时不得移除，内核范围不扩大到其他协议。
 - Agent 预设也须执行精简规则：`dsh-go-companion`、`dsh-go-companion-full`、`dsh-go-diagnostics` 不得出现在设置、新对话或预设编辑器的选择列表中；保留原始主机目录以识别旧默认值，新建对话不得因此回到已移除的预设。
 - 功能移除须同步清理设置项、设置搜索、全部功能、深链、启动监听、原生服务/桌面组件与独占资源；旧偏好不得重新启用这些功能。后续合并上游时保持此范围。
 - 聊天共用的语音、通知状态归约、手机操控、引擎与错误捕获继续保留；不要因为目录名含 companion/pet 就连带删除共享模块。用户已有对话和配置不清空。

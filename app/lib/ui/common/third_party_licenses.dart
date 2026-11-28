@@ -41,6 +41,10 @@ void registerThirdPartyLicenses({String? os}) {
       yield LicenseEntryWithLineBreaks(<String>[
         'Streaming Zipformer zh-en (sherpa-onnx)',
       ], await rootBundle.loadString('assets/licenses/streaming-asr-model-APACHE-2.0.txt'));
+      // The proxy core behind 设置 › 代理 (runtime/xray; Android only).
+      yield LicenseEntryWithLineBreaks(<String>[
+        'Xray-core',
+      ], await rootBundle.loadString('assets/licenses/xray-core-NOTICE.txt'));
     }
   });
 }

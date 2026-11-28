@@ -63,6 +63,7 @@ enum SpotCondition {
 enum SettingsPageId {
   hub,
   models,
+  proxy,
   permission,
   personalization,
   replyPrefs,
@@ -388,6 +389,14 @@ final _pages = <SettingsPageMeta>[
     keywords: (l) => l.searchKwModels,
     freq: Freq.medium,
     links: const ['models'],
+  ),
+  SettingsPageMeta(
+    SettingsPageId.proxy,
+    title: (l) => l.proxyTitle,
+    group: _ai,
+    keywords: (l) => l.searchKwProxy,
+    links: const ['proxy'],
+    androidOnly: true,
   ),
   SettingsPageMeta(
     SettingsPageId.permission,

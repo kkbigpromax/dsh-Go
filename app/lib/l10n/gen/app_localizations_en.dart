@@ -17943,6 +17943,154 @@ class L10nEn extends L10n {
   }
 
   @override
+  String get proxyTitle => 'Proxy';
+
+  @override
+  String get proxySubtitle => 'Send model requests through your VLESS + REALITY server';
+
+  @override
+  String get proxySwitch => 'Use proxy';
+
+  @override
+  String get proxySwitchHint =>
+      'When on, the engine\'s model requests (ChatGPT / Claude subscriptions included) go through the server below; local addresses stay direct.';
+
+  @override
+  String get proxyUnavailable => 'This build doesn\'t include the proxy core, so the proxy can\'t be used.';
+
+  @override
+  String get proxyStatusOn => 'Running';
+
+  @override
+  String get proxyStatusOff => 'Off';
+
+  @override
+  String get proxyStatusWaiting => 'Applies when the engine restarts';
+
+  @override
+  String proxyLastError(String error) {
+    return 'The proxy failed to start last time; the engine connected directly: $error';
+  }
+
+  @override
+  String get proxyServer => 'Server';
+
+  @override
+  String get proxyAddress => 'Address';
+
+  @override
+  String get proxyPort => 'Port';
+
+  @override
+  String get proxyId => 'User ID (UUID)';
+
+  @override
+  String get proxyEncryption => 'Encryption';
+
+  @override
+  String get proxyFlow => 'Flow';
+
+  @override
+  String get proxyFlowNone => 'None';
+
+  @override
+  String get proxyTransport => 'Transport';
+
+  @override
+  String get proxyNetwork => 'Network';
+
+  @override
+  String get proxyXhttpHost => 'Host';
+
+  @override
+  String get proxyXhttpPath => 'Path';
+
+  @override
+  String get proxyXhttpMode => 'Mode';
+
+  @override
+  String get proxyFlowXhttpNote => 'XHTTP doesn\'t use flow control; flow applies to TCP only.';
+
+  @override
+  String get proxyReality => 'REALITY';
+
+  @override
+  String get proxySni => 'SNI';
+
+  @override
+  String get proxyFingerprint => 'Fingerprint';
+
+  @override
+  String get proxyPublicKey => 'PublicKey';
+
+  @override
+  String get proxyShortId => 'ShortId';
+
+  @override
+  String get proxySpiderX => 'SpiderX';
+
+  @override
+  String get proxyMldsa65 => 'Mldsa65Verify';
+
+  @override
+  String get proxyUnset => 'Not set';
+
+  @override
+  String get proxyOptional => 'Optional';
+
+  @override
+  String get proxyTest => 'Test connection';
+
+  @override
+  String get proxyTesting => 'Testing…';
+
+  @override
+  String proxyTestOk(int ms) {
+    return 'Connected in $ms ms';
+  }
+
+  @override
+  String proxyTestFailed(String error) {
+    return 'Connection failed: $error';
+  }
+
+  @override
+  String get proxySave => 'Save';
+
+  @override
+  String get proxySaved => 'Saved';
+
+  @override
+  String get proxySavedRestarting => 'Saved; restarting the engine';
+
+  @override
+  String get proxyUnsaved => 'Unsaved changes';
+
+  @override
+  String get proxyDiscardTitle => 'Discard changes?';
+
+  @override
+  String get proxyDiscardBody => 'Your changes haven\'t been saved.';
+
+  @override
+  String get proxyDiscard => 'Discard';
+
+  @override
+  String proxyMissing(String field) {
+    return 'Fill in $field first';
+  }
+
+  @override
+  String get proxyPortInvalid => 'The port is a whole number from 1 to 65535';
+
+  @override
+  String get proxyFooter =>
+      'Only VLESS + REALITY is supported, over TCP (optionally with Vision flow) or XHTTP. Copy each value from your server\'s configuration. Testing doesn\'t save.';
+
+  @override
+  String get searchKwProxy => 'proxy,VPN,VLESS,REALITY,Xray,Vision,XHTTP,ChatGPT,Claude,network';
+
+  @override
   String get readListUpdating => 'Updating · previous results';
 
   @override
