@@ -1,4 +1,4 @@
-name: Build fork APK
+name: Build Agentello APK
 
 on:
   workflow_dispatch:
@@ -16,6 +16,8 @@ env:
   DSH_MAVEN_MIRRORS: '0'
   DSH_BETA_TOKEN_FILE: ''
   TZ: Asia/Taipei
+  # The proxy core's go.mod asks for a newer Go than the runner's; Go fetches it.
+  GOTOOLCHAIN: auto
 
 jobs:
   apk:
@@ -84,18 +86,51 @@ jobs:
           assert 'remove-deepseek-session-log.diff' in manifest['dshPatches'], manifest['dshPatches']
           print('Bundled engine includes the session-log removal patch.')
           PY
+      - name: Restore the fixed signing key
+        # One repository secret, AGENTELLO_SIGNING: {"keystore": base64 PKCS12, "password", "alias"}.
+        # The same key every time, so each build installs over the last. build.gradle.kts stops
+        # the build if the certificate is not the expected one.
+        env:
+          SIGNING: ${{ secrets.AGENTELLO_SIGNING }}
+        run: |
+          if [ -z "$SIGNING" ]; then
+            echo "::error::The AGENTELLO_SIGNING secret is missing (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          python3 - <<'PY'
+          import base64, json, os
+          from pathlib import Path
+          secret = json.loads(os.environ['SIGNING'])
+          store = Path(os.environ['RUNNER_TEMP']) / 'release.p12'
+          store.write_bytes(base64.b64decode(secret['keystore']))
+          store.chmod(0o600)
+          props = Path('app/android/key.properties')
+          props.write_text(
+              f"storeFile={store}\nstorePassword={secret['password']}\n"
+              f"keyAlias={secret['alias']}\nkeyPassword={secret.get('keyPassword', secret['password'])}\n"
+          )
+          props.chmod(0o600)
+          PY
+      - name: Read the version
+        run: |
+          name=$(sed -nE 's/^version: *([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' app/pubspec.yaml)
+          test -n "$name"
+          echo "APP_VERSION=$name" >> "$GITHUB_ENV"
       - name: Build release APK
-        run: bash tooling/build-apk.sh --flavor arm64 --build-name 1.1.0 --keep-daemon
+        run: bash tooling/build-apk.sh --flavor arm64 --build-name "$APP_VERSION" --keep-daemon
+      - name: Forget the signing key
+        if: always()
+        run: rm -f app/android/key.properties "$RUNNER_TEMP/release.p12"
       - name: Prepare download
         run: |
           mkdir -p dist
-          cp app/build/app/outputs/flutter-apk/app-arm64-release.apk dist/dsh-go-1.1.0-arm64.apk
+          cp app/build/app/outputs/flutter-apk/app-arm64-release.apk "dist/agentello-$APP_VERSION-arm64.apk"
           cd dist
           sha256sum ./*.apk > SHA256SUMS
       - name: Upload APK
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: dsh-go-fork-arm64-${{ github.run_number }}
+          name: agentello-arm64-${{ github.run_number }}
           path: dist/
           if-no-files-found: error
           compression-level: 0

@@ -66,6 +66,13 @@
 - 代码：删除远程传输、页面、远程备份、远程保活与对应测试；四个远程依赖移出 `pubspec.yaml`，manifest 去掉相机权限和远程保活服务；`MainActivity` 去掉扫码初始化通道。文字识别仍用 ML Kit。用户指南同步：第 2、3 章去掉 DeepSeek 账号和远程主机，第 12 章说明不含 DS Bot，常见问题去掉远程内容。
 - 验证：`flutter analyze` 无问题；全量 Flutter 测试 13922 项通过、513 项失败，失败全部是改动前就存在的（与 1.4.0 合并记录及当前 `main` 对照），没有新增失败。依赖远程主机切换的测试用例按参数精确删除，其余本机场景保留；DeepSeek 账号、首启和设置页相关测试改为新行为，改动界面的截图已重新生成。构建与工具脚本测试 138 + 116 项、文案与指南检查通过。发现并修复一处问题：新首启页在运行环境解压中不再启动引擎。Kotlin 未编译（本环境无 Android SDK），未构建 APK，未做真机验证。
 
+## 恢复构建：GitHub Actions 与固定签名（2026-11-28）
+
+- 用户决定：在 GitHub 上编译；签名只要求前后一致、能覆盖安装。
+- 生成一把新的固定发布签名（RSA 4096，PKCS12，别名 `agentello`，证书 SHA-256 `86eade3eecb4bc32e38dc62c135c500b641c1de8b9d751751ec0e0b1d2e47bf2`），私下交给用户备份，并由用户存入仓库 secret `AGENTELLO_SIGNING`。密钥不入库、不进日志。`build.gradle.kts` 的指纹守卫已换成这把证书（旧指纹 `9376cf6d…` 作废）。
+- 工作流 `.github/workflows/build-apk.yml`（手动触发）：还原签名到运行器临时目录，版本取 `app/pubspec.yaml`，`tooling/build-apk.sh` 同时编译 tawcroot、代理内核（`GOTOOLCHAIN=auto` 拉取所需 Go）和运行时，产物命名 `agentello-<版本>-arm64.apk`，构建后删除密钥文件。仓库公开时，Actions 产物登录 GitHub 即可下载。
+- 验证：本地用生成的 secret 模拟还原步骤，按 Gradle 同样的方式读出证书指纹与守卫一致、私钥可读；工作流 YAML 语法检查通过。工作流本身尚未在 GitHub 上运行。
+
 ## 内置代理（2026-11-28）
 
 - 用户决定：合入自己的精简版 Xray（只支持 VLESS + REALITY，传输 TCP+Vision 与 XHTTP），设置里加代理页，参数手动填写（参照 v2rayNG），不做导入和扫码；开启后让模型请求走代理，以便在国内使用 ChatGPT 和 Claude。

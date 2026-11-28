@@ -99,7 +99,7 @@ CI（`.github/workflows/ci.yml`）在 PR 上跑通用检查和改动涉及的部
 
 - App 名称为 Agentello，`applicationId` 为 `io.github.kkbigpromax.agentello`；Kotlin namespace 保持原值。合并上游时不得恢复旧名称、旧包名或旧图标，细节见 [fork 改动与合并规则](docs/fork-maintenance.md)。
 - 版本名称与当前上游版本保持一致（取 `app/pubspec.yaml` 中的版本，不加 fork 后缀）；内部构建号按现有规则递增以支持覆盖安装。
-- 项目已进入暂停阶段，旧签名退役。用户恢复项目前不生成新签名、不构建新版。恢复时先生成一把新的固定发布签名并私下备份，更新 `app/android/app/build.gradle.kts` 的预期证书 SHA256，以及新建本机构建脚本中的证书校验。旧代码中的指纹是历史记录。
+- 固定发布签名（2026-11-28 生成，证书 SHA-256 `86eade3eecb4bc32e38dc62c135c500b641c1de8b9d751751ec0e0b1d2e47bf2`）由用户私下备份，并存为仓库 Actions secret `AGENTELLO_SIGNING`（JSON：`keystore` 为 base64 PKCS12，`password`，`alias`）。用 GitHub Actions「Build Agentello APK」（`.github/workflows/build-apk.yml`，手动触发）构建；`app/android/app/build.gradle.kts` 校验证书指纹，不符即停止。不得重新生成签名、不得把密钥提交 Git 或写进日志。
 - 新签名启用后，后续更新都应复用这一把签名。密钥缺失或证书不符应停止发布构建，恢复当前签名而非回退到 debug 签名。同包名但签名不同会导致旧版无法直接覆盖安装。需要保留旧版数据时，应在卸载前自行导出或备份所需数据。
 - 密钥、密码、配置和备份不得提交 Git 或放入公开输出。
 

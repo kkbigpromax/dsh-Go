@@ -30,7 +30,7 @@ tasks.matching { it.name.startsWith("validateSigning") && it.name.endsWith("Rele
         ).getCertificate(keyProps.getProperty("keyAlias"))
         val fingerprint = MessageDigest.getInstance("SHA-256")
             .digest(certificate.encoded).joinToString("") { "%02x".format(it.toInt() and 0xff) }
-        require(fingerprint == "9376cf6df2238c82e37e79bb6911c4590dcbccb0440207dd4c65f1c2fa244bdb") {
+        require(fingerprint == "86eade3eecb4bc32e38dc62c135c500b641c1de8b9d751751ec0e0b1d2e47bf2") {
             "Fork signing certificate changed; release build stopped."
         }
     }
