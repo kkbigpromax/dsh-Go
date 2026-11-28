@@ -40,13 +40,7 @@ HostRef? petActionHost(Object? raw) {
 
 final petHostChoicesProvider = Provider<List<PetHostChoice>>((ref) {
   final current = ref.watch(activeHostProvider);
-  final hosts = <(HostRef, String)>[
-    (HostRef.local, appL10n.commonThisPhone),
-    for (final h in ref.watch(hostsProvider).ssh)
-      if (h.hostKeyFingerprint != null) (HostRef.ssh(h.id), hostLabel(HostKind.ssh, h.name)),
-    for (final h in ref.watch(relayAccountProvider).value?.hosts ?? <RelayHost>[])
-      if (h.trust == RelayTrust.pinned) (HostRef.relay(h.id, name: h.name), hostLabel(HostKind.relay, h.name)),
-  ];
+  final hosts = <(HostRef, String)>[(HostRef.local, appL10n.commonThisPhone)];
   return [for (final (host, label) in hosts) PetHostChoice(host, snippet(label, max: 40)!, current: host == current)];
 });
 

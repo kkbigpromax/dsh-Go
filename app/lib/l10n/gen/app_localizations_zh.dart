@@ -11727,10 +11727,10 @@ class L10nZh extends L10n {
   String get localeEn => 'English';
 
   @override
-  String get localEnvChooseTitle => 'DSH 在哪里运行？';
+  String get localEnvChooseTitle => '在这台手机上运行 DSH';
 
   @override
-  String get localEnvChooseMessage => '之后可以在设置里更改';
+  String get localEnvChooseMessage => '先安装本机运行环境，之后可以在设置里卸载';
 
   @override
   String localEnvThisPhoneDetail(int storage, int memory) {
@@ -19576,6 +19576,12 @@ class L10nZh extends L10n {
 
   @override
   String get shellGetApiKey => '获取 API Key';
+
+  @override
+  String get shellConnectModel => '连接模型';
+
+  @override
+  String get shellConnectModelMessage => '添加一个兼容 OpenAI 或 Anthropic 的模型渠道。ChatGPT、Claude 订阅登录在「设置 › 模型」里。';
 
   @override
   String get shellConnectDeepSeek => '连接 DeepSeek';

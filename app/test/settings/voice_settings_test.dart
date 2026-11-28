@@ -16,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../chat/support/composer_fakes.dart' show FakeVoiceBridge;
 import '../chat/support/harness.dart';
-import '../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../phone/support.dart' show FixedActiveHost;
 
 void main() {
   setUpAll(loadTestFonts);
@@ -60,7 +60,6 @@ void main() {
           overrides: [
             operatingSystemProvider.overrideWithValue(os),
             activeHostProvider.overrideWith(() => FixedActiveHost(host)),
-            hostsProvider.overrideWith(FixedHosts.new),
             voiceBridgeProvider.overrideWithValue(
               FakeVoiceBridge(caps: VoiceCapabilities(recognizer: true, recorder: true, languages: languages)),
             ),
@@ -127,7 +126,9 @@ void main() {
       expect(find.text(zh.harmonyVoiceLocalLine), findsNothing);
     });
 
-    testWidgets('朗读, 实时字幕 on the system recognizer and 通话 are there; DeepSeek and a cloud service still listen', (tester) async {
+    testWidgets('朗读, 实时字幕 on the system recognizer and 通话 are there; DeepSeek and a cloud service still listen', (
+      tester,
+    ) async {
       await page(tester, 'ohos', height: 4000);
       expect(find.byKey(const ValueKey('speech-voice')), findsOneWidget);
       expect(find.text(zh.speechLiveSection), findsOneWidget);

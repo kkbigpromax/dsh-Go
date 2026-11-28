@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:dsh_app/app.dart';
-import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/performance/performance_state.dart';
 import 'package:dsh_app/pets/pet_pack.dart';
 import 'package:dsh_app/pets/pet_sheets.dart';
@@ -13,8 +12,6 @@ import 'package:dsh_app/state/locale_state.dart';
 import 'package:dsh_app/state/ui_mode_state.dart';
 import 'package:dsh_app/ui/common/app_sheet.dart';
 import 'package:dsh_app/ui/common/display_image.dart';
-import 'package:dsh_app/ui/onboarding/runtime_choice.dart';
-import 'package:dsh_app/runtime/local_footprint.dart';
 import 'package:dsh_app/ui/pets/pet_sprite.dart';
 import 'package:dsh_app/ui/plugins/plugin_widgets.dart';
 import 'package:dsh_app/ui/settings/performance_page.dart';
@@ -378,28 +375,6 @@ void main() {
       expect(c.read(performancePrefsProvider).fluid, isNull);
       expect(scoped(tester), isTrue);
     });
-  });
-
-  testWidgets('a low device recommends remote but keeps a deliberate local selection', (tester) async {
-    window(tester);
-    var local = 0;
-    var remote = 0;
-    final channel = FakePerformanceChannel(Future.value(snapshot(DeviceTier.low)));
-    await mount(
-      tester,
-      RuntimeChoiceView(onLocal: () => local++, onRemote: () => remote++),
-      channel: channel,
-      overrides: [localFootprintProvider.overrideWith((ref) async => const LocalFootprint(totalMemoryMb: 8192))],
-    );
-    await tester.pumpAndSettle();
-    expect(find.text(appL10n.performanceRemoteHint), findsOneWidget);
-    await tester.tap(find.text(appL10n.commonContinue));
-    expect(remote, 1);
-    await tester.tap(find.byKey(const ValueKey('runtime-option-local')));
-    channel.events.add(snapshot(DeviceTier.low, hot: true, sequence: 2));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(appL10n.commonContinue));
-    expect(local, 1);
   });
 
   testWidgets('light native mode creates no WebView until the user selects web', (tester) async {

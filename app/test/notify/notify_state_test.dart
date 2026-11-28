@@ -310,29 +310,6 @@ void main() {
       expect(container.read(currentSessionProvider), 's1');
     });
 
-    for (final kind in [HostKind.ssh, HostKind.relay]) {
-      test('$kind current-chat requests become system reminders on background', () async {
-        final host = kind == HostKind.ssh ? _ssh : const HostRef.relay('lab');
-        make(
-          active: fakeHostConnection(local: false, kind: kind, hostId: 'lab'),
-        );
-        container.read(activeHostProvider.notifier).select(host);
-        container.read(currentSessionProvider.notifier).select('r1');
-        await settle();
-        expect(container.read(viewedChatProvider), (host: host, sessionId: 'r1'));
-        remote.emit(approval('e9', 'r1'));
-        remote.emit(question('q9', 'r1', ['Continue?']));
-        await settle();
-        expect(channel.shown, isEmpty);
-        expect(container.read(chatAlertsProvider), isNull, reason: 'current chat stays quiet');
-        await foreground(false);
-        expect(channel.shown.map((p) => p.key), unorderedEquals(['e9', 'q9']));
-        expect(channel.shown.every((p) => p.host == host && p.attention), isTrue);
-        await foreground(false);
-        expect(channel.shown, hasLength(2), reason: 'same lifecycle value does not reannounce');
-      });
-    }
-
     test('a remote attention banner migrates only once, not again from pending', () async {
       make(
         active: fakeHostConnection(local: false, kind: HostKind.ssh, hostId: 'lab'),

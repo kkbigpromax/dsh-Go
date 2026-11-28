@@ -120,27 +120,7 @@ void main() {
     return ProviderScope.containerOf(t.element(find.byType(BotChatPage)));
   }
 
-  for (final schema in ['slider', 'formula', 'future-input']) {
-    testWidgets('$schema has only current-host web fallback, no answer', (t) async {
-      final old = FakeDsBotTransport(team: fallbackTeam(schema));
-      final next = FakeDsBotTransport(team: fallbackTeam(schema));
-      final opened = <String>[];
-      final c = await open(t, old, next, opened);
-      expect(find.widgetWithText(FilledButton, 'Confirm'), findsNothing);
-      expect(find.widgetWithText(ChoiceChip, 'Two'), findsNothing);
-      await t.tap(find.byKey(const ValueKey('bot-view-open-web')));
-      await t.pump();
-      expect(opened, ['local']);
-      c.read(activeHostProvider.notifier).select(const HostRef.ssh('next'));
-      await frames(t);
-      await t.tap(find.byKey(const ValueKey('bot-view-open-web')));
-      await t.pump();
-      expect(opened, ['local', 'next']);
-      expect([...old.endpoints, ...next.endpoints].where((e) => e == 'view-reply'), isEmpty);
-      expect(t.takeException(), isNull);
-    });
-  }
-  for (final change in ['host', 'api', 'boot', 'session']) {
+  for (final change in ['api', 'boot', 'session']) {
     testWidgets('stale web callback is retired after $change', (t) async {
       final team = fallbackTeam('slider');
       final old = FakeDsBotTransport(team: team);

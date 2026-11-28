@@ -237,7 +237,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('切回原生界面'), findsOneWidget);
       expect(find.text('App 设置'), findsOneWidget);
-      expect(find.text('切换主机'), findsOneWidget);
+      expect(find.text('切换主机'), findsNothing);
       await tester.tap(find.text('切回原生界面'));
       await tester.pumpAndSettle();
       expect(container.read(uiModeProvider).mode, UiMode.native);

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dsh_app/state/connection_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/session_deletion_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/workspaces_state.dart';
@@ -122,24 +121,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  for (final roundTrip in [false, true]) {
-    testWidgets('restore confirmation retires across host switch (return: $roundTrip)', (tester) async {
-      final (host, container) = await _openArchive(tester);
-      await tester.tap(find.byType(SearchResultTile));
-      await settle(tester);
-      container.read(activeHostProvider.notifier).select(const HostRef.ssh('other'));
-      if (roundTrip) container.read(activeHostProvider.notifier).select(HostRef.local);
-      await settle(tester);
-      await tester.tap(find.text('恢复并打开'));
-      await settle(tester);
-      expect(host.argsOf('workspace/unarchiveSession'), isEmpty);
-      expect(host.archived, ['a1']);
-      expect(container.read(currentSessionProvider), isNull);
-      expect(find.byType(SessionSearchPage), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-  }
-
   for (final archivedOnly in [false, true]) {
     testWidgets('archived deletion waits for confirmation and Host acknowledgement (browser: $archivedOnly)', (
       tester,
@@ -210,30 +191,6 @@ void main() {
     expect(find.byType(SearchResultTile), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
-  for (final confirmed in [false, true]) {
-    testWidgets('archived deletion intent retires on A to B to A (confirmation: $confirmed)', (tester) async {
-      final backend = _DeletionBackend();
-      final (host, container) = await _openArchive(tester, backend: backend);
-      if (confirmed) {
-        await _askDelete(tester);
-      } else {
-        await _openActions(tester);
-      }
-      container.read(activeHostProvider.notifier).select(const HostRef.ssh('other'));
-      container.read(activeHostProvider.notifier).select(HostRef.local);
-      await settle(tester);
-      if (confirmed) {
-        expect(tester.widget<FilledButton>(_confirm).onPressed, isNull);
-      } else {
-        expect(tester.widget<ListTile>(_deleteAction).onTap, isNull);
-      }
-      expect(backend.calls, isEmpty);
-      expect(host.archived, ['a1']);
-      expect(host.argsOf('workspace/unarchiveSession'), isEmpty);
-      expect(tester.takeException(), isNull);
-    });
-  }
 
   testWidgets('an archived chat restored elsewhere no longer satisfies the pending deletion intent', (tester) async {
     final backend = _DeletionBackend();

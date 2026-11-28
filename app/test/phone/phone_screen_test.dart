@@ -4,7 +4,6 @@
 
 import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/state/compose_inbox.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/phone_state.dart';
 import 'package:dsh_app/ui/common/list_page_row.dart';
 import 'package:dsh_app/ui/common/overview_card.dart';
@@ -239,13 +238,6 @@ void main() {
       // Safe mode loads no plugins: no restart needed.
       expect(h.runtime.stops, 0);
       expect(find.text('已关闭'), findsOneWidget);
-    });
-
-    testWidgets('remote host: explains it only works on the local engine', (tester) async {
-      await pumpPhone(tester, const PhoneControlScreen(), host: const HostRef.ssh('lab'));
-      expect(find.text('当前连的是远程主机'), findsOneWidget);
-      expect(find.textContaining('「实验室服务器」上的 DSH 操作不了这台手机'), findsOneWidget);
-      expect(find.text('只在本机引擎可用'), findsOneWidget);
     });
   });
 

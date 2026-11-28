@@ -221,22 +221,6 @@ void main() {
     expect(container.read(currentSessionProvider), isNull);
   });
 
-  testWidgets('synchronous owner change while clearing selection does not arm a retired timer', (tester) async {
-    final (host, container) = await start(tester);
-    var changed = false;
-    final sub = container.listen(currentSessionProvider, (previous, next) {
-      if (next == null && !changed) {
-        changed = true;
-        container.read(activeHostProvider.notifier).select(HostRef.ssh('pc'));
-      }
-    });
-    addTearDown(sub.close);
-    final p = plan(container, ['s1']);
-    await tester.pump(const Duration(seconds: 5));
-    expect(await p.done, isNull);
-    expect(host.argsOf('workspace/archiveSession'), isEmpty);
-  });
-
   testWidgets('replacement sends the older plan without restoring its selection, so no listener reenters', (
     tester,
   ) async {
@@ -257,15 +241,12 @@ void main() {
     expect(container.read(currentSessionProvider), isNull);
     await tester.pump(const Duration(seconds: 4));
     await _settle(tester);
-    expect(host.argsOf('workspace/archiveSession').map((call) => (call['request'] as Map)['sessionId']), [
-      's1',
-      's2',
-    ]);
+    expect(host.argsOf('workspace/archiveSession').map((call) => (call['request'] as Map)['sessionId']), ['s1', 's2']);
     expect((await outer.done)!.archived, ['s2']);
     expect(container.read(sessionsProvider).value!.map((s) => s.sessionId), ['s3']);
   });
 
-  for (final boundary in ['host', 'round-trip', 'reconnect', 'dispose']) {
+  for (final boundary in ['host', 'reconnect', 'dispose']) {
     testWidgets('waiting plan retires without dispatch: $boundary', (tester) async {
       final (host, container) = await start(tester);
       final connectionA = container.read(activeConnectionProvider).value!;
@@ -379,7 +360,7 @@ void main() {
     expect(container.read(currentSessionProvider), 'new-owner-selection');
     expect(await p.done, isNull);
   });
-  for (final outcome in ['success', 'failure', 'third', 'host', 'route']) {
+  for (final outcome in ['success', 'failure', 'third', 'route']) {
     testWidgets('late committing result preserves newer undo: $outcome', (tester) async {
       final (host, container) = await start(tester);
       await addSecond(tester, host, container);

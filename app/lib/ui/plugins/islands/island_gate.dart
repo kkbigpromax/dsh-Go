@@ -4,9 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../plugins/seams/seat_state.dart' show seatRouteGuardReportProvider;
-import '../../../remote/ssh/ssh_link.dart';
 import '../../../runtime/runtime_state.dart';
-import '../../../state/connection_state.dart';
 import '../../../state/hosts_state.dart';
 
 /// Whether a host's plugin routes refuse callers without the session cookie
@@ -135,14 +133,7 @@ final islandHostUrlProvider = Provider.autoDispose.family<Uri?, HostRef>((ref, h
       final status = ref.watch(localRuntimeProvider.select((s) => s.status));
       if (!status.isRunning || status.baseUrl == null || status.token == null) return null;
       return islandLaunchUri(status.baseUrl!, status.token!);
-    case HostKind.ssh:
-      ref.watch(hostLinkStatusProvider(host));
-      final link = ref.watch(hostLinkProvider(host));
-      final port = link is SshHostLink ? link.localPort : null;
-      final token = link is SshHostLink ? link.endpoint?.token : null;
-      if (port == null || token == null) return null;
-      return islandLaunchUri('http://127.0.0.1:$port', token);
-    case HostKind.relay:
+    case HostKind.ssh || HostKind.relay:
       return null;
   }
 });

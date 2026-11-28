@@ -21789,13 +21789,13 @@ abstract class L10n {
   /// No description provided for @localEnvChooseTitle.
   ///
   /// In zh, this message translates to:
-  /// **'DSH 在哪里运行？'**
+  /// **'在这台手机上运行 DSH'**
   String get localEnvChooseTitle;
 
   /// No description provided for @localEnvChooseMessage.
   ///
   /// In zh, this message translates to:
-  /// **'之后可以在设置里更改'**
+  /// **'先安装本机运行环境，之后可以在设置里卸载'**
   String get localEnvChooseMessage;
 
   /// No description provided for @localEnvThisPhoneDetail.
@@ -36011,6 +36011,18 @@ abstract class L10n {
   /// In zh, this message translates to:
   /// **'获取 API Key'**
   String get shellGetApiKey;
+
+  /// No description provided for @shellConnectModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接模型'**
+  String get shellConnectModel;
+
+  /// No description provided for @shellConnectModelMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加一个兼容 OpenAI 或 Anthropic 的模型渠道。ChatGPT、Claude 订阅登录在「设置 › 模型」里。'**
+  String get shellConnectModelMessage;
 
   /// No description provided for @shellConnectDeepSeek.
   ///

@@ -12,7 +12,6 @@ import 'package:dsh_app/state/drawer_view_state.dart';
 import 'package:dsh_app/state/onboarding_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/state/balance_state.dart';
-import 'package:dsh_app/ui/common/progress_halo.dart';
 import 'package:dsh_app/ui/common/side_insets.dart';
 import 'package:dsh_app/ui/onboarding/appearance_step.dart';
 import 'package:dsh_app/ui/onboarding/connect_page.dart';
@@ -236,20 +235,6 @@ void main() {
         null,
       ),
       'connect': (() => _beside(ConnectPage(onDone: () {}), step: 3), unpackingState(0.68), const [], null),
-      'sign-in waits': (
-        () => _beside(ConnectPage(onDone: () {}), step: 3),
-        unpackingState(0.68),
-        const [],
-        (tester) async {
-          // At a large text size the page scrolls: bring the sign-in in first.
-          final signIn = find.byType(FilledButton).first;
-          await tester.ensureVisible(signIn);
-          await tester.pump();
-          await tester.tap(signIn);
-          await frames(tester, 6);
-          expect(find.byType(ProgressHalo), findsOneWidget);
-        },
-      ),
       'waiting': (() => RuntimeSetupPage(onDone: () {}, waiting: true), unpackingState(0.86), const [], null),
       'status sheet': (
         () => _beside(AppearanceStepPage(onDone: () {})),

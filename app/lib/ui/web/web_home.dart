@@ -344,8 +344,7 @@ class _WebEntryHostState extends ConsumerState<WebEntryHost> {
         );
       case OpenChatEntry(:final host, :final sessionId):
         if (!mounted || !await DiscardGuard.confirmLeave(context) || !mounted) return;
-        final hosts = ref.read(hostsProvider);
-        if (host.kind == HostKind.ssh && hosts.loaded && hosts.sshById(host.id) == null) {
+        if (!host.isLocal) {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(context.l10n.webChatGone)));
           return;
         }

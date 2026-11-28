@@ -5,9 +5,7 @@ import 'package:dsh_app/companion/companion_memory.dart';
 import 'package:dsh_app/companion/companion_reminder.dart';
 import 'package:dsh_app/l10n/gen/app_localizations.dart';
 import 'package:dsh_app/state/connection_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/ui/companion/companion_tasks_page.dart';
-import 'package:dsh_app/ui/shell/system_entry_host.dart';
 import 'package:dsh_app/ui/theme/app_icons.dart';
 import 'package:dsh_app/ui/theme/app_theme.dart';
 import 'package:dsh_client/dsh_client.dart';
@@ -17,8 +15,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/sqlite3.dart';
-
-import 'companion_test_settle.dart';
 
 const _channel = MethodChannel('dsh/companion_reminders');
 const _raw = '2026-03-08 03:10 America/Los_Angeles提醒我带钥匙';
@@ -576,75 +572,4 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
   }
-
-  testWidgets('D actual notification entry opens its original task and keeps a later revision without dispatch', (
-    tester,
-  ) async {
-    final first = (await submit(await source('first', _raw))).task;
-    registered(first);
-    final changed = (await submit(
-      await source('amend', '把带钥匙的提醒改到2026-03-08 03:10 America/Los_Angeles'),
-      previous: first,
-    )).task;
-    await submit(await source('other', _raw.replaceFirst('带钥匙', '带书')));
-    final before = store.tasks();
-    final receipts = store.taskReceipts(first['task_id']! as String);
-    owner = CompanionMemoryOwner(store, CompanionLocal.at(root));
-    calls.clear();
-    const entries = MethodChannel('dsh/shortcuts');
-    const paths = MethodChannel('plugins.flutter.io/path_provider');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(entries, (_) async => true);
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(paths, (call) async {
-      expect(call.method, 'getApplicationSupportDirectory');
-      return root.path;
-    });
-    addTearDown(() {
-      binding.defaultBinaryMessenger.setMockMethodCallHandler(entries, null);
-      binding.defaultBinaryMessenger.setMockMethodCallHandler(paths, null);
-    });
-    const keptHost = HostRef.ssh('current-unrelated-host');
-    SharedPreferences.setMockInitialValues({ActiveHostController.prefsKey: keptHost.encode()});
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activeConnectionProvider.overrideWithValue(const AsyncData<HostConnection?>(null)),
-          companionMemoryOwnerProvider('${root.path}/companion').overrideWith((ref) => owner!),
-        ],
-        child: MaterialApp(
-          theme: buildDarkTheme(),
-          localizationsDelegates: L10n.localizationsDelegates,
-          supportedLocales: L10n.supportedLocales,
-          locale: const Locale('zh'),
-          home: const Scaffold(body: SystemEntryHost()),
-        ),
-      ),
-    );
-    await tester.pump();
-    final scope = ProviderScope.containerOf(tester.element(find.byType(SystemEntryHost)));
-    await settleMixed(tester, scope.read(activeHostProvider.notifier).ready);
-    expect(scope.read(activeHostProvider), keptHost);
-    await binding.defaultBinaryMessenger.handlePlatformMessage(
-      entries.name,
-      const StandardMethodCodec().encodeMethodCall(
-        MethodCall('entry', {'kind': 'companion_task', 'taskId': first['task_id'], 'taskRev': 1}),
-      ),
-      (_) {},
-    );
-    await tester.pumpAndSettle();
-    expect(find.byType(CompanionTasksPage), findsOneWidget);
-    final page = tester.widget<CompanionTasksPage>(find.byType(CompanionTasksPage));
-    expect(page.taskId, first['task_id']);
-    expect(page.openedRevision, 1);
-    expect(find.text('带钥匙'), findsOneWidget);
-    expect(find.text('带书'), findsNothing);
-    final l10n = L10n.of(tester.element(find.byType(CompanionTasksPage)));
-    expect(find.text(l10n.companionTaskChanged), findsOneWidget);
-    expect(changed['task_rev'], 2);
-    expect(store.tasks(), before);
-    expect(store.taskReceipts(first['task_id']! as String), receipts);
-    expect(calls.where((call) => call.method == 'wake' || call.method == 'resolve'), isEmpty);
-    expect(scope.read(activeHostProvider), keptHost);
-    await tester.pumpWidget(const SizedBox());
-  });
 }

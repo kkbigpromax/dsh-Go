@@ -24,7 +24,7 @@ void main() {
   setUpAll(loadTestFonts);
   setUp(() => SharedPreferences.setMockInitialValues({}));
   for (final room in [false, true]) {
-    for (final change in ['host', 'HTTP boot', 'readOnly', if (!room) 'part', 'unchanged']) {
+    for (final change in ['HTTP boot', 'readOnly', if (!room) 'part', 'unchanged']) {
       testWidgets('${room ? 'room' : 'bot'} send validates its rendered target before clearing draft: $change', (
         tester,
       ) async {

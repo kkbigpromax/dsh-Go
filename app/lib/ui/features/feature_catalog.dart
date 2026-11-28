@@ -17,7 +17,6 @@ import '../../state/android_features.dart';
 import '../../state/plugins_state.dart';
 import '../common/feature_tile.dart';
 import '../agents/team_page.dart';
-import '../bots/bots_page.dart';
 import '../community/community_page.dart';
 import '../cordis/cordis_page.dart';
 import '../files/files_page.dart';
@@ -29,7 +28,6 @@ import '../plugins/plugins_screen.dart';
 import '../plugins/seats/plugin_seat_page.dart';
 import '../plugins/seats/seat_links.dart';
 import '../providers/providers_page.dart';
-import '../remote/remote_screen.dart';
 import '../session/session_artifacts.dart';
 import '../session/session_detail_page.dart';
 import '../share_code/profile_share_sheet.dart';
@@ -323,13 +321,6 @@ final featureSections = <FeatureSection>[
   ]),
   FeatureSection.localized((l10n) => l10n.catalogCommunitySharingSection, [
     FeatureItem.localized(
-      id: 'ds-bot',
-      title: (_) => 'DS Bot',
-      summary: (l10n) => l10n.catalogBotSummary,
-      icon: AppIcons.bot,
-      native: (_) => const BotsPage(),
-    ),
-    FeatureItem.localized(
       id: 'share-profile',
       title: (l10n) => l10n.catalogShareProfile,
       summary: (l10n) => l10n.catalogShareProfileSummary,
@@ -384,13 +375,6 @@ final featureSections = <FeatureSection>[
       icon: AppIcons.phoneControl,
       tile: FeatureKind.phone,
       native: (_) => const PhoneControlScreen(),
-    ),
-    FeatureItem.localized(
-      id: 'remote',
-      title: (l10n) => l10n.commonRemoteHost,
-      summary: (l10n) => l10n.catalogRemoteSummary,
-      icon: AppIcons.remoteHosts,
-      native: (_) => const RemoteScreen(),
     ),
   ], id: settingsFeatureSection),
 ];

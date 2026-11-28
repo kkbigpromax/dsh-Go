@@ -22,7 +22,6 @@ import 'package:dsh_app/ui/common/list_page_row.dart';
 import 'package:dsh_app/ui/phone/phone_control_screen.dart';
 import 'package:dsh_app/ui/phone/phone_widgets.dart';
 import 'package:dsh_app/ui/providers/providers_page.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/settings/appearance/appearance_page.dart';
 import 'package:dsh_app/ui/settings/about_page.dart';
 import 'package:dsh_app/ui/settings/background_guide_page.dart';
@@ -330,16 +329,6 @@ void main() {
       tester,
       SettingsPageId.models,
       () => _app(tester, const ProvidersPage(), providers.providerOverrides(providers.sampleBackend())),
-    );
-  });
-
-  testWidgets('远程主机', (tester) async {
-    await _check(
-      tester,
-      SettingsPageId.remote,
-      () => _app(tester, const RemoteScreen(), _running()),
-      // Once there is a host to come back to; 直连优先 once signed in to DSH Remote.
-      absent: {'remote-auto-connect', 'remote-direct'},
     );
   });
 

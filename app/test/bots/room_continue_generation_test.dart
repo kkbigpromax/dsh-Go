@@ -24,7 +24,6 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   for (final transition in [
-    'host before frame',
     'HTTP boot rehandshake',
     'read-only before frame',
     'pause changed before frame',

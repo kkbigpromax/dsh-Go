@@ -36,7 +36,15 @@ void main() {
     expect(
       SettingsIndex.pages.keys.toSet(),
       SettingsPageId.values
-          .where((p) => !{SettingsPageId.pets, SettingsPageId.diagnostics, SettingsPageId.about}.contains(p))
+          .where(
+            (p) => !{
+              SettingsPageId.pets,
+              SettingsPageId.diagnostics,
+              SettingsPageId.about,
+              SettingsPageId.remote,
+              SettingsPageId.account,
+            }.contains(p),
+          )
           .toSet(),
     );
     expect(SettingsIndex.page(SettingsPageId.hub).parent, isNull);
@@ -94,7 +102,7 @@ void main() {
   test('全部功能\'s 设置 cards are settings pages, by the same names', () {
     final section = featureSections.singleWhere((s) => s.id == settingsFeatureSection);
     expect(featureSections.last, section, reason: 'the last group');
-    expect([for (final i in section.items) i.id], ['models', 'permission', 'phone', 'remote']);
+    expect([for (final i in section.items) i.id], ['models', 'permission', 'phone']);
     for (final item in section.items) {
       final page = SettingsIndex.pageForLink(item.id);
       expect(page, isNotNull, reason: item.id);

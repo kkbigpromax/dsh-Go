@@ -24,7 +24,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../../phone/support.dart' show FixedActiveHost;
 import '../../shell/golden_harness.dart';
 
 final _zh = lookupL10n(AppLocale.zhCN);
@@ -37,7 +37,6 @@ List<String> _ids(String q) => [for (final h in _search(q)) h.spot?.id ?? 'featu
 
 List<Override> _overrides({HostRef host = HostRef.local}) => [
   activeHostProvider.overrideWith(() => FixedActiveHost(host)),
-  hostsProvider.overrideWith(FixedHosts.new),
   localRuntimeProvider.overrideWith(() => FakeRuntime(const LocalRuntimeState(loaded: true, status: runningStatus))),
   settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true))),
   guidePageReaderProvider.overrideWithValue((asset) async => '# 设置'),

@@ -2,7 +2,6 @@
 // with confirmation, the connection test, and measured row geometry.
 
 import 'package:dsh_app/l10n/l10n.dart';
-import 'package:dsh_app/state/models_state.dart';
 import 'package:dsh_app/state/providers_state.dart';
 import 'package:dsh_app/ui/common/list_page_row.dart';
 import 'package:dsh_app/ui/common/page_hero.dart';
@@ -45,21 +44,21 @@ void main() {
   });
 
   group('list', () {
-    testWidgets('defaults first, then DeepSeek and each provider with its state, then 添加渠道', (tester) async {
+    testWidgets('defaults first, then each provider with its state, then 添加渠道', (tester) async {
       await _pump(tester, const ProvidersPage(), providerOverrides(sampleBackend(), account: signedInAccount));
-      expect(find.text('4 个渠道 · 2 个可用'), findsOneWidget);
+      expect(find.text('3 个渠道 · 1 个可用'), findsOneWidget);
       expect(find.textContaining('新渠道的模型'), findsNothing);
-      expect(find.text('账号 · 雾蓝'), findsOneWidget);
+      expect(find.text('DeepSeek'), findsNothing);
       expect(find.text('OpenAI 兼容 · 3 个模型'), findsOneWidget);
       expect(find.text('缺少 API Key'), findsOneWidget);
       expect(find.text('配置有误'), findsOneWidget);
       final dots = tester.widgetList<AnimatedStatusDot>(find.byType(AnimatedStatusDot)).map((d) => d.tone).toList();
-      expect(dots, [StatusTone.ok, StatusTone.ok, StatusTone.warn, StatusTone.error]);
+      expect(dots, [StatusTone.ok, StatusTone.warn, StatusTone.error]);
       final titles = [
         for (final row in tester.widgetList<ListPageRow>(find.byType(ListPageRow)))
           row.title ?? row.spot?.title(appL10n),
       ];
-      expect(titles, [appL10n.viewModelSelect, 'DeepSeek', 'My Gateway', 'Claude 中转', '家里的 vLLM', '添加渠道']);
+      expect(titles, [appL10n.viewModelSelect, 'My Gateway', 'Claude 中转', '家里的 vLLM', '添加渠道']);
 
       await tester.tap(find.text('Claude 中转'));
       await settle(tester);
@@ -72,31 +71,10 @@ void main() {
       expect(find.byType(ProviderFormPage), findsOneWidget);
     });
 
-    testWidgets('a remote host: its own providers, DeepSeek from its catalog', (tester) async {
-      await _pump(tester, const ProvidersPage(), [
-        ...providerOverrides(sampleBackend(isLocal: false)),
-        modelCatalogProvider.overrideWith(
-          (ref) async => const ModelCatalog(
-            defaultSelection: null,
-            routableProviders: ['deepseek-official'],
-            groups: [
-              ProviderGroup('deepseek-official', 'DeepSeek', [
-                ModelInfo(provider: 'deepseek-official', id: 'deepseek-v4-pro', name: 'DeepSeek-V4-Pro'),
-              ]),
-            ],
-            failures: [],
-          ),
-        ),
-      ]);
-      expect(find.text('电脑 · SSH · 4 个渠道 · 2 个可用'), findsOneWidget);
-      expect(find.text('已配置'), findsOneWidget);
-      expect(tester.widget<ListPageRow>(find.widgetWithText(ListPageRow, 'DeepSeek')).onTap, isNull);
-    });
-
     testWidgets('not connected, unsupported, read-only', (tester) async {
       await _pump(tester, const ProvidersPage(), providerOverrides(null));
       expect(find.text('没有连上引擎'), findsOneWidget);
-      expect(find.text('DeepSeek'), findsWidgets, reason: 'the app-side DeepSeek row still shows');
+      expect(find.text('DeepSeek'), findsNothing);
 
       await _pump(tester, const ProvidersPage(), providerOverrides(FakeProviderBackend(supported: false)));
       expect(find.text('这台主机不支持自定义渠道'), findsOneWidget);
@@ -110,7 +88,7 @@ void main() {
       await _pump(tester, const ProvidersPage(), providerOverrides(sampleBackend()));
       final width = tester.view.physicalSize.width / tester.view.devicePixelRatio;
       final cards = [
-        for (final title in ['DeepSeek', 'My Gateway'])
+        for (final title in ['My Gateway'])
           tester.getRect(find.ancestor(of: find.text(title), matching: find.byType(GlassSurface)).first),
       ];
       for (final card in cards) {
@@ -136,7 +114,7 @@ void main() {
       // Every row leads with a 32 monogram tile 16 in; 「添加渠道」's glyph
       // shares the tiles' centre line.
       final tiles = [for (final e in find.byType(Monogram).evaluate()) tester.getRect(find.byWidget(e.widget))];
-      expect(tiles, hasLength(4));
+      expect(tiles, hasLength(3));
       for (final tile in tiles) {
         expect(tile.width, moreOrLessEquals(32, epsilon: 0.6));
         expect(tile.left - cards.first.left, moreOrLessEquals(16, epsilon: 0.6));
@@ -147,7 +125,7 @@ void main() {
       expect(add.center.dx, moreOrLessEquals(tiles.first.center.dx, epsilon: 0.6));
       expect(
         [for (final e in find.byType(Monogram).evaluate()) Monogram.letterOf((e.widget as Monogram).name)],
-        ['D', 'M', 'C', '家'],
+        ['M', 'C', '家'],
       );
     });
   });

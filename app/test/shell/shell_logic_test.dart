@@ -19,7 +19,6 @@ import 'package:dsh_app/ui/onboarding/api_key_page.dart';
 import 'package:dsh_app/ui/onboarding/connect_page.dart';
 import 'package:dsh_app/ui/onboarding/onboarding_flow.dart';
 import 'package:dsh_app/ui/onboarding/runtime_setup_page.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
 import 'package:dsh_app/ui/shell/home_shell.dart';
 import 'package:dsh_app/ui/shell/root_gate.dart';
@@ -410,7 +409,6 @@ void main() {
       'api key': () => ApiKeyPage(onDone: () {}),
       'settings': () => const SettingsScreen(),
       'engine': () => const EngineScreen(),
-      'remote': () => const RemoteScreen(),
       'drawer': () => HomeShell(chatBuilder: (_) => const SizedBox.expand(), initiallyOpen: true),
     };
     for (final MapEntry(key: name, value: build) in screens.entries) {

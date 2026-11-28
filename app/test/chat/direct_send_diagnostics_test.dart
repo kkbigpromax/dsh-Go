@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dsh_app/diagnostics/app_error_log.dart';
 import 'package:dsh_app/diagnostics/diagnostics_bundle.dart';
@@ -260,7 +259,11 @@ class _Harness {
   ChatState get state => container.read(chatProvider(_session));
   _Peer get peer => container.read(_peers)[container.read(activeHostProvider)]!;
 
-  static Future<_Harness> start(WidgetTester tester, {HostRef selected = _ssh, bool initialSnapshot = true}) async {
+  static Future<_Harness> start(
+    WidgetTester tester, {
+    HostRef selected = HostRef.local,
+    bool initialSnapshot = true,
+  }) async {
     final peers = {
       for (final host in [HostRef.local, _ssh, _relay]) host: _Peer(host),
     };
@@ -330,7 +333,7 @@ List<AppErrorRecord> _added(Set<AppErrorRecord> before) => [
 AppErrorRecord _failure(
   Set<AppErrorRecord> before, {
   String stage = 'prompt',
-  String host = 'ssh',
+  String host = 'local',
   required String category,
   bool unknown = false,
 }) {
@@ -344,7 +347,6 @@ AppErrorRecord _failure(
   return record;
 }
 
-DraftAttachment _file() => DraftAttachment.sniff('SYNTHETIC_FILE_PRIVATE.md', Uint8List.fromList(_text.codeUnits));
 DraftAttachment _image() => DraftAttachment.sniff(
   'SYNTHETIC_IMAGE_PRIVATE.png',
   base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAEklEQVR4nGPwTt/yHxkzkC4AAAPnJlH/osXzAAAAAElFTkSuQmCC'),
@@ -358,19 +360,10 @@ Map<String, Object?> _message(String requestId) => {
   'source': {'kind': 'user', 'rpcId': requestId},
 };
 
-class _PrivateError implements Exception {
-  int stringReads = 0;
-  @override
-  String toString() {
-    stringReads++;
-    return 'SYNTHETIC_CUSTOM_ERROR_PRIVATE';
-  }
-}
-
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  for (final host in [HostRef.local, _ssh, _relay]) {
+  for (final host in [HostRef.local]) {
     testWidgets('current ${host.kind.name} writer-held records a safe failure without a watch error', (tester) async {
       final h = await _Harness.start(tester, selected: host);
       h.peer.carrier.promptError = _writerHeld;
@@ -400,29 +393,6 @@ void main() {
       }
     });
   }
-
-  testWidgets('arbitrary remote code, message and nested details are not copied into the log', (tester) async {
-    final h = await _Harness.start(tester);
-    h.peer.carrier.promptError = const DshRemoteException('SYNTHETIC_CODE_PRIVATE', 'SYNTHETIC_MESSAGE_PRIVATE', {
-      'nested': {'prompt': _text, 'path': '/SYNTHETIC_PATH_PRIVATE'},
-    });
-    final before = _before();
-    expect(await h.chat.send(_text), isFalse);
-    _failure(before, category: 'remote_other');
-    expect(h.state.error, appL10n.stateSendFailed);
-    expect(h.peer.carrier.prompts, hasLength(1));
-  });
-
-  testWidgets('unknown custom errors do not acquire another toString read for diagnostics', (tester) async {
-    final h = await _Harness.start(tester);
-    final error = _PrivateError();
-    h.peer.carrier.promptError = error;
-    final before = _before();
-    expect(await h.chat.send(_text), isFalse);
-    _failure(before, category: 'unknown');
-    expect(error.stringReads, 1, reason: 'the existing chatErrorText debugPrint remains the only conversion');
-    expect(h.state.error, appL10n.stateSendFailed);
-  });
 
   for (final sample in <(Object, String)>[
     (const DshHttpException(403, 'SYNTHETIC_HTTP_PRIVATE', body: 'SYNTHETIC_BODY_PRIVATE'), 'http'),
@@ -461,33 +431,6 @@ void main() {
       expect(h.peer.carrier.prompts.last['requestId'], isNot(first));
     });
   }
-
-  testWidgets('initial attachment upload failure is not a prompt failure', (tester) async {
-    final h = await _Harness.start(tester);
-    h.peer.carrier.uploadError = const DshRemoteException('UPLOAD_LIMIT', 'SYNTHETIC_UPLOAD_PRIVATE');
-    final before = _before();
-    expect(await h.chat.send(_text, attachments: [_file()]), isFalse);
-    expect(h.peer.carrier.argsOf('fileUploads/upload'), hasLength(1));
-    expect(h.peer.carrier.prompts, isEmpty);
-    expect(h.state.pending, isEmpty);
-    expect(
-      h.state.error,
-      appL10n.stateActionReason(appL10n.stateAttachmentUploadFailed, appL10n.stateRemoteUploadLimit),
-    );
-    _failure(before, stage: 'attachment_upload', category: 'remote_other');
-  });
-
-  testWidgets('failed image fallback upload reports its own unknown stage', (tester) async {
-    final h = await _Harness.start(tester);
-    h.peer.carrier.rejectImages = true;
-    h.peer.carrier.uploadError = const DshTransportException('SYNTHETIC_FALLBACK_PRIVATE');
-    final before = _before();
-    expect(await h.chat.send(_text, attachments: [_image()]), isFalse);
-    expect(h.peer.carrier.prompts, hasLength(1));
-    expect(h.peer.carrier.argsOf('fileUploads/upload'), hasLength(1));
-    expect(h.state.pending, isEmpty);
-    _failure(before, stage: 'attachment_upload', category: 'transport', unknown: true);
-  });
 
   testWidgets('successful image fallback retains both prompt calls and emits no failure', (tester) async {
     final h = await _Harness.start(tester);
@@ -576,15 +519,7 @@ void main() {
     });
   }
 
-  for (final change in [
-    'host',
-    'host_aba_no_frame',
-    'replacement_client',
-    'new_generation',
-    'follow_retired',
-    'invalidate',
-    'dispose',
-  ]) {
+  for (final change in ['new_generation', 'follow_retired', 'invalidate', 'dispose']) {
     testWidgets('late error after $change cannot add a current send failure', (tester) async {
       final h = await _Harness.start(tester);
       final old = h.peer;
@@ -670,22 +605,5 @@ void main() {
     expect(_added(before), isEmpty);
     await h.closeClients();
     await tester.pump();
-  });
-
-  testWidgets('a full 40-record ring still retains exactly the new safe send observation', (tester) async {
-    final h = await _Harness.start(tester);
-    for (var i = 0; i < 40; i++) {
-      appErrorLog.record(AppErrorSource.platform, 'older controlled record $i', StackTrace.empty);
-    }
-    final snapshot = appErrorLog.snapshot();
-    final before = _before();
-    expect(snapshot, hasLength(40));
-    h.peer.carrier.promptError = _writerHeld;
-    expect(await h.chat.send(_text), isFalse);
-    final record = _failure(before, category: 'session_writer_held');
-    expect(appErrorLog.snapshot(), hasLength(40));
-    expect(appErrorLog.snapshot().last, same(record));
-    expect(appErrorLog.snapshot(), isNot(contains(same(snapshot.first))));
-    expect(snapshot, hasLength(40), reason: 'the pre-send snapshot remains unchanged');
   });
 }

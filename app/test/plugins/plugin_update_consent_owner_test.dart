@@ -18,18 +18,7 @@ import 'support/notice_on_top.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  for (final mode in [
-    'same',
-    'cancel',
-    'other',
-    'roundtrip',
-    'no-frame',
-    'refresh',
-    'ready',
-    'disconnected',
-    'version-changed',
-    'removed',
-  ]) {
+  for (final mode in ['same', 'cancel', 'refresh', 'ready', 'disconnected', 'version-changed', 'removed']) {
     testWidgets('update confirmation belongs to original host: $mode', (tester) async {
       final a = FakePluginCarrier();
       final b = FakePluginCarrier();

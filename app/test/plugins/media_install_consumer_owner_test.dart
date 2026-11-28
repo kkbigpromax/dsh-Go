@@ -30,7 +30,7 @@ class _RecoveryCarrier extends FakePluginCarrier {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  for (final scenario in ['success', 'failure', 'covered', 'host', 'roundtrip', 'closed', 'recover', 'first-ready', 'client']) {
+  for (final scenario in ['success', 'failure', 'covered', 'host', 'closed', 'recover', 'first-ready', 'client']) {
     testWidgets('real media sheet owns its completion: $scenario', (tester) async {
       final a = _RecoveryCarrier();
       final b = FakePluginCarrier();
@@ -49,29 +49,37 @@ void main() {
       usePhoneView(tester);
       late BuildContext origin;
       var sheetCompleted = false;
-      await tester.pumpWidget(testApp(
-        Scaffold(body: Builder(builder: (context) {
-          origin = context;
-          return TextButton(
-            onPressed: () async {
-              await showMediaInstallSheet(context);
-              sheetCompleted = true;
-            },
-            child: const Text('Open media'),
-          );
-        })),
-        overrides: [
-          activeHostProvider.overrideWith(FixedHost.new),
-          switchConnectionProvider.overrideWith(() => SwitchConnection(ah)),
-          activeConnectionProvider.overrideWith((ref) => ref.watch(switchConnectionProvider)),
-          readListIdentityProvider.overrideWithValue(null),
-          localSafeModeProvider.overrideWithValue(false),
-          marketIndexFetcherProvider.overrideWithValue((url) async => parseMarketIndex(sampleIndex, url)),
-          officialMarketFetcherProvider.overrideWithValue(() async => officialFixtureMarket()),
-          npmIntegrityProvider.overrideWithValue((name, _) async => officialFixtureMarket().byName[name]?.listing?.integrity),
-          appVersionProvider.overrideWithValue(AppVersion.tryParse('1.0.11')!),
-        ],
-      ));
+      await tester.pumpWidget(
+        testApp(
+          Scaffold(
+            body: Builder(
+              builder: (context) {
+                origin = context;
+                return TextButton(
+                  onPressed: () async {
+                    await showMediaInstallSheet(context);
+                    sheetCompleted = true;
+                  },
+                  child: const Text('Open media'),
+                );
+              },
+            ),
+          ),
+          overrides: [
+            activeHostProvider.overrideWith(FixedHost.new),
+            switchConnectionProvider.overrideWith(() => SwitchConnection(ah)),
+            activeConnectionProvider.overrideWith((ref) => ref.watch(switchConnectionProvider)),
+            readListIdentityProvider.overrideWithValue(null),
+            localSafeModeProvider.overrideWithValue(false),
+            marketIndexFetcherProvider.overrideWithValue((url) async => parseMarketIndex(sampleIndex, url)),
+            officialMarketFetcherProvider.overrideWithValue(() async => officialFixtureMarket()),
+            npmIntegrityProvider.overrideWithValue(
+              (name, _) async => officialFixtureMarket().byName[name]?.listing?.integrity,
+            ),
+            appVersionProvider.overrideWithValue(AppVersion.tryParse('1.0.11')!),
+          ],
+        ),
+      );
       await tester.pumpAndSettle();
       final container = ProviderScope.containerOf(origin);
       await tester.tap(find.text('Open media'));
@@ -105,9 +113,11 @@ void main() {
       }
       var destinationCompleted = false;
       if (scenario == 'covered') {
-        unawaited(navigator.push(MaterialPageRoute<void>(
-          builder: (_) => const Scaffold(body: Text('New destination')),
-        )).then((_) => destinationCompleted = true));
+        unawaited(
+          navigator
+              .push(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('New destination'))))
+              .then((_) => destinationCompleted = true),
+        );
         await tester.pumpAndSettle();
         expect(sheetContext.mounted, isTrue, reason: 'the old sheet remains mounted under the new route');
         expect(sheetRoute.isCurrent, isFalse);
@@ -167,9 +177,11 @@ void main() {
       if (scenario == 'closed') {
         navigator.pop();
         await tester.pumpAndSettle();
-        unawaited(navigator.push(MaterialPageRoute<void>(
-          builder: (_) => const Scaffold(body: Text('New destination')),
-        )).then((_) => destinationCompleted = true));
+        unawaited(
+          navigator
+              .push(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('New destination'))))
+              .then((_) => destinationCompleted = true),
+        );
         await tester.pumpAndSettle();
       }
       if (scenario == 'failure') {

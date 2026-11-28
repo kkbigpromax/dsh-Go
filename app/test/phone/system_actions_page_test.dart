@@ -21,7 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../shell/golden_harness.dart';
-import 'support.dart' show FixedActiveHost, FixedHosts;
+import 'support.dart' show FixedActiveHost;
 
 final _zh = lookupL10n(AppLocale.zhCN);
 
@@ -93,7 +93,6 @@ Future<_Actions> _pump(
         if (reminders != null) runtimeBridgeProvider.overrideWithValue(_Reminders(reminders)),
         systemActionsProvider.overrideWith(() => actions),
         activeHostProvider.overrideWith(() => FixedActiveHost(host)),
-        hostsProvider.overrideWith(FixedHosts.new),
         localRuntimeProvider.overrideWith(
           () => FakeRuntime(const LocalRuntimeState(loaded: true, status: runningStatus)),
         ),
@@ -225,11 +224,6 @@ void main() {
         expect(find.text(line), findsOneWidget);
       });
     }
-
-    testWidgets('on a remote host it says those chats aren\'t covered', (tester) async {
-      await _pump(tester, const SystemActionsPage(), host: const HostRef.ssh('s'));
-      expect(find.text(_zh.systemActionsRemoteTitle), findsOneWidget);
-    });
   });
 
   group('the log', () {

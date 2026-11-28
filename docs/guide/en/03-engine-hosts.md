@@ -1,6 +1,6 @@
-# Engine and remote hosts
+# This phone's engine
 
-DSH can run right on this phone (this phone's engine), or on your computer or server with your phone connecting to it. Chats, workspaces and plugins belong to each host.
+DSH runs on this phone (this phone's engine); chats, workspaces and plugins are kept on it. This build has no remote hosts.
 
 ## Running in the background on iPhone
 
@@ -29,16 +29,6 @@ python3 -m pip --version
 
 Installing packages changes the Linux system and needs approval for that system write. Workspace-write permission does not replace it. Inspect the actual download, installation or execution error; do not reset, uninstall or change pairing settings to address a missing package. The Linux environment does not grant arbitrary access to other iOS apps.
 
-## This phone or remote
-
-The first time you open the app, choose how to use it:
-
-- **This phone**: installs the runtime on your phone; everything runs on this phone. The option shows the storage and memory it needs.
-- **Remote host**: uses DSH on your computer or server, with nothing installed on the phone. Recommended when the phone is short on memory or storage.
-- **Chat with characters**: the tavern only, with nothing installed; the app opens straight into the tavern, now and on later launches. Bringing chats over from DeepSeek starts here too.
-
-You can add DSH to this phone anytime: tap **Install runtime** on the engine page, or tap **This phone** when switching hosts. It starts once installed.
-
 ## This phone's engine
 
 <!-- nav: commonSettings,hubSettingsEngine -->
@@ -46,7 +36,7 @@ You can add DSH to this phone anytime: tap **Install runtime** on the engine pag
 
 - **Start**, **Stop**, **Restart**: stopping asks first; both stopping and restarting interrupt active chats.
 - If the engine fails to start, the page shows the cause and ways to fix it, such as retrying, **Start in Safe mode** or viewing logs.
-- **Start when DSH Go opens**: on by default. As long as DSH is installed on this phone, opening the app starts it, even while you use a remote host. Turn it off if you don't need that.
+- **Start when DSH Go opens**: on by default. As long as DSH is installed on this phone, opening the app starts it. Turn it off if you don't need that.
 - **Automatic Safe mode**: on by default. After two failed starts in a row, starts without plugins.
 - **Start in Safe mode**: enter Safe mode by hand. Once fixed, tap **Return to normal mode**. Entering and leaving both restart the engine.
 - **Logs**: the engine's live output.
@@ -78,72 +68,3 @@ With the defaults, chats, workspaces, plugins and settings are deleted, includin
 `Settings › Local engine › Uninstall runtime`
 
 Frees up storage. Chats, workspaces, plugins, settings, interface settings and skills on this phone are all deleted, and nothing is reinstalled. To use this phone's engine again, tap **Install runtime** on the same page. If you only need a break, stop the engine and turn off **Start when DSH Go opens**.
-
-## Switch hosts
-
-Open the chat list and tap the current host's name at the bottom to open **Switch host**, then choose **This phone** or a remote host. With no remote hosts yet, tap **Connect a computer or server**; otherwise tap **Manage remote hosts**.
-
-Tap the icon to the left of the host name for details: remote hosts show their name, connection status and current network path, with an on-demand latency measurement where supported. For this phone, it opens **Local engine**. The host name and dropdown arrow still switch hosts.
-
-<!-- nav: remoteSwitchHost,remoteManageHosts -->
-`Switch host › Manage remote hosts` · [Open](dshgo://open/remote)
-
-It's in Settings too:
-
-<!-- nav: commonSettings,commonRemoteHost -->
-`Settings › Remote host`
-
-On launch, the app reconnects to the host you used last. To start on this phone every time, turn off **Connect to the last host** on the remote hosts page; saved hosts stay, and you can connect to them by hand any time.
-
-## Add an SSH host
-
-The host needs SSH enabled and DSH installed (`npm i -g @deepseek-ai/dsh`).
-
-1. On the remote hosts page, tap **Add SSH host**.
-2. Enter the **Host** and **Username**. **Port** defaults to 22. The name is optional.
-3. Sign in with a **Password** or a **Private key**. You can **Import from file**, and add a **Private key passphrase (optional)**. Passwords and keys stay on this phone.
-4. **Instance management** defaults to **Managed**: **Start command** defaults to `dsh web`; if you installed DSH with nvm, enter its full path. For an instance you manage yourself, select **Attach only** and enter its **Remote DSH port** and **DSH launch token** from its launch URL. **Working directory (optional)** is where new chats start; use an absolute path in attach-only mode.
-5. Tap **Test connection**. The first time, **Trust this host?** appears: check the fingerprint on the host, and tap **Trust and connect** if it matches.
-6. Tap **Save**, then select the host in the list.
-
-In managed mode, testing starts or reuses DSH on the host, and it keeps running afterwards. **Attach only** opens an SSH tunnel to the specified port on remote `127.0.0.1`. It never discovers instances, starts, stops or restarts DSH, or reads/writes managed state files. Start the instance yourself first and keep it running. If connection fails, check the port and token; the app never restarts it as a repair. The token stays in secure storage on this phone, like the SSH password and private key.
-
-Managed mode refuses to replace a live instance whose start command differs or launch log is missing. A rejected token or refused reused port never authorizes a restart either. Check the settings or use **Attach only** first. If you really intend to replace the app-recorded instance, choose **Restart managed DSH** in the DSH section of Edit host and confirm. This may interrupt other clients and active chats; normal **Test connection** never performs it. Confirmed dead managed processes can still be started automatically.
-
-**SSH compression** is on by default, negotiating compression after authentication. Unsupported servers continue uncompressed. Turn it off in the host form if needed; save and establish a new SSH connection to apply.
-
-To change or delete a host, tap **Edit** next to it to open **Edit host**; **Delete this host** is at the bottom. Deleting removes only the settings, password, key and launch token saved on this phone; DSH and chats on the host stay.
-
-## DSH Remote
-
-No network setup, end-to-end encrypted. Good for computers on another network.
-
-1. Install the remote plugin in the host's DSH and sign in.
-2. On the remote hosts page, choose the same sign-in provider you used on that host, for example “Continue with GitHub”, and sign in with the same account. If the page lists no providers and shows only **Sign in in browser**, tap that button.
-3. Select an online host. On first connection, check that the identity fingerprint matches the one the host's remote plugin shows, then tap **Trust and connect**.
-
-Once signed in, the account sits at the top of the remote hosts page, with **Sign out** beside it; its hosts are listed below. The host list refreshes each time you open the page, or tap the refresh button at the top right. Tapping an offline host checks again and tells you if it's still offline.
-
-When the server supports it, you can also choose **Pair a computer by scanning**: sign in to DeepSeek in the app, scan the code shown by the computer’s Remote plugin, check the computer fingerprint, then enter the verification code as prompted. Camera permission is only for capturing the QR code; reading an image from photos or pasting the pairing link still works without it. Opening the scanner initializes the shared ML Kit SDK on demand, without requiring or enabling phone control’s text recognition. See the [FAQ](11-faq.md#local-text-recognition-and-google-ml-kit) for SDK statistics disclosures.
-
-Connections automatically try LAN / P2P, then TURN, and finally Relay without a direct-connection switch. Each path requires compatible server and Host support. Tap the route label on the connection card or beside a Host to see the actual route, connection time, available round-trip latency and fallback reason. WebRTC routes also show the selected ICE candidates' phone/Host IPv4 or IPv6 and UDP or TCP, never raw IP addresses. Unmeasured or unconfirmed values are not presented as known results.
-
-<!-- nav: commonSettings,commonRemoteHost,remoteCompactHistory -->
-`Settings › Remote host › Compact history`
-
-**Compact history** is off by default. Supporting DSH Remote Hosts summarize historical tool arguments and output to reduce history transfer; message text, live replies, approvals and original Host records stay unchanged. Switch to another host (or this phone) and back, or restart the app, to apply. The current client and its automatic reconnects retain their original mode to avoid mixing cached history. After turning it off, select the host again and reopen the chat to load full history. Older Hosts continue sending full history; SSH is unaffected.
-
-DSH Remote connects to one host at a time; switching disconnects the previous one. Over DSH Remote: you can send images only, DSH Web doesn’t open in the app, plugins can only be turned on or off, and DS Bot and chat log export aren't available. Conversation backups use a separate session-transfer capability, not chat log export.
-
-## Conversation backups and restore
-
-<!-- nav: commonSettings,commonRemoteHost,backupTitle -->
-`Settings › Remote host › Conversation backups`
-
-Connect the source Remote host, select a workspace and either one conversation or **Entire workspace**, then tap **Back up to phone**. Switch to the target host, reopen this page, choose an existing target workspace and tap a local backup to restore. Export and import are checked independently against each host; older plugins without the respective capability are identified.
-
-Files and the catalog are encrypted in app-private storage, with the key protected by system secret storage. Uninstalling the app or clearing app data loses these backups. Only complete entries whose length and SHA-256 match are published; interrupting a batch keeps completed entries. Every restore creates a new full snapshot without merging later messages. Attachments, workspace source files and cross-session relationships are excluded.
-
-If a commit disconnects or its outcome is unclear, **Restores to check** keeps the pending record. Connect to the original target with the original Remote device identity and tap **Check**. The server retains results for about five minutes; if unknown, inspect the target first. The app never automatically imports again. After checking, you can acknowledge and clear the pending record; another import may create a duplicate. If history was restored but not attached to the workspace, find the shown conversation ID instead of importing again. Deleting a local backup never deletes conversations on hosts.
-
-Remote currently connects to one host at a time, so copying uses backup-to-phone followed by switching and restoring, rather than simultaneous host-to-host forwarding.

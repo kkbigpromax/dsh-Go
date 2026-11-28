@@ -296,14 +296,13 @@ void main() {
         ),
       ),
     );
-    String? reason(SessionDeletionSupport support, {List<String> ids = const ['s1']}) =>
-        sessionDeletionDisabledReason(
-          context,
-          available: AsyncData(support),
-          busy: false,
-          sessions: const [],
-          ids: ids,
-        );
+    String? reason(SessionDeletionSupport support, {List<String> ids = const ['s1']}) => sessionDeletionDisabledReason(
+      context,
+      available: AsyncData(support),
+      busy: false,
+      sessions: const [],
+      ids: ids,
+    );
     // Not asked yet (no live connection / no ready mux generation) is a
     // "temporarily unavailable", never "this host does not support it".
     expect(reason(SessionDeletionSupport.unknown), '安全永久删除暂不可用，请重连或更新此主机；不会改为归档。');
@@ -456,32 +455,6 @@ void main() {
     await _settle(tester);
     expect(tester.widget<FilledButton>(_confirm).onPressed, isNotNull);
     expect(fixture.backend.calls, isEmpty);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('host switch while delete is held stops remaining batch and suppresses late UI', (tester) async {
-    final gate = Completer<void>();
-    addTearDown(() {
-      if (!gate.isCompleted) gate.complete();
-    });
-    final backend = _DeletionBackend()..firstDeleteReply = gate;
-    final fixture = await _start(tester, backend: backend);
-    await _bulkConfirmation(tester, fixture.container);
-    await tester.tap(_confirm);
-    await _settle(tester);
-    expect(backend.calls, hasLength(1));
-    final b = await _switchToB(tester, fixture.container, backend);
-    fixture.container.read(drawerSelectionProvider.notifier).start('s1');
-    final newer = fixture.container.read(drawerSelectionProvider);
-    gate.complete();
-    await _settle(tester);
-    expect(backend.calls, hasLength(1));
-    expect(backend.calls.where((call) => identical(call.client, b.client)), isEmpty);
-    expect(fixture.container.read(drawerSelectionProvider), same(newer));
-    expect(_tile('B first'), findsOneWidget);
-    expect(find.byKey(const ValueKey('session-delete-failures')), findsNothing);
-    expect(find.text('已永久删除 2 个对话'), findsNothing);
-    expect(find.byKey(const ValueKey('session-delete-progress')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

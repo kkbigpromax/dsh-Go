@@ -1,9 +1,7 @@
 import 'dart:io';
 
-import 'package:dsh_app/remote/secret_store.dart';
 import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/connection_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/schedule_editor_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
@@ -15,7 +13,6 @@ import 'package:dsh_app/ui/common/discard_guard.dart';
 import 'package:dsh_app/ui/features/preset_editor/preset_editor_page.dart';
 import 'package:dsh_app/ui/features/schedule_editor/schedule_editor_page.dart';
 import 'package:dsh_app/ui/providers/provider_form_page.dart';
-import 'package:dsh_app/ui/remote/ssh_host_form.dart';
 import 'package:dsh_client/dsh_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +24,6 @@ import '../bots/support.dart' as bots;
 import '../chat/support/harness.dart';
 import '../plugins/support/fake_plugin_host.dart';
 import '../providers/support.dart' as providers;
-import '../remote/support/fake_ssh.dart';
 import '../shell/golden_harness.dart' as shell;
 
 void main() {
@@ -92,19 +88,6 @@ void main() {
         hostWorkspacesProvider.overrideWith((ref) async => const []),
       ]),
     );
-  });
-
-  testWidgets('SSH 编辑读取已保存秘密后直接返回', (tester) async {
-    final navigator = await open(tester, const SshHostFormPage(existing: sampleSsh), [
-      secretStoreProvider.overrideWithValue(
-        MemorySecretStore({SshSecrets.passwordKey(sampleSsh.id): 'saved-password'}),
-      ),
-    ]);
-    expect(
-      find.byWidgetPredicate((widget) => widget is TextField && widget.controller?.text == 'saved-password'),
-      findsOneWidget,
-    );
-    await leave(tester, navigator);
   });
 
   testWidgets('新建 Bot 刚打开直接返回', (tester) async {

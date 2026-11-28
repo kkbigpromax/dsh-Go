@@ -20,7 +20,7 @@ import '../shell/golden_harness.dart' show FakeRuntime, runningStatus;
 
 void main() {
   for (final surface in ['settings', 'session']) {
-    for (final scenario in ['switch to local', 'same remote', 'same local']) {
+    for (final scenario in ['same local']) {
       testWidgets('permission default confirmation: $surface / $scenario', (tester) async {
         SharedPreferences.setMockInitialValues({});
         usePhoneView(tester);

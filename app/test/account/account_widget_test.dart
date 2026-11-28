@@ -1,15 +1,14 @@
 // Onboarding choice, signing-in state and account page, driven through the UI
 // with the real controller against an in-memory Host.
 
+import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/state/account_state.dart';
 import 'package:dsh_app/state/onboarding_state.dart';
 import 'package:dsh_app/ui/account/account_page.dart';
 import 'package:dsh_app/ui/account/account_widgets.dart';
 import 'package:dsh_app/ui/common/app_sheet.dart';
-import 'package:dsh_app/ui/onboarding/api_key_page.dart';
 import 'package:dsh_app/ui/onboarding/connect_page.dart';
 import 'package:dsh_app/ui/theme/theme.dart';
-import 'package:dsh_client/dsh_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,8 +26,6 @@ ProviderContainer _containerOf(WidgetTester tester, Type type) =>
 
 void main() {
   group('onboarding connect step', () {
-    late FakeAccountApi api;
-    late FakeBrowser browser;
     late int done;
 
     Future<void> pumpConnect(WidgetTester tester) async {
@@ -36,145 +33,29 @@ void main() {
       await tester.pumpWidget(
         accountApp(
           home: ConnectPage(onDone: () => done++),
-          overrides: accountOverrides(api: api, browser: browser),
+          overrides: accountOverrides(api: FakeAccountApi(), browser: FakeBrowser()),
         ),
       );
       await _settle(tester);
     }
 
-    setUp(() {
-      api = FakeAccountApi();
-      browser = FakeBrowser();
-      done = 0;
+    setUp(() => done = 0);
+
+    testWidgets('a provider or later; no DeepSeek sign-in or API key', (tester) async {
+      await pumpConnect(tester);
+      expect(find.text(appL10n.shellConnectModel), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, appL10n.engineProviderAdd), findsOneWidget);
+      expect(find.text(appL10n.shellSetUpLater), findsOneWidget);
+      expect(find.text(appL10n.shellSignInDeepSeek), findsNothing);
+      expect(find.text(appL10n.shellUseApiKey), findsNothing);
     });
 
-    testWidgets('account sign-in is the primary choice; cancel returns to it', (tester) async {
+    testWidgets('later finishes the step and stops asking', (tester) async {
       await pumpConnect(tester);
-      expect(find.widgetWithText(FilledButton, '用 DeepSeek 账号登录'), findsOneWidget);
-      expect(find.widgetWithText(OutlinedButton, '使用 API Key'), findsOneWidget);
-      expect(find.text('稍后设置'), findsOneWidget);
-
-      await tester.tap(find.text('用 DeepSeek 账号登录'));
-      await _settle(tester);
-      expect(api.calls, contains('startSignIn:web'));
-      expect(find.text('正在准备登录'), findsOneWidget);
-
-      api.emit(signedOutView(attempt: attempt(SignInPhase.waitingBrowser)));
-      await _settle(tester);
-      expect(find.text('在浏览器中完成登录'), findsOneWidget);
-      expect(browser.opened.single.queryParameters['theme'], 'light');
-      expect(find.text('重新打开登录页'), findsOneWidget);
-
-      await tester.tap(find.text('取消登录'));
-      await _settle(tester);
-      expect(api.calls, contains('cancelSignIn:att-1'));
-      expect(find.text('连接 DeepSeek'), findsOneWidget);
-      expect(find.text('登录没有完成'), findsNothing, reason: 'cancelling is not an error');
-      expect(done, 0);
-    });
-
-    testWidgets('success shows a short confirmation, then continues and stops asking', (tester) async {
-      await pumpConnect(tester);
-      await tester.tap(find.text('用 DeepSeek 账号登录'));
-      await _settle(tester);
-      api.emit(signedOutView(attempt: attempt(SignInPhase.waitingBrowser)));
-      await _settle(tester);
-      api.emit(signedInView(attempt: attempt(SignInPhase.succeeded)));
-      await _settle(tester);
-
-      expect(find.text('登录成功'), findsOneWidget);
-      expect(find.text('欢迎，雾蓝'), findsOneWidget);
-      expect(done, 0);
-      await tester.pump(const Duration(seconds: 1));
-      expect(done, 1);
-      expect(_containerOf(tester, ConnectPage).read(onboardingPrefsProvider).keySkipped, isTrue);
-      expect(api.calls, contains('initializeDefaultModel'));
-    });
-
-    testWidgets('a failure is explained inline and can be dismissed', (tester) async {
-      api.onStart = () async => throw const DshRemoteException('gateway/internal', 'account: no-response');
-      await pumpConnect(tester);
-      await tester.tap(find.text('用 DeepSeek 账号登录'));
-      await _settle(tester);
-      expect(find.text('连不上 DeepSeek'), findsOneWidget);
-      expect(find.text('检查手机网络后重试'), findsOneWidget);
-
-      await tester.tap(find.byTooltip('关闭'));
-      await _settle(tester);
-      expect(find.text('连不上 DeepSeek'), findsNothing);
-    });
-
-    testWidgets('returning without a result offers to reopen the page', (tester) async {
-      await pumpConnect(tester);
-      await tester.tap(find.text('用 DeepSeek 账号登录'));
-      await _settle(tester);
-      api.emit(signedOutView(attempt: attempt(SignInPhase.waitingBrowser)));
-      await _settle(tester);
-
-      _containerOf(tester, ConnectPage).read(accountProvider.notifier).noteAppResumed();
-      await tester.pump(const Duration(seconds: 2));
-      await _settle(tester);
-      expect(find.text('还没收到登录结果'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilledButton, '重新打开登录页'));
-      await _settle(tester);
-      expect(browser.opened, hasLength(2));
-      await tester.tap(find.text('取消登录'));
-      await _settle(tester);
-    });
-
-    testWidgets('"使用 API Key" keeps the key path, with a way back', (tester) async {
-      await pumpConnect(tester);
-      await tester.tap(find.text('使用 API Key'));
-      await _settle(tester);
-      expect(find.byType(ApiKeyPage), findsOneWidget);
-      expect(find.text('保存并继续'), findsOneWidget);
-
-      await tester.tap(find.byTooltip('返回'));
-      await _settle(tester);
-      expect(find.byType(ApiKeyPage), findsNothing);
-      expect(find.text('用 DeepSeek 账号登录'), findsOneWidget);
-
-      await tester.tap(find.text('使用 API Key'));
-      await _settle(tester);
-      await tester.enterText(find.byType(TextField), 'sk-0123456789abcdef0123456789');
-      await tester.pump();
-      await tester.tap(find.text('保存并继续'));
-      await _settle(tester);
-      expect(done, 1);
-    });
-
-    testWidgets('system back returns from key entry without finishing', (tester) async {
-      await pumpConnect(tester);
-      expect(tester.widget<PopScope<void>>(find.byType(PopScope<void>)).canPop, isTrue);
-      await tester.tap(find.text('使用 API Key'));
-      await _settle(tester);
-      await tester.binding.handlePopRoute();
-      await _settle(tester);
-      expect(find.byType(ApiKeyPage), findsNothing);
-      expect(find.text('连接 DeepSeek'), findsOneWidget);
-      expect(done, 0);
-    });
-
-    testWidgets('system back cancels a pending browser sign-in', (tester) async {
-      await pumpConnect(tester);
-      await tester.tap(find.text('用 DeepSeek 账号登录'));
-      await _settle(tester);
-      api.emit(signedOutView(attempt: attempt(SignInPhase.waitingBrowser)));
-      await _settle(tester);
-      await tester.binding.handlePopRoute();
-      await _settle(tester);
-      expect(api.calls, contains('cancelSignIn:att-1'));
-      expect(find.text('连接 DeepSeek'), findsOneWidget);
-      expect(done, 0);
-    });
-
-    testWidgets('"稍后设置" continues without signing in', (tester) async {
-      await pumpConnect(tester);
-      await tester.tap(find.text('稍后设置'));
+      await tester.tap(find.text(appL10n.shellSetUpLater));
       await _settle(tester);
       expect(done, 1);
       expect(_containerOf(tester, ConnectPage).read(onboardingPrefsProvider).keySkipped, isTrue);
-      expect(api.calls.where((c) => c.startsWith('startSignIn')), isEmpty);
     });
   });
 
@@ -285,15 +166,7 @@ void main() {
       browserHint: BrowserHint.returned,
     );
     final screens = <String, (Widget Function(), AccountState)>{
-      'connect': (
-        () => ConnectPage(onDone: () {}),
-        const AccountState(
-          phase: AccountPhase.signedOut,
-          connected: true,
-          failure: SignInFailure(SignInFailureKind.interrupted),
-        ),
-      ),
-      'connect waiting': (() => ConnectPage(onDone: () {}), waiting),
+      'connect': (() => ConnectPage(onDone: () {}), const AccountState(phase: AccountPhase.signedOut)),
       'account signed in': (
         () => const AccountPage(),
         const AccountState(

@@ -10,7 +10,6 @@ import '../../state/engine_control.dart';
 import '../../state/safe_mode_state.dart';
 import '../common/status_chip.dart';
 import '../engine/engine_status.dart';
-import '../remote/remote_screen.dart';
 import '../settings/background_guide_page.dart';
 import '../theme/theme.dart';
 import 'recovery_actions.dart';
@@ -68,7 +67,6 @@ class FailureCardModel {
             if (tawcRecoveryAvailable) FailureAction.retry,
             // HarmonyOS: a safe run that couldn't launch can still go back to the person's own configuration.
             if (f.safeMode && f.causeUnknown) FailureAction.startNormal,
-            FailureAction.remote,
             FailureAction.showLog,
           ],
         );
@@ -143,7 +141,6 @@ enum FailureAction {
   retryWithTawcroot,
   startNormal,
   background,
-  remote,
   showLog;
 
   String get label => switch (this) {
@@ -153,7 +150,6 @@ enum FailureAction {
     FailureAction.retryWithTawcroot => appL10n.phoneFailureRetryWithTawcroot,
     FailureAction.startNormal => appL10n.phoneFailureStartNormal,
     FailureAction.background => appL10n.phoneEngineKeepAlive,
-    FailureAction.remote => appL10n.commonRemoteHost,
     FailureAction.showLog => appL10n.commonViewLogs,
   };
 }
@@ -209,8 +205,6 @@ class EngineFailureCard extends ConsumerWidget {
           unawaited(SafeModeActions.showFailureLog(context, summary: model.detail));
         case FailureAction.background:
           unawaited(Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) => const BackgroundGuidePage())));
-        case FailureAction.remote:
-          unawaited(Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) => const RemoteScreen())));
       }
     }
 

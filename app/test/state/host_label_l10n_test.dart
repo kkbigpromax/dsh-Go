@@ -5,7 +5,6 @@ import 'package:dsh_app/l10n/l10n.dart';
 import 'package:dsh_app/runtime/runtime_bridge.dart';
 import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/connection_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/ui/chat/chat_screen.dart';
 import 'package:dsh_app/ui/chat/widgets/whale_tail.dart';
@@ -70,18 +69,6 @@ void main() {
 
     useEnglish();
     expect(conn.label, 'This phone');
-  });
-
-  test('remote labels keep the host name and translate the rest', () {
-    _useChinese();
-    final ssh = HostConnection(client: _client(), isLocal: false, kind: HostKind.ssh, hostId: 'mac', name: '书房的 Mac');
-    final relay = HostConnection(client: _client(), isLocal: false, kind: HostKind.relay, hostId: 'r1');
-    expect(ssh.label, '书房的 Mac · SSH');
-    expect(relay.label, '远程主机 · 远程');
-
-    useEnglish();
-    expect(ssh.label, '书房的 Mac · SSH');
-    expect(relay.label, 'Remote host · Remote');
   });
 
   test('a fixed label wins', () {

@@ -5,7 +5,6 @@ import 'package:dsh_app/forum/forum_auth.dart';
 import 'package:dsh_app/forum/forum_config.dart';
 import 'package:dsh_app/forum/forum_crypto.dart';
 import 'package:dsh_app/l10n/l10n.dart';
-import 'package:dsh_app/remote/relay/dsh_remote_backend.dart';
 import 'package:dsh_app/remote/secret_store.dart';
 import 'package:dsh_app/secrets/secure_storage.dart';
 import 'package:dsh_app/share_hosted/hosted_link.dart';
@@ -13,11 +12,9 @@ import 'package:dsh_app/share_hosted/hosted_links_state.dart';
 import 'package:dsh_app/state/account_state.dart' show accountBrowserProvider;
 import 'package:dsh_app/state/android_features.dart';
 import 'package:dsh_app/state/credential_recovery.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/provider_keys.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/ui/onboarding/api_key_page.dart';
-import 'package:dsh_app/ui/remote/ssh_host_form.dart';
 import 'package:dsh_app/ui/settings/privacy_page.dart';
 import 'package:dsh_app/ui/theme/theme.dart';
 import 'package:dsh_client/dsh_client.dart';
@@ -30,7 +27,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../account/support.dart' show FakeBrowser;
 import '../engine_settings/support.dart' as engine;
-import '../remote/support/fake_relay.dart';
 import '../shell/golden_harness.dart';
 
 final _zh = lookupL10n(AppLocale.zhCN);
@@ -79,9 +75,7 @@ class _FailingSettings extends FakeSettings {
 }
 
 class _UnreadableSecrets implements SecretStore {
-  _UnreadableSecrets([this.code = 'secrets_unreadable']);
-
-  final String code;
+  final String code = 'secrets_unreadable';
 
   /// Store calls that changed or would have changed something (write, delete).
   int writes = 0;
@@ -146,7 +140,6 @@ void main() {
     const PrivacyPage(),
     overrides: [
       ...engine.engineOverrides(DshClient.withCarrier(engine.FakeSettingsHost())),
-      relayBackendProvider.overrideWith((ref) => FakeRelayBackend()),
       operatingSystemProvider.overrideWithValue(os),
     ],
   );
@@ -244,11 +237,7 @@ void main() {
         goldenApp(
           home: const ApiKeyPage(onboarding: false),
           brightness: Brightness.light,
-          overrides: [
-            settingsProvider.overrideWith(() => settings),
-            relayBackendProvider.overrideWith((ref) => FakeRelayBackend()),
-            operatingSystemProvider.overrideWithValue(os),
-          ],
+          overrides: [settingsProvider.overrideWith(() => settings), operatingSystemProvider.overrideWithValue(os)],
         ),
       );
       await tester.enterText(find.byType(TextField), 'sk-new');
@@ -290,65 +279,6 @@ void main() {
       expect(vault.calls, isEmpty);
     });
 
-    Future<void> saveHost(WidgetTester tester, String os, SecretStore secrets) async {
-      usePhoneSurface(tester);
-      await tester.pumpWidget(
-        goldenApp(
-          home: const SshHostFormPage(
-            existing: SshHostConfig(id: 'h1', name: 'Mac', host: 'example.invalid', user: 'me'),
-          ),
-          brightness: Brightness.light,
-          overrides: [
-            secretStoreProvider.overrideWithValue(secrets),
-            operatingSystemProvider.overrideWithValue(os),
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byWidgetPredicate(
-          (widget) => widget is TextField && widget.keyboardType == TextInputType.visiblePassword,
-        ),
-        'new-password',
-      );
-      await tester.pump();
-      await tester.tap(find.text(_zh.commonSave).last);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
-    }
-
-    testWidgets('SSH host: offers the way out and keeps the form', (tester) async {
-      final secrets = _UnreadableSecrets('secrets_key_missing');
-      await saveHost(tester, 'ohos', secrets);
-      expect(find.text(_zh.harmonyCredentialsClearBody), findsOneWidget);
-      await tester.tap(find.text(_zh.commonCancel).last);
-      await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(SshHostFormPage), findsOneWidget);
-      expect(secrets.writes, 1, reason: 'not tried again by itself');
-      expect(vault.recovers, isEmpty);
-    });
-
-    testWidgets('SSH host on Android: only that it didn\'t save', (tester) async {
-      await saveHost(tester, 'android', _UnreadableSecrets());
-      expect(find.text(_zh.commonSaveFailed), findsOneWidget);
-      expect(find.text(_zh.harmonyCredentialsClearBody), findsNothing);
-    });
-
-    for (final code in const ['secrets_unreadable', 'secrets_key_missing', 'secrets_key_unusable']) {
-      test('relay account, $code: says so, and is not retried as a network error', () async {
-        final backend = DshRemoteRelayBackend(secrets: _UnreadableSecrets(code), serverUrl: 'https://relay.example');
-        addTearDown(backend.close);
-        await expectLater(
-          backend.currentUser(),
-          throwsA(
-            isA<HostLinkError>()
-                .having((e) => e.message, 'message', appL10n.harmonyCredentialsUnreadableHint)
-                .having((e) => e.retryable, 'retryable', isFalse),
-          ),
-        );
-      });
-    }
-
     test('forum sign-in: says the keys can\'t be read and where to go', () async {
       final c = ProviderContainer(
         overrides: [
@@ -381,7 +311,6 @@ void main() {
     late _MemoryLinks links;
     late _MemoryKeys keys;
     late MemorySecretStore forum;
-    late List<FakeRelayBackend> relays;
     late int keyPairsMade;
     late ProviderContainer c;
 
@@ -399,7 +328,6 @@ void main() {
       ]);
       keys = _MemoryKeys({'custom': 'old-provider-key'});
       forum = MemorySecretStore({'session:$forumDefaultBaseUrl': '{"key":"old","client":"c"}'});
-      relays = [];
       keyPairsMade = 0;
       FlutterSecureStorage.setMockInitialValues({'deepseek_api_key': 'old-api-key'});
       vault.whenCleared(() {
@@ -418,11 +346,6 @@ void main() {
             keyPairsMade++;
             return generateForumKeyPairSync();
           }),
-          relayBackendProvider.overrideWith((ref) {
-            final relay = FakeRelayBackend(user: relays.isEmpty ? sampleRelayUser : null);
-            relays.add(relay);
-            return relay;
-          }),
         ],
       );
       addTearDown(c.dispose);
@@ -438,17 +361,13 @@ void main() {
       c.listen(settingsProvider, (_, _) {});
       c.listen(hostedLinksProvider, (_, _) {});
       c.listen(forumAuthProvider, (_, _) {});
-      c.listen(relayAccountProvider, (_, _) {});
       await settle();
       expect(c.read(settingsProvider).apiKey, 'old-api-key');
       expect(c.read(settingsProvider).customProviderIds, {'custom'});
       expect(c.read(hostedLinksProvider).links, hasLength(1));
       expect(c.read(forumAuthProvider).signedIn, isTrue);
-      expect(c.read(relayAccountProvider).value?.signedIn, isTrue);
       await c.read(forumAuthProvider.notifier).authorizeUrl();
       expect(keyPairsMade, 1);
-      final relaysBefore = relays.length;
-      c.read(activeHostProvider.notifier).select(const HostRef.relay('r1'));
 
       await c.read(credentialRecoveryProvider).recover();
       await settle();
@@ -459,9 +378,6 @@ void main() {
       expect(c.read(settingsProvider).loaded, isTrue, reason: 'no trip back to the splash');
       expect(c.read(hostedLinksProvider).links, isEmpty);
       expect(c.read(forumAuthProvider).signedIn, isFalse);
-      expect(relays.length, greaterThan(relaysBefore), reason: 'the old account object is gone');
-      expect(c.read(relayAccountProvider).value?.signedIn, isFalse);
-      expect(c.read(activeHostProvider), HostRef.local);
 
       // The next save writes what's there now: the old link stays gone, and the
       // forum's key pair is made anew rather than remembered.

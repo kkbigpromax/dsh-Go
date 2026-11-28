@@ -23,9 +23,4 @@ final androidSystemFeaturesProvider = Provider<bool>(
   (ref) => androidSystemFeaturesOn(ref.watch(operatingSystemProvider)),
 );
 
-/// Whether flutter_webrtc has an implementation here, for DSH Remote's direct path.
-final webRtcAvailableProvider = Provider<bool>((ref) => webRtcOn(ref.watch(operatingSystemProvider)));
-
 bool androidSystemFeaturesOn(String os) => os != 'ohos' && os != 'ios';
-
-bool webRtcOn(String os) => os != 'ohos';

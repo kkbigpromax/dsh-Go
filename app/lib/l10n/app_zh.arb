@@ -6912,8 +6912,8 @@
   "localeSystem": "跟随系统",
   "localeZh": "简体中文",
   "localeEn": "English",
-  "localEnvChooseTitle": "DSH 在哪里运行？",
-  "localEnvChooseMessage": "之后可以在设置里更改",
+  "localEnvChooseTitle": "在这台手机上运行 DSH",
+  "localEnvChooseMessage": "先安装本机运行环境，之后可以在设置里卸载",
   "localEnvThisPhoneDetail": "存储约 {storage} MB · 内存约 {memory} MB",
   "@localEnvThisPhoneDetail": {
     "placeholders": {
@@ -11637,6 +11637,8 @@
   "shellShow": "显示",
   "shellApiKeyEncrypted": "加密保存在本机",
   "shellGetApiKey": "获取 API Key",
+  "shellConnectModel": "连接模型",
+  "shellConnectModelMessage": "添加一个兼容 OpenAI 或 Anthropic 的模型渠道。ChatGPT、Claude 订阅登录在「设置 › 模型」里。",
   "shellConnectDeepSeek": "连接 DeepSeek",
   "shellConnectDeepSeekMessage": "登录 DeepSeek 账号即可开始，无需 API Key",
   "shellAccountSignInUnsupported": "当前引擎不支持账号登录",

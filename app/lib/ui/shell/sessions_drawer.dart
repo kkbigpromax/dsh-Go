@@ -25,7 +25,7 @@ import '../../state/session_deletion_state.dart';
 import '../../state/sessions_state.dart';
 import '../../state/read_list_identity.dart';
 import '../../state/workspaces_state.dart';
-import '../bots/bots_page.dart' show BotsPage, UnreadBadge;
+import '../bots/bots_page.dart' show UnreadBadge;
 import '../chat/media/media_format.dart' show chatTitleShown;
 import '../common/app_sheet.dart';
 import '../common/empty_view.dart';
@@ -35,8 +35,6 @@ import '../common/read_list_status.dart';
 import '../common/status_dot.dart';
 import '../onboarding/local_install.dart';
 import '../remote/host_status.dart';
-import '../remote/host_switcher.dart' show showHostSheet;
-import '../remote/network_details_sheet.dart' show showRemoteNetworkDetails;
 import '../safe_mode/engine_failure_card.dart';
 import '../safe_mode/safe_mode_banner.dart';
 import '../share/share_entry.dart';
@@ -249,7 +247,7 @@ class SessionsDrawer extends ConsumerWidget {
                       child: ExcludeSemantics(
                         excluding: selecting,
                         child: IdentityBar(
-                          onHost: () => showHostSheet(context, onManage: () => onOpen(DrawerDestination.remote)),
+                          onHost: () => onOpen(DrawerDestination.engine),
                           onLocalDetails: () => onOpen(DrawerDestination.engine),
                           onFeatures: () => onOpen(DrawerDestination.features),
                           onSettings: () => onOpen(DrawerDestination.settings),
@@ -493,9 +491,8 @@ class _SessionList extends ConsumerWidget {
     }
     // DS Bot's conversations (its Bots' chats, groups, members' sessions)
     // fold into one row that opens the Bot pages.
-    final botReady = ref.watch(dsBotProvider.select((s) => s.ready));
-    final showBots = scope.bots.isNotEmpty || (workspace == null && botReady);
-    if (scope.sessions.isEmpty && !showBots && ref.watch(drawerViewProvider).folders.isEmpty) {
+    // DS Bot is not part of this build (docs/fork-maintenance.md): no drawer row.
+    if (scope.sessions.isEmpty && ref.watch(drawerViewProvider).folders.isEmpty) {
       if (scope.readOnly) return _Centered(child: Text(readListStatusText(scope.status)));
       return workspace == null ? const _EmptyState() : const _WorkspaceEmptyState();
     }
@@ -503,16 +500,6 @@ class _SessionList extends ConsumerWidget {
       now: now,
       onNewChat: onClose,
       readOnly: scope.readOnly,
-      leading: showBots
-          ? DsBotDrawerRow(
-              running: scope.bots.any((s) => s.running),
-              onTap: () {
-                Navigator.of(context).push(BotsPage.route());
-                // Close once the page covers us, so "back" lands on the chat.
-                Future<void>.delayed(AppMotion.slow, onClose);
-              },
-            )
-          : null,
       onOpen: (id) {
         if (ref.read(readListIdentityProvider) != identity ||
             ref.read(drawerScopeProvider)?.sessions.any((s) => s.sessionId == id) != true) {
@@ -848,8 +835,6 @@ class _EmptyState extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final host = ref.watch(activeHostProvider);
-    if (!host.isLocal) return _RemoteEmptyState(host: host);
     final status = ref.watch(localRuntimeProvider.select((s) => s.status));
     if (EngineFailureCard.visibleFor(status)) {
       return const SingleChildScrollView(padding: EdgeInsets.fromLTRB(10, 8, 10, 16), child: EngineFailureCard());
@@ -892,53 +877,6 @@ class _EmptyState extends ConsumerWidget {
         icon: AppIcons.power,
         title: l10n.shellEngineNotRunning,
         message: l10n.shellEngineStatusHint,
-      ),
-    };
-    return _Centered(child: view);
-  }
-}
-
-/// Empty list on a remote host: connecting, failed (with the reason and a
-/// retry), or connected with no conversations yet.
-class _RemoteEmptyState extends ConsumerWidget {
-  const _RemoteEmptyState({required this.host});
-
-  final HostRef host;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final name = ref.watch(hostNameProvider(host)) ?? l10n.commonRemoteHost;
-    final status = ref.watch(hostLinkStatusProvider(host)).value ?? HostLinkStatus.idle;
-    void retry() => ref.read(remoteConnectionProvider(host).notifier).retry();
-    final view = switch (status.phase) {
-      HostLinkPhase.connected => EmptyView(
-        compact: true,
-        icon: AppIcons.chat,
-        title: l10n.shellNoChatsYet,
-        message: l10n.shellNewChatsHint,
-      ),
-      HostLinkPhase.failed => EmptyView(
-        compact: true,
-        icon: AppIcons.disconnected,
-        title: l10n.shellHostUnreachable(name),
-        message: status.error?.message ?? l10n.commonConnectionFailed,
-        actionLabel: status.error?.retryable ?? true ? l10n.commonRetry : null,
-        onAction: retry,
-      ),
-      HostLinkPhase.reconnecting => EmptyView(
-        compact: true,
-        icon: AppIcons.reconnecting,
-        title: l10n.shellHostReconnecting(name),
-        message: status.error?.message,
-        actionLabel: l10n.shellRetryNow,
-        onAction: retry,
-      ),
-      _ => EmptyView(
-        compact: true,
-        icon: AppIcons.reconnecting,
-        title: l10n.shellHostConnecting(name),
-        message: status.step == null ? l10n.shellHostChatsAfterConnecting : '${status.step!.label}…',
       ),
     };
     return _Centered(child: view);
@@ -999,7 +937,7 @@ class IdentityBar extends ConsumerWidget {
                 IconButton(
                   key: const ValueKey('identity-host-details'),
                   tooltip: host.isLocal ? l10n.phoneEngineTitle : l10n.remoteNetworkDetails,
-                  onPressed: host.isLocal ? onLocalDetails : () => showRemoteNetworkDetails(context, host),
+                  onPressed: onLocalDetails,
                   padding: const EdgeInsets.all(4),
                   constraints: const BoxConstraints.tightFor(width: keySize, height: keySize),
                   style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),

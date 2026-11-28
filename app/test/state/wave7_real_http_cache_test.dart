@@ -22,7 +22,6 @@ import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/state/subscriptions_state.dart';
 import 'package:dsh_app/state/workspaces_state.dart';
-import 'package:dsh_app/ui/account/account_page.dart';
 import 'package:dsh_app/ui/chat/model_sheet.dart';
 import 'package:dsh_app/ui/common/segmented_pill.dart';
 import 'package:dsh_app/ui/plugins/plugins_screen.dart';
@@ -369,12 +368,6 @@ void main() {
         await tester.tap(find.byTooltip(appL10n.pluginsRefresh));
         await tester.pump();
         expect(tester.widget<Switch>(find.byType(Switch).first).onChanged, isNull);
-      } else if (kind == 'providers') {
-        await tester.tap(find.text('DeepSeek').first);
-        await tester.pumpAndSettle();
-        expect(find.byType(AccountPage), findsOneWidget);
-        await tester.tap(find.byTooltip(appL10n.commonBack));
-        await tester.pumpAndSettle();
       }
       final before = scroll.position.pixels;
       await tester.drag(find.byWidgetPredicate((w) => identical(w, scroll.widget)), const Offset(0, -280));

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
-import '../../remote/remote_background.dart';
 import '../../runtime/background_net.dart';
 import '../../runtime/background_protection.dart';
 import '../../runtime/runtime_state.dart';
@@ -343,7 +342,6 @@ class _SuspendedPageState extends ConsumerState<_SuspendedPage> {
             ),
           ],
         ),
-        if (!ios) const _RemoteBackgroundSection(),
       ],
     );
   }
@@ -375,7 +373,6 @@ class _SuspendedPageState extends ConsumerState<_SuspendedPage> {
             SettingsTile(title: l10n.harmonyBackgroundRemoteTitle, subtitle: l10n.harmonyBackgroundRemote),
           ],
         ),
-        if (os == 'ohos') const _RemoteBackgroundSection(),
         SettingsSection(
           title: l10n.harmonyBackgroundLong,
           children: [
@@ -401,38 +398,6 @@ class _SuspendedPageState extends ConsumerState<_SuspendedPage> {
         ),
       ],
     );
-  }
-}
-
-class _RemoteBackgroundSection extends ConsumerWidget {
-  const _RemoteBackgroundSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final options = ref.watch(remoteBackgroundOptionsProvider).value;
-    return SettingsSection(
-      title: l10n.remoteBackgroundProtectionTitle,
-      children: [
-        SettingsSwitchTile(
-          key: const ValueKey('remote-background-audio'),
-          title: l10n.backgroundProtectionAudio,
-          subtitle: l10n.remoteBackgroundAudioHint,
-          value: options?.audio ?? false,
-          onChanged: options == null
-              ? null
-              : (value) => _set(context, () => ref.read(remoteBackgroundOptionsProvider.notifier).setAudio(value)),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _set(BuildContext context, Future<void> Function() change) async {
-    try {
-      await change();
-    } catch (_) {
-      if (context.mounted) showBriefNotice(context, context.l10n.backgroundProtectionUpdateFailed);
-    }
   }
 }
 

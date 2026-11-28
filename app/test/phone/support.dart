@@ -248,10 +248,7 @@ class FakePhoneNative {
     _messenger.setMockMethodCallHandler(phoneMethods, null);
     // A provider can outlive the fake by a frame at teardown and cancel its event stream
     // then: leave a quiet handler rather than none (removePhoneNative removes it outright).
-    _messenger.setMockStreamHandler(
-      phoneEvents,
-      MockStreamHandler.inline(onListen: (_, _) {}, onCancel: (_) {}),
-    );
+    _messenger.setMockStreamHandler(phoneEvents, MockStreamHandler.inline(onListen: (_, _) {}, onCancel: (_) {}));
   }
 
   bool get listening => _sink != null;
@@ -288,7 +285,13 @@ class FakePhoneNative {
       case 'setBackgroundViewport':
         final viewportResult = results[call.method] ?? {'ok': true};
         if (viewportResult['ok'] == true) {
-          status = {...status, 'background': {..._background, 'viewport': {'v': 1, 'preset': args['preset']}}};
+          status = {
+            ...status,
+            'background': {
+              ..._background,
+              'viewport': {'v': 1, 'preset': args['preset']},
+            },
+          };
         }
         return viewportResult;
       case 'setBackgroundParallelLimit':
@@ -298,9 +301,13 @@ class FakePhoneNative {
           final old = (_background['parallelism'] as Map).cast<String, Object?>();
           final limit = args['limit'] as int;
           final current = old['effectiveLimit'] as int;
-          status = {...status, 'background': {..._background, 'parallelism': {
-            ...old, 'configuredLimit': limit, 'effectiveLimit': current > limit ? limit : current,
-          }}};
+          status = {
+            ...status,
+            'background': {
+              ..._background,
+              'parallelism': {...old, 'configuredLimit': limit, 'effectiveLimit': current > limit ? limit : current},
+            },
+          };
         }
         return capacityResult;
       case 'setBackgroundMode':
@@ -377,8 +384,14 @@ class FakePhoneNative {
     final id = args['draftId'] as String?;
     switch (method) {
       case 'skills.list':
-        return result ?? {'learn': learn, 'skills': skills.values.toList(), 'drafts': drafts.values.toList(),
-          'legacy': legacy.values.toList(), 'archived': archived.toList()};
+        return result ??
+            {
+              'learn': learn,
+              'skills': skills.values.toList(),
+              'drafts': drafts.values.toList(),
+              'legacy': legacy.values.toList(),
+              'archived': archived.toList(),
+            };
       case 'skills.get':
         return result ?? skills[name] ?? {'error': 'changed', 'detail': 'Unknown skill.'};
       case 'skills.setLearn':
@@ -402,7 +415,6 @@ class FakePhoneNative {
         throw MissingPluginException(method);
     }
   }
-
 }
 
 /// Acts as a build without the native module: every call fails with
@@ -479,21 +491,4 @@ class FixedActiveHost extends ActiveHostController {
 
   @override
   HostRef build() => host;
-}
-
-class FixedHosts extends HostsController {
-  @override
-  HostsState build() => const HostsState(
-    loaded: true,
-    ssh: [
-      SshHostConfig(
-        id: 'lab',
-        name: '实验室服务器',
-        host: 'lab.example.com',
-        port: 22,
-        user: 'root',
-        auth: SshAuthMethod.privateKey,
-      ),
-    ],
-  );
 }

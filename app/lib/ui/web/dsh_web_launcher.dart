@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
-import '../../remote/ssh/ssh_link.dart';
-import '../../state/connection_state.dart';
 import '../../state/hosts_state.dart';
 import 'local_web_screen.dart';
 import 'web_target.dart';
@@ -41,19 +39,8 @@ final dshWebAccessProvider = Provider.autoDispose<DshWebAccess>((ref) {
   switch (host.kind) {
     case HostKind.local:
       return const LocalDshWeb();
-    case HostKind.relay:
+    case HostKind.ssh || HostKind.relay:
       return NoDshWeb(appL10n.webRelayUnavailable);
-    case HostKind.ssh:
-      // Rebuild once the link connects (or reconnects to a new process).
-      ref.watch(hostLinkStatusProvider(host));
-      final link = ref.watch(hostLinkProvider(host));
-      final name = ref.watch(hostNameProvider(host)) ?? appL10n.webSshHost;
-      final port = link is SshHostLink ? link.localPort : null;
-      final token = link is SshHostLink ? link.endpoint?.token : null;
-      if (port == null || token == null) {
-        return NoDshWeb(appL10n.webConnectHostFirst(name));
-      }
-      return SshDshWeb(localWebUri('http://127.0.0.1:$port', token), name);
   }
 });
 

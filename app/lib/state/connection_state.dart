@@ -7,9 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/l10n.dart';
 import '../remote/link_status.dart';
 import '../remote/network_watch.dart';
-import '../remote/relay/relay_backend.dart';
-import '../remote/ssh/ssh_link.dart';
-import '../remote/ssh/ssh_transport.dart';
 import '../runtime/runtime_bridge.dart';
 import '../runtime/container_paths.dart';
 import 'workspaces_state.dart';
@@ -175,76 +172,9 @@ final localConnectionProvider = AsyncNotifierProvider<LocalConnectionController,
 /// Network changes and app resumes; remote links re-check on each.
 final networkKicksProvider = Provider<Stream<void>>((ref) => networkKicks());
 
-/// Opens SSH connections (dartssh2); tests swap in a fake server.
-final sshTransportFactoryProvider = Provider<SshTransportFactory>((ref) => DartSshTransport.connect);
-
-/// Builds the link for one remote host. Overridable so tests can inject fake
-/// transports.
-typedef SshLinkFactory = SshHostLink Function(Ref ref, SshHostConfig config);
-
-final sshLinkFactoryProvider = Provider<SshLinkFactory>(
-  (ref) => (ref, config) {
-    final hosts = ref.read(hostsProvider.notifier);
-    return SshHostLink(
-      config: config,
-      loadSecrets: () => hosts.loadSecrets(config.id),
-      pinHostKey: (key) => hosts.pinHostKey(config.id, key),
-      transportFactory: ref.read(sshTransportFactoryProvider),
-      // No prompt here: a host becomes active only after its key was
-      // confirmed in the UI (test connection / host sheet), so an unknown key
-      // at this point fails closed.
-      kicks: ref.read(networkKicksProvider),
-    );
-  },
-);
-
-/// The live link to a remote host; null for 本机 or an unknown host. Kept while
-/// something watches it (the active connection, a status row); closed after.
-final hostLinkProvider = Provider.autoDispose.family<HostLink?, HostRef>((ref, host) {
-  switch (host.kind) {
-    case HostKind.local:
-      return null;
-    case HostKind.ssh:
-      // Reconnect only for changes that matter to the session (not a rename
-      // or a freshly pinned key).
-      final key = ref.watch(hostsProvider.select((s) => s.sshById(host.id)?.connectionKey));
-      if (key == null) return null;
-      final config = ref.read(hostsProvider).sshById(host.id)!;
-      final link = ref.read(sshLinkFactoryProvider)(ref, config);
-      // Renames, cwd and re-pinned keys apply in place.
-      ref.listen(hostsProvider.select((s) => s.sshById(host.id)), (_, next) {
-        if (next != null && next.connectionKey == link.config.connectionKey) link.updateConfig(next);
-      });
-      ref.onDispose(() => unawaited(link.close()));
-      return link;
-    case HostKind.relay:
-      final backend = ref.watch(relayBackendProvider);
-      final link = RelayHostLink(
-        backend: backend,
-        hostId: host.id,
-        // Fresh presence straight from the server (the account list on the
-        // remote page refreshes on its own).
-        resolveHost: () async {
-          final hosts = await backend.listHosts(refresh: true);
-          for (final h in hosts) {
-            if (h.id == host.id) return h;
-          }
-          return null;
-        },
-        kicks: ref.read(networkKicksProvider),
-      );
-      final statuses = link.statuses.listen((status) {
-        if (status.phase == HostLinkPhase.failed && status.error?.kind == HostLinkErrorKind.notLoggedIn) {
-          unawaited(ref.read(relayAccountProvider.notifier).recheck());
-        }
-      });
-      ref.onDispose(() {
-        unawaited(statuses.cancel());
-        unawaited(link.close());
-      });
-      return link;
-  }
-});
+/// The live link to a remote host. This build has no remote hosts
+/// (docs/fork-maintenance.md): always null, so every status reads idle.
+final hostLinkProvider = Provider.autoDispose.family<HostLink?, HostRef>((ref, host) => null);
 
 /// Status of a host's link for the UI (idle for 本机).
 final hostLinkStatusProvider = StreamProvider.autoDispose.family<HostLinkStatus, HostRef>((ref, host) {
@@ -263,84 +193,9 @@ final hostLinkStatusProvider = StreamProvider.autoDispose.family<HostLinkStatus,
 final hostNameProvider = Provider.autoDispose.family<String?, HostRef>((ref, host) {
   return switch (host.kind) {
     HostKind.local => appL10n.commonThisPhone,
-    HostKind.ssh => ref.watch(hostsProvider.select((s) => s.sshById(host.id)?.name)),
-    HostKind.relay => ref.watch(relayAccountProvider.select((a) => a.value?.hostById(host.id)?.name)) ?? host.name,
+    HostKind.ssh || HostKind.relay => host.name,
   };
 });
-
-/// Connection to a remote host, following its link through reconnects.
-class RemoteConnectionController extends AsyncNotifier<HostConnection?> {
-  RemoteConnectionController(this.host);
-
-  final HostRef host;
-
-  @override
-  Future<HostConnection?> build() async {
-    final link = ref.watch(hostLinkProvider(host));
-    if (link == null) return null;
-    var name = ref.read(hostNameProvider(host));
-
-    HostConnection wrap(DshClient client) => HostConnection(
-      client: client,
-      name: name,
-      isLocal: false,
-      kind: host.kind,
-      hostId: host.id,
-      workingDirectory: link is SshHostLink ? link.resolvedWorkingDirectory : null,
-    );
-
-    ref.listen(hostNameProvider(host), (_, next) {
-      name = next;
-      // A label change keeps the current client; it must not revive a previous one.
-      if (!state.isLoading && !state.hasError) {
-        if (state.value case final connection?) state = AsyncData(wrap(connection.client));
-      }
-    });
-
-    if (link is SshHostLink) {
-      ref.listen(hostsProvider.select((s) => s.sshById(host.id)), (previous, next) {
-        if (next == null || next.connectionKey != link.config.connectionKey) return;
-        // hostLinkProvider does this too; doing it here first keeps wrap() current.
-        link.updateConfig(next);
-        if (next.workingDirectory != previous?.workingDirectory) {
-          if (link.currentClient case final client?) state = AsyncData(wrap(client));
-        }
-        // A reset and re-pinned key: connect again instead of staying failed.
-        if (next.hostKeyFingerprint != previous?.hostKeyFingerprint &&
-            (state.hasError || link.status.phase == HostLinkPhase.failed)) {
-          ref.invalidateSelf();
-        }
-      });
-    }
-    final clients = link.clients.listen((client) => state = AsyncData(wrap(client)));
-    // After a failed first open, the link may still come back on its own
-    // (network kick, "重试"): pick the client up then.
-    final statuses = link.statuses.listen((s) {
-      if (s.isConnected && state.hasError && !state.isLoading) ref.invalidateSelf();
-    });
-    ref.onDispose(() {
-      unawaited(clients.cancel());
-      unawaited(statuses.cancel());
-    });
-    return wrap(await link.open());
-  }
-
-  /// Gives up any backoff and connects again now.
-  void retry() {
-    final link = ref.read(hostLinkProvider(host));
-    if (link == null) return;
-    final phase = link.status.phase;
-    // A link still retrying on its own just skips its wait.
-    if (phase != HostLinkPhase.reconnecting && (phase == HostLinkPhase.failed || state.hasError)) {
-      ref.invalidateSelf();
-    } else {
-      link.retry();
-    }
-  }
-}
-
-final remoteConnectionProvider = AsyncNotifierProvider.autoDispose
-    .family<RemoteConnectionController, HostConnection?, HostRef>(RemoteConnectionController.new);
 
 /// Passive observations of the active connection. Exported values contain
 /// enum names, booleans and numbers, never host identifiers or raw errors.
@@ -553,17 +408,5 @@ final activeConnectionProvider = Provider<AsyncValue<HostConnection?>>((ref) {
   return connection;
 });
 
-AsyncValue<HostConnection?> _connectionForHost(Ref ref, HostRef host) {
-  switch (host.kind) {
-    case HostKind.local:
-      return ref.watch(localConnectionProvider);
-    case HostKind.ssh:
-      final known = ref.watch(hostsProvider.select((s) => !s.loaded || s.sshById(host.id) != null));
-      if (!known) return ref.watch(localConnectionProvider);
-      final loaded = ref.watch(hostsProvider.select((s) => s.loaded));
-      if (!loaded) return const AsyncLoading();
-      return ref.watch(remoteConnectionProvider(host));
-    case HostKind.relay:
-      return ref.watch(remoteConnectionProvider(host));
-  }
-}
+/// Only 本机 connects in this build; any other reference falls back to it.
+AsyncValue<HostConnection?> _connectionForHost(Ref ref, HostRef host) => ref.watch(localConnectionProvider);

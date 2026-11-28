@@ -100,48 +100,6 @@ void main() {
     expect((await SharedPreferences.getInstance()).getBool(QuickPanelController.swipeKey), isTrue);
   });
 
-  testWidgets('the sheet: what shows first, in order, then the rest', (tester) async {
-    await _pump(tester);
-    await _openSheet(tester);
-    expect(_rows(tester), [
-      DrawerDestination.plugins,
-      DrawerDestination.engine,
-      DrawerDestination.settings,
-      DrawerDestination.web,
-      DrawerDestination.remote,
-      DrawerDestination.settingsSearch,
-      DrawerDestination.features,
-    ]);
-  });
-
-  testWidgets('ticking adds, unticking removes; only names go into storage', (tester) async {
-    await _pump(tester);
-    await _openSheet(tester);
-
-    await tester.tap(_sheetRow(DrawerDestination.remote));
-    await _settle(tester);
-    expect(await _stored(), ['plugins', 'engine', 'settings', 'remote']);
-
-    await tester.tap(_sheetRow(DrawerDestination.engine));
-    await _settle(tester);
-    expect(await _stored(), ['plugins', 'settings', 'remote']);
-    expect(_container(tester).read(quickPanelProvider).items, [
-      DrawerDestination.plugins,
-      DrawerDestination.settings,
-      DrawerDestination.remote,
-    ]);
-
-    // Unticked, a row stays where it is until the sheet is opened again.
-    expect(_rows(tester).take(2), [DrawerDestination.plugins, DrawerDestination.engine]);
-    await tester.tap(_sheetRow(DrawerDestination.engine));
-    await _settle(tester);
-    expect(await _stored(), ['plugins', 'engine', 'settings', 'remote']);
-
-    await tester.binding.handlePopRoute();
-    await _settle(tester);
-    expect(find.descendant(of: find.byKey(_itemsRow), matching: find.text('插件、本机引擎、设置、远程主机')), findsOneWidget);
-  });
-
   testWidgets('the handle reorders; what is ticked is stored in the rows\' order', (tester) async {
     await _pump(tester);
     await _openSheet(tester);
@@ -245,7 +203,6 @@ void main() {
   test('every destination has a stable id and they stay what storage holds', () {
     expect(DrawerDestination.values.map((d) => d.name), [
       'web',
-      'remote',
       'plugins',
       'engine',
       'settings',

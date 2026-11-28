@@ -126,26 +126,6 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('switching host clears the retained view and draft', (tester) async {
-    usePhoneView(tester);
-    final first = _bridge('first host');
-    final link = NotifierProvider<_Connection, NativeBridge?>(() => _Connection(first));
-    await tester.pumpWidget(
-      testApp(
-        const Scaffold(body: NativePanelView(panel: _panel)),
-        overrides: _overrides(first, link),
-      ),
-    );
-    await pumpFrames(tester);
-    await tester.enterText(find.byType(TextField), 'private to first host');
-    final container = _container(tester);
-    container.read(activeHostProvider.notifier).select(const HostRef.ssh('another'));
-    container.read(link.notifier).set(_bridge('second host'));
-    await pumpFrames(tester);
-    expect(_text(tester), 'second host');
-    expect(tester.takeException(), isNull);
-  });
-
   testWidgets('a late view from an obsolete bridge cannot overwrite its replacement', (tester) async {
     usePhoneView(tester);
     final old = _DelayedBridge();
@@ -268,48 +248,6 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
-
-  testWidgets('old work finishing cannot clear a new host invocation with the same control key', (tester) async {
-    usePhoneView(tester);
-    final oldAnswer = Completer<DshGoInvokeResult>(), newAnswer = Completer<DshGoInvokeResult>();
-    final first = _bridge('first')..answer = (_) => oldAnswer.future;
-    final second = _bridge('second')..answer = (_) => newAnswer.future;
-    final link = NotifierProvider<_Connection, NativeBridge?>(() => _Connection(first));
-    await tester.pumpWidget(
-      testApp(
-        const Scaffold(body: NativePanelView(panel: _panel)),
-        overrides: _overrides(first, link),
-      ),
-    );
-    await pumpFrames(tester);
-    await tester.tap(find.byKey(const ValueKey('submit:view')));
-    await pumpFrames(tester);
-    final container = _container(tester);
-    container.read(activeHostProvider.notifier).select(const HostRef.ssh('second'));
-    container.read(link.notifier).set(second);
-    await pumpFrames(tester);
-    await tester.tap(find.byKey(const ValueKey('submit:view')));
-    await pumpFrames(tester);
-    expect(second.invocations, hasLength(1));
-    oldAnswer.complete(const DshGoInvokeResult());
-    await pumpFrames(tester);
-    final control = nativeControlKey('controls', NativeSurface.panel, 'save');
-    expect(container.read(nativeWorkProvider.notifier).busy(control), isTrue);
-    newAnswer.complete(
-      const DshGoInvokeResult(
-        effects: [
-          {
-            'type': 'patch',
-            'data': {'name': 'accepted'},
-          },
-        ],
-      ),
-    );
-    await pumpFrames(tester);
-    expect(container.read(nativeWorkProvider.notifier).busy(control), isFalse);
-    expect(_text(tester), 'accepted');
-    expect(tester.takeException(), isNull);
-  });
 
   for (final deferred in [false, true]) {
     testWidgets('${deferred ? 'deferred' : 'immediate'} answer after a same-client refresh is ignored', (tester) async {

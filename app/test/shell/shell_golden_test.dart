@@ -13,7 +13,6 @@ import 'package:dsh_app/ui/engine/engine_screen.dart';
 import 'package:dsh_app/ui/onboarding/api_key_page.dart';
 import 'package:dsh_app/ui/onboarding/onboarding_scaffold.dart';
 import 'package:dsh_app/ui/onboarding/runtime_setup_page.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
 import 'package:dsh_app/ui/shell/home_shell.dart';
 import 'package:dsh_app/ui/theme/theme.dart';
@@ -26,7 +25,6 @@ import 'golden_harness.dart';
 const _key = 'sk-4c1f0e7b9a2d4e6f8a1b3c5d7e9fa3f9';
 
 void main() {
-
   goldenBoth(
     'setup_40',
     // Inside the flow: step 1 of 2 in the top bar.
@@ -106,8 +104,6 @@ void main() {
       settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true, apiKey: _key))),
     ],
   );
-
-  goldenBoth('remote', () => const RemoteScreen());
 
   // The appearance group: the theme row (palette dot + name), chat text size.
   goldenBoth(

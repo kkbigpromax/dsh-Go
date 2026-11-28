@@ -9,14 +9,12 @@ import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/state/workspaces_state.dart';
 import 'package:dsh_app/ui/engine/engine_screen.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../remote/support/fake_relay.dart';
 import '../safe_mode/support.dart';
 import '../shell/golden_harness.dart';
 
@@ -110,7 +108,6 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, f.handle);
     usePhoneSurface(tester);
     if (narrow) tester.view.physicalSize = const Size(320 * 2, 640 * 2);
-    final relay = FakeRelayBackend(user: null);
     await tester.pumpWidget(
       goldenApp(
         home: Builder(
@@ -127,7 +124,6 @@ void main() {
           settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true))),
           activeHostProvider.overrideWith(_Active.new),
           secretStoreProvider.overrideWithValue(MemorySecretStore()),
-          relayBackendProvider.overrideWithValue(relay),
           networkKicksProvider.overrideWithValue(const Stream.empty()),
           hostLinkStatusProvider.overrideWith((ref, host) => const Stream.empty()),
           activeConnectionProvider.overrideWith(
@@ -324,17 +320,6 @@ void main() {
     expect(f.runtime.calls, ['stop', 'set:true', 'start']);
   });
 
-  testWidgets('host changes while confirmation is open retire the pending action', (tester) async {
-    final f = await pump(tester);
-    await open(tester);
-    final active = f.container.read(activeHostProvider.notifier) as _Active;
-    active.select(const HostRef.ssh('other-host'));
-    active.select(HostRef.local);
-    await confirm(tester);
-    expect(f.native, isEmpty);
-    expect(f.runtime.calls, isEmpty);
-  });
-
   testWidgets('runtime replacement while confirmation is open retires the pending action', (tester) async {
     final f = await pump(tester);
     await open(tester);
@@ -349,13 +334,6 @@ void main() {
     final f = await pump(tester, runtime: _Runtime(phase: RuntimePhase.notInstalled));
     await toBottom(tester);
     expect(find.byKey(_tile), findsNothing);
-    expect(f.native, isEmpty);
-  });
-
-  testWidgets('the remote page exposes no local workspace recovery action', (tester) async {
-    final f = await pump(tester, home: const RemoteScreen());
-    expect(find.byKey(_tile), findsNothing);
-    expect(f.runtime.calls, isEmpty);
     expect(f.native, isEmpty);
   });
 

@@ -29,7 +29,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../account/support.dart' show FixedAccount, sampleBalance, sampleProfile;
 import '../engine_settings/support.dart' as engine;
-import '../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../phone/support.dart' show FixedActiveHost;
 import '../shell/golden_harness.dart';
 
 /// Pins the shown version so the baselines don't change with every release.
@@ -41,7 +41,6 @@ class _FixedVersion extends AppUpdateController {
 List<Override> _local({bool autoApprove = false}) => [
   appUpdateProvider.overrideWith(_FixedVersion.new),
   activeHostProvider.overrideWith(() => FixedActiveHost(HostRef.local)),
-  hostsProvider.overrideWith(FixedHosts.new),
   localRuntimeProvider.overrideWith(() => FakeRuntime(const LocalRuntimeState(loaded: true, status: runningStatus))),
   settingsProvider.overrideWith(() => FakeSettings(AppSettings(loaded: true, autoApproveCommands: autoApprove))),
 ];

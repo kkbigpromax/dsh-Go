@@ -9,7 +9,6 @@ import 'package:dsh_app/state/notify_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/state/workspaces_state.dart';
-import 'package:dsh_app/ui/common/discard_guard.dart';
 import 'package:dsh_app/ui/notify/chat_alert_host.dart';
 import 'package:dsh_app/ui/shell/home_shell.dart';
 import 'package:dsh_app/ui/shell/sessions_drawer.dart';
@@ -173,46 +172,6 @@ void main() {
     await tester.drag(find.text('问你：用哪个数据库？'), const Offset(0, -80));
     await tester.pumpAndSettle();
     expect(find.text('问你：用哪个数据库？'), findsNothing);
-  });
-
-  testWidgets('通知先确认：取消保留表单、主机和对话，放弃才切换', (tester) async {
-    final text = TextEditingController();
-    addTearDown(text.dispose);
-    final container = await pumpHome(
-      tester,
-      page: DiscardGuard(
-        listenable: text,
-        isDirty: () => text.text.isNotEmpty,
-        child: Scaffold(
-          body: Column(
-            children: [
-              const Text('设置页'),
-              TextField(controller: text),
-            ],
-          ),
-        ),
-      ),
-    );
-    await openPage(tester);
-    await tester.enterText(find.byType(TextField), '草稿');
-    final beforeSession = container.read(currentSessionProvider);
-    final beforeHost = container.read(activeHostProvider);
-    const target = HostRef.ssh('lab');
-    channel.tapController.add(const NotifyTap(host: target, sessionId: 's2', kind: 'done'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('继续编辑'));
-    await tester.pumpAndSettle();
-    expect(find.text('设置页'), findsOneWidget);
-    expect(text.text, '草稿');
-    expect(container.read(currentSessionProvider), beforeSession);
-    expect(container.read(activeHostProvider), beforeHost);
-    channel.tapController.add(const NotifyTap(host: target, sessionId: 's2', kind: 'done'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('放弃'));
-    await tester.pumpAndSettle();
-    expect(find.text('设置页'), findsNothing);
-    expect(container.read(currentSessionProvider), 's2');
-    expect(container.read(activeHostProvider), target);
   });
 
   testWidgets('普通 PopScope 不拦截横幅回首页', (tester) async {

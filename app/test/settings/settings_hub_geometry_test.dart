@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../phone/support.dart' show FixedActiveHost;
 import '../shell/golden_harness.dart';
 
 const _tol = 0.6;
@@ -34,7 +34,6 @@ void main() {
         brightness: Brightness.light,
         overrides: [
           activeHostProvider.overrideWith(() => FixedActiveHost(HostRef.local)),
-          hostsProvider.overrideWith(FixedHosts.new),
           localRuntimeProvider.overrideWith(
             () => FakeRuntime(const LocalRuntimeState(loaded: true, status: runningStatus)),
           ),

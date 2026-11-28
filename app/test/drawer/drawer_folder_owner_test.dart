@@ -1,10 +1,7 @@
 // Real drawer folder actions and persisted per-Host views. UNRUN fixture.
 import 'dart:convert';
 
-import 'package:dsh_app/l10n/l10n.dart';
-import 'package:dsh_app/pets/pet_overlay_actions.dart';
 import 'package:dsh_app/ui/shell/drawer/drawer_filter_bar.dart';
-import 'package:flutter/services.dart';
 import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/connection_state.dart';
 import 'package:dsh_app/state/drawer_view_state.dart';
@@ -85,18 +82,6 @@ Future<(ProviderContainer, DrawerView)> _start(WidgetTester tester, {required bo
   return (container, bView);
 }
 
-Future<void> _switchB(WidgetTester tester, ProviderContainer container, DrawerView expected) async {
-  final hostB = DrawerHost();
-  _seed(hostB, 'B');
-  final connectionB = workspaceHost(hostB, local: false);
-  addTearDown(connectionB.client.close);
-  container.read(switchConnectionProvider.notifier).set(connectionB);
-  container.read(activeHostProvider.notifier).select(const HostRef.ssh('pc'));
-  await _settle(tester);
-  expect(container.read(activeConnectionProvider).value!.client, same(connectionB.client));
-  expect(container.read(drawerViewProvider).toJson(), expected.toJson());
-}
-
 Future<void> _openFolderActions(WidgetTester tester) async {
   await tester.longPress(find.widgetWithText(DrawerFolderHeader, 'A folder'));
   await _settle(tester);
@@ -133,39 +118,6 @@ void main() {
     });
   }
 
-  testWidgets('background pet host switch retires the open folder creation', (tester) async {
-    final (container, bView) = await _start(tester, sameFolderId: false);
-    await _switchB(tester, container, bView);
-    await tester.tap(find.byType(DrawerViewButton));
-    await _settle(tester);
-    await tester.tap(find.text('新建文件夹'));
-    await _settle(tester);
-    await tester.enterText(find.byType(TextField), 'B new folder');
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    // Android's floating pet is available after Home backgrounds the app.
-    // Use its real action handler; it changes Host without popping the sheet.
-    expect(
-      await container
-          .read(petOverlayActionsProvider)
-          .handle(MethodCall('switchHost', {'host': HostRef.local.encode()})),
-      isTrue,
-    );
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await _settle(tester);
-    expect(find.text('创建').hitTestable(), findsOneWidget);
-    await tester.tap(find.text('创建'));
-    await _settle(tester);
-    final prefs = await SharedPreferences.getInstance();
-    expect(jsonDecode(prefs.getString(DrawerViewController.keyFor(HostRef.local))!), _aView.toJson());
-    expect(jsonDecode(prefs.getString(DrawerViewController.keyFor(const HostRef.ssh('pc')))!), bView.toJson());
-    expect(container.read(drawerViewProvider).toJson(), _aView.toJson());
-    expect(tester.takeException(), isNull);
-  });
-
   testWidgets('same Host folder creation still saves its name and returns to drawer', (tester) async {
     final (container, bView) = await _start(tester, sameFolderId: false);
     await tester.tap(find.byType(DrawerViewButton));
@@ -182,65 +134,6 @@ void main() {
     expect(container.read(drawerViewProvider).toJson(), saved.toJson());
     expect(jsonDecode(prefs.getString(DrawerViewController.keyFor(const HostRef.ssh('pc')))!), bView.toJson());
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('folder delete confirmation cannot delete the same folder ID on a new Host', (tester) async {
-    final (container, bView) = await _start(tester, sameFolderId: true);
-    await _openFolderActions(tester);
-    await _switchB(tester, container, bView);
-    // The still-visible old sheet is the real user entry, not a retained callback.
-    expect(find.text('删除文件夹').hitTestable(), findsOneWidget);
-    await tester.tap(find.text('删除文件夹'));
-    await _settle(tester);
-    expect(container.read(drawerViewProvider).toJson(), bView.toJson());
-    final prefs = await SharedPreferences.getInstance();
-    expect(jsonDecode(prefs.getString(DrawerViewController.keyFor(const HostRef.ssh('pc')))!), bView.toJson());
-    expect(find.text(appL10n.shellFolderDeleted('A folder')), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('old folder undo cannot restore A folder into B persisted view', (tester) async {
-    final (container, bView) = await _start(tester, sameFolderId: false);
-    await _openFolderActions(tester);
-    await tester.tap(find.text('删除文件夹'));
-    await _settle(tester);
-    expect(container.read(drawerViewProvider).folders, isEmpty);
-    expect(find.text('撤销').hitTestable(), findsOneWidget);
-    await _switchB(tester, container, bView);
-    expect(find.text('撤销').hitTestable(), findsOneWidget);
-    await tester.tap(find.text('撤销'));
-    await _settle(tester);
-    expect(container.read(drawerViewProvider).toJson(), bView.toJson());
-    final prefs = await SharedPreferences.getInstance();
-    expect(jsonDecode(prefs.getString(DrawerViewController.keyFor(const HostRef.ssh('pc')))!), bView.toJson());
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('old folder undo cannot write B preferences (prefs first)', (tester) async {
-    final (container, bView) = await _start(tester, sameFolderId: false);
-    await _openFolderActions(tester);
-    await tester.tap(find.text('删除文件夹'));
-    await _settle(tester);
-    await _switchB(tester, container, bView);
-    await tester.tap(find.text('撤销'));
-    await _settle(tester);
-    final prefs = await SharedPreferences.getInstance();
-    expect(jsonDecode(prefs.getString(DrawerViewController.keyFor(const HostRef.ssh('pc')))!), bView.toJson());
-    expect(container.read(drawerViewProvider).toJson(), bView.toJson());
-  });
-
-  testWidgets('A to B to A permanently retires old folder Undo', (tester) async {
-    final (container, bView) = await _start(tester, sameFolderId: false);
-    await _openFolderActions(tester);
-    await tester.tap(find.text('删除文件夹'));
-    await _settle(tester);
-    await _switchB(tester, container, bView);
-    container.read(activeHostProvider.notifier).select(HostRef.local);
-    await _settle(tester);
-    expect(container.read(drawerViewProvider).folders, isEmpty);
-    await tester.tap(find.text('撤销'));
-    await _settle(tester);
-    expect(container.read(drawerViewProvider).folders, isEmpty);
   });
 
   testWidgets('disposed container retires retained folder Undo callback', (tester) async {

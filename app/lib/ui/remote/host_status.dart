@@ -26,10 +26,6 @@ class HostStatusView {
     HostLinkPhase.reconnecting => HostStatusView(StatusTone.warn, appL10n.remoteReconnecting),
     HostLinkPhase.failed => HostStatusView(StatusTone.error, appL10n.commonConnectionFailed),
   };
-
-  static HostStatusView ofRelayHost(RelayHost host) => host.online
-      ? HostStatusView(StatusTone.ok, appL10n.remoteOnline)
-      : HostStatusView(StatusTone.idle, appL10n.remoteOffline);
 }
 
 /// Live status of [host]: the engine for 本机, the link for remote hosts.

@@ -23,7 +23,6 @@ import '../../state/settings_state.dart';
 import '../../ui_config/ui_skill.dart';
 import '../onboarding/onboarding_flow.dart';
 import '../onboarding/setup_progress.dart';
-import '../remote/remote_screen.dart';
 import '../theme/theme.dart';
 import 'home_shell.dart';
 import 'brand_mark.dart';
@@ -105,11 +104,8 @@ class _RootGateState extends ConsumerState<RootGate> {
   OnboardingStep? _step;
   bool _autoStartDone = false;
 
-  /// The setup step asks 本机 or 远程主机 first ([runtimeStepAsks]).
+  /// The setup step shows what installing costs first ([runtimeStepAsks]).
   bool _chooseRuntime = false;
-
-  /// The host list is open over the setup step.
-  bool _pickingRemote = false;
 
   /// First run on this phone, setting up while the runtime unpacks
   /// (docs/design/onboarding-parallel-setup.md).
@@ -208,27 +204,6 @@ class _RootGateState extends ConsumerState<RootGate> {
   void _leaveBeside() {
     _beside = false;
     unawaited(_prefs.setSetupStep(null));
-  }
-
-  /// 「远程主机」: the host list over the setup step. Picking a host there
-  /// (it closes itself) finishes first run without the runtime; coming back
-  /// without one returns to the choice.
-  Future<void> _useRemote() async {
-    if (_pickingRemote) return;
-    _pickingRemote = true;
-    try {
-      await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const RemoteScreen()));
-    } finally {
-      _pickingRemote = false;
-    }
-    if (!mounted || ref.read(activeHostProvider).isLocal) return;
-    if (_beside) _leaveBeside();
-    await ref.read(onboardingPrefsProvider.notifier).setLocalDeclined(true);
-    // What installing does on the other path: Android 13 asks about
-    // notifications once the channels exist, before the first reply lands.
-    unawaited(ref.read(notifyChannelProvider).status().then<void>((_) {}, onError: (_) {}));
-    _autoStartDone = true;
-    _goTo(null);
   }
 
   /// Writes the diagnostics snapshot once per engine run, after the frame that saw it.
@@ -352,7 +327,6 @@ class _RootGateState extends ConsumerState<RootGate> {
           onAppearanceDone: _afterAppearance,
           onAccessDone: _afterAccess,
           onFinished: _afterFinishing,
-          onRemote: _useRemote,
           onRuntimeDone: _afterRuntime,
           onKeyDone: _afterKey,
         );

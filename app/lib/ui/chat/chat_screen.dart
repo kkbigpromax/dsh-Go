@@ -44,7 +44,7 @@ import '../../state/drawer_view_state.dart';
 import '../../state/engine_control.dart';
 import '../../state/engine_settings_state.dart' show engineSettingsProvider;
 import '../../state/features_state.dart' show agentPresetsProvider, permissionStateProvider;
-import '../../state/hosts_state.dart' show HostKind, HostRef, activeHostProvider, hostLabel;
+import '../../state/hosts_state.dart' show HostRef, activeHostProvider, hostLabel;
 import '../../state/media_generation.dart';
 import '../../state/mention_state.dart';
 import '../../state/models_state.dart';
@@ -1540,14 +1540,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> with WidgetsBindingObse
   }
 
   /// The engine could not be reached: try again.
-  void _reconnect() {
-    final host = ref.read(activeHostProvider);
-    if (host.kind == HostKind.local) {
-      ref.invalidate(localConnectionProvider);
-    } else {
-      ref.read(remoteConnectionProvider(host).notifier).retry();
-    }
-  }
+  void _reconnect() => ref.invalidate(localConnectionProvider);
 
   void _onSuggestion(ChatSuggestion suggestion) {
     _input.value = TextEditingValue(

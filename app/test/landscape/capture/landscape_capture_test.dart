@@ -31,7 +31,6 @@ import 'package:dsh_app/ui/phone/phone_control_screen.dart';
 import 'package:dsh_app/ui/session/session_detail_page.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
 import 'package:dsh_app/ui/terminal/terminal_page.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/state/session_search.dart';
 import 'package:dsh_app/state/update_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
@@ -204,7 +203,6 @@ void main() {
   );
   capture('all_features', (_) => _golden(const AllFeaturesPage(), overrides: _shellOverrides()));
   capture('engine', (_) => _golden(const EngineScreen(), overrides: _shellOverrides()));
-  capture('remote', (_) => _golden(const RemoteScreen(), overrides: _shellOverrides()));
   capture(
     'files',
     (_) => filesApp(const WorkspaceFilesPage(sessionId: 's1', now: _now), sampleWorkspace()),
@@ -236,9 +234,7 @@ void main() {
   capture('share_panel', (_) {
     final state = shareChatState();
     return testApp(
-      _Launcher(
-        (context) => showSharePanel(context, ConversationSubject(sessionId: 's1', reply: firstReply(state))),
-      ),
+      _Launcher((context) => showSharePanel(context, ConversationSubject(sessionId: 's1', reply: firstReply(state)))),
       overrides: [chatProvider.overrideWith2((id) => FakeChatController(id, state))],
     );
   }, before: _tapOpen);

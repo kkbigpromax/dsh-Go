@@ -17,13 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
-import '../../state/connection_state.dart';
-import '../../state/hosts_state.dart';
 import '../common/app_sheet.dart';
 import '../common/sheet_title_bar.dart';
-import '../remote/host_status.dart';
-import '../remote/host_switcher.dart';
-import '../remote/remote_screen.dart';
 import '../settings/settings_screen.dart';
 import '../settings/settings_widgets.dart';
 import '../shell/brand_mark.dart';
@@ -112,8 +107,6 @@ class _HandleSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final host = ref.watch(activeHostProvider);
-    final name = ref.watch(hostNameProvider(host)) ?? context.l10n.commonRemoteHost;
     final navigator = Navigator.of(context);
     void push(Widget page) => unawaited(navigator.push(MaterialPageRoute<void>(builder: (_) => page)));
     return SafeArea(
@@ -146,17 +139,6 @@ class _HandleSheet extends ConsumerWidget {
                 onTap: () {
                   navigator.pop();
                   push(const SettingsScreen());
-                },
-              ),
-              SettingsTile(
-                key: const ValueKey('web-handle-host'),
-                icon: hostKindIcon(host.kind),
-                tinted: false,
-                title: context.l10n.webSwitchHost,
-                value: Text(name),
-                onTap: () {
-                  navigator.pop();
-                  unawaited(showHostSheet(navigator.context, onManage: () => push(const RemoteScreen())));
                 },
               ),
             ],

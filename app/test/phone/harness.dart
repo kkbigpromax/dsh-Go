@@ -25,7 +25,6 @@ class PhoneHarness {
 List<Override> phoneOverrides(PhoneTestRuntime runtime, {HostRef host = HostRef.local}) => [
   localRuntimeProvider.overrideWith(() => runtime),
   activeHostProvider.overrideWith(() => FixedActiveHost(host)),
-  hostsProvider.overrideWith(FixedHosts.new),
 ];
 
 /// Tall surface by default so every section is on screen without scrolling.

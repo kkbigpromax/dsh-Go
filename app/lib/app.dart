@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n/l10n.dart';
 import 'performance/performance_state.dart';
 import 'performance/refresh_rate.dart';
-import 'remote/remote_background.dart';
 import 'state/app_info.dart';
 import 'state/appearance_state.dart';
 import 'state/locale_state.dart';
@@ -181,7 +180,6 @@ class _DshAppState extends ConsumerState<DshApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.home == null) ref.watch(remoteBackgroundProvider);
     // 刷新率设置改动时告诉原生;setMode 对同一个值不做任何事。
     unawaited(RefreshRateService.instance.setMode(ref.watch(performancePrefsProvider.select((p) => p.refreshRate))));
     final themeMode = ref.watch(uiThemeModeProvider.select((s) => s.value));

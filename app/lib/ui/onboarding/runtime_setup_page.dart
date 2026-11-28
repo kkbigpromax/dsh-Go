@@ -85,7 +85,7 @@ class _RuntimeSetupPageState extends ConsumerState<RuntimeSetupPage> {
   bool _installRequested = false;
 
   /// Asks where DSH runs before installing.
-  bool get _asks => widget.choose && widget.onRemote != null;
+  bool get _asks => widget.choose;
 
   @override
   void initState() {
@@ -166,7 +166,6 @@ class _RuntimeSetupPageState extends ConsumerState<RuntimeSetupPage> {
               key: const ValueKey('choose'),
               leading: widget.leading,
               onLocal: widget.onLocal ?? () => _install(),
-              onRemote: widget.onRemote!,
             )
           : KeyedSubtree(key: const ValueKey('progress'), child: _progress(context, state, view)),
     );

@@ -50,12 +50,6 @@ Future<void> _openSheet(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 600));
 }
 
-Future<void> _signIn(WidgetTester tester) async {
-  await tester.tap(find.byType(FilledButton).first);
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 600));
-}
-
 /// One golden, light only: `goldens/<name>_light.png`, or the English one.
 void _light(
   String name,
@@ -97,7 +91,6 @@ void main() {
   _light('setup_capsule_failed', _appearance, _failed);
 
   goldenBoth('setup_connect', _connect, overrides: _with(unpackingState(0.68)));
-  goldenBoth('setup_await_sign_in', _connect, overrides: _with(unpackingState(0.68)), before: _signIn);
 
   goldenBoth(
     'setup_waiting',

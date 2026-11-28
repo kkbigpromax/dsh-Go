@@ -22,7 +22,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('dsh/runtime');
 
-  for (final previousLocal in [false, true]) {
+  for (final previousLocal in [true]) {
     for (final scenario in ['idle', 'running', 'error']) {
       if (previousLocal && scenario == 'idle') continue;
       test('previous ${previousLocal ? 'local client' : 'remote host'} cannot lend a running row: $scenario', () async {

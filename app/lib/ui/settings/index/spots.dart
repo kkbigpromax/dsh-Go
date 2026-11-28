@@ -601,14 +601,6 @@ final _pages = <SettingsPageMeta>[
     links: const ['engine'],
   ),
   SettingsPageMeta(
-    SettingsPageId.remote,
-    title: (l) => l.commonRemoteHost,
-    group: _hosts,
-    keywords: (l) => l.searchKwRemote,
-    freq: Freq.medium,
-    links: const ['remote'],
-  ),
-  SettingsPageMeta(
     SettingsPageId.engineParams,
     title: (l) => l.engineSettingsTitle,
     group: _hosts,
@@ -651,15 +643,6 @@ final _pages = <SettingsPageMeta>[
     row: false,
   ),
   // 帮助与关于
-
-  // The overview card.
-  SettingsPageMeta(
-    SettingsPageId.account,
-    title: (l) => l.engineAccountTitle,
-    keywords: (l) => l.searchKwAccount,
-    freq: Freq.medium,
-    links: const ['account'],
-  ),
 ];
 
 // ── Rows ─────────────────────────────────────────────────────────────────────
@@ -1133,34 +1116,6 @@ abstract final class Spots {
     ohosKeywords: (l) => l.harmonyKwEngineUninstall,
   );
 
-  // 远程主机.
-  static final addSshHost = SettingSpot(
-    'add-ssh-host',
-    page: SettingsPageId.remote,
-    title: (l) => l.remoteAddSshHost,
-    keywords: (l) => l.searchKwAddSshHost,
-  );
-  static final remoteAutoConnect = SettingSpot(
-    'remote-auto-connect',
-    page: SettingsPageId.remote,
-    title: (l) => l.remoteAutoConnectOnStartup,
-    keywords: (l) => l.searchKwRemoteAutoConnect,
-  );
-
-  static final remoteSessionBackup = SettingSpot(
-    'remote-session-backup',
-    page: SettingsPageId.remote,
-    title: (l) => l.backupTitle,
-    keywords: (l) => l.backupSearchKeywords,
-  );
-
-  static final remoteCompactHistory = SettingSpot(
-    'remote-compact-history',
-    page: SettingsPageId.remote,
-    title: (l) => l.remoteCompactHistory,
-    keywords: (l) => l.searchKwRemoteCompactHistory,
-  );
-
   // 引擎参数 and its pages (drawn from the engine's schema).
   static final subagentDepth = SettingSpot(
     'subagent-depth',
@@ -1267,10 +1222,6 @@ final _rows = <SettingSpot>[
   Spots.workspaceRecovery,
   Spots.engineReset,
   Spots.engineUninstall,
-  Spots.addSshHost,
-  Spots.remoteAutoConnect,
-  Spots.remoteCompactHistory,
-  Spots.remoteSessionBackup,
   Spots.subagentDepth,
   Spots.parallelCalls,
   Spots.commandTimeout,

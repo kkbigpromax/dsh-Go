@@ -6,7 +6,6 @@ import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/ui/common/list_page_row.dart';
-import 'package:dsh_app/ui/common/overview_card.dart';
 import 'package:dsh_app/ui/common/search_capsule.dart';
 import 'package:dsh_app/ui/settings/search/settings_search_page.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
@@ -17,7 +16,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../../phone/support.dart' show FixedActiveHost;
 import '../../shell/golden_harness.dart';
 
 const _tol = 0.6;
@@ -25,7 +24,6 @@ const _width = 390.0;
 
 List<Override> _overrides() => [
   activeHostProvider.overrideWith(() => FixedActiveHost(HostRef.local)),
-  hostsProvider.overrideWith(FixedHosts.new),
   localRuntimeProvider.overrideWith(() => FakeRuntime(const LocalRuntimeState(loaded: true, status: runningStatus))),
   settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true))),
 ];
@@ -46,17 +44,11 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   for (final scale in [1.0, 2.0]) {
-    testWidgets('the hub\'s capsule: 16 from both sides, over the overview card, at $scale× text', (tester) async {
+    testWidgets('the hub\'s capsule: 16 from both sides, at $scale× text', (tester) async {
       await _pump(tester, const SettingsScreen(), scale: scale);
       final capsule = tester.getRect(find.byType(SearchCapsuleButton));
       expect(capsule.left, moreOrLessEquals(16, epsilon: _tol));
       expect(_width - capsule.right, moreOrLessEquals(16, epsilon: _tol));
-      final card = tester.getRect(
-        find.descendant(of: find.byType(OverviewCard), matching: find.byType(GlassSurface)).first,
-      );
-      expect(capsule.left, moreOrLessEquals(card.left, epsilon: _tol));
-      expect(capsule.right, moreOrLessEquals(card.right, epsilon: _tol));
-      expect(card.top - capsule.bottom, moreOrLessEquals(16, epsilon: _tol));
       // The glass sits in a square slot as tall as the capsule: equal room
       // above and below, and as much on its left.
       final glass = tester.getRect(

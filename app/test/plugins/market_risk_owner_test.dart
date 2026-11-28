@@ -13,7 +13,7 @@ import 'support/fake_plugin_host.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  for (final mode in ['same', 'other', 'roundtrip', 'ready']) {
+  for (final mode in ['same', 'ready']) {
     testWidgets('risk approval retains its original host: $mode', (tester) async {
       final a = FakePluginCarrier();
       final b = FakePluginCarrier();

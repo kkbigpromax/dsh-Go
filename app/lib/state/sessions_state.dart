@@ -968,7 +968,7 @@ class CurrentSessionController extends Notifier<String?> {
         // Old IDs have no host binding. Keep their existing compatibility
         // only when startup actually chose the saved host; a skipped remote
         // must not turn its unbound ID into a local conversation.
-        if (HostRef.decode(prefs.getString(ActiveHostController.prefsKey)) == host) state = legacy;
+        if (HostRef.decode(prefs.getString('active_host')) == host) state = legacy;
       }
     } catch (_) {
       // No preferences backend (tests) or unreadable store: start with a new chat.

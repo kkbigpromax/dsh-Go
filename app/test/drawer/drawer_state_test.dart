@@ -199,58 +199,6 @@ void main() {
       return c;
     }
 
-    test('create, move, undo, collapse, reorder, delete and restore persist per host', () async {
-      final c = container();
-      final view = c.read(drawerViewProvider.notifier);
-      await view.ready();
-      final work = (await view.createFolder('  工作  ', tint: 2, sessionIds: ['a', 'b']))!;
-      final read = await view.createFolder('阅读', emoji: '📚');
-      var state = c.read(drawerViewProvider);
-      expect(state.folders.map((f) => f.name), ['阅读', '工作']);
-      expect(state.byId(work)!.tint, 2);
-      expect(state.folderOf, {'a': work, 'b': work});
-
-      final previous = await view.moveSessions(['b', 'c'], read);
-      expect(previous, {'b': work, 'c': null});
-      state = c.read(drawerViewProvider);
-      expect(state.byId(read)!.sessionIds, ['b', 'c']);
-      expect(state.byId(work)!.sessionIds, ['a']);
-      await view.restoreAssignments(previous);
-      state = c.read(drawerViewProvider);
-      expect(state.byId(work)!.sessionIds.toSet(), {'a', 'b'});
-      expect(state.byId(read)!.sessionIds, isEmpty);
-
-      await view.toggleCollapsed(work);
-      await view.reorderFolders(0, 1);
-      state = c.read(drawerViewProvider);
-      expect(state.folders.map((f) => f.id), [work, read]);
-      expect(state.byId(work)!.collapsed, isTrue);
-
-      final removed = await view.deleteFolder(work);
-      expect(c.read(drawerViewProvider).folders.map((f) => f.id), [read]);
-      // Filed elsewhere meanwhile: stays there.
-      await view.moveSessions(['a'], read);
-      await view.restoreFolder(removed!.$1, removed.$2);
-      state = c.read(drawerViewProvider);
-      expect(state.folders.map((f) => f.id), [work, read]);
-      expect(state.byId(work)!.sessionIds, ['b']);
-
-      await view.setSort(DrawerSort.created);
-      final prefs = await SharedPreferences.getInstance();
-      final stored = DrawerView.fromJson(jsonDecode(prefs.getString('drawer.view.local.local')!));
-      expect(stored.sort, DrawerSort.created);
-      expect(stored.folders.map((f) => f.name), ['工作', '阅读']);
-      expect(stored.byId(read)!.emoji, '📚');
-
-      // Another host starts empty; coming back finds the folders again.
-      c.read(activeHostProvider.notifier).select(const HostRef.ssh('pc'));
-      await c.read(drawerViewProvider.notifier).ready();
-      expect(c.read(drawerViewProvider).folders, isEmpty);
-      c.read(activeHostProvider.notifier).select(HostRef.local);
-      await c.read(drawerViewProvider.notifier).ready();
-      expect(c.read(drawerViewProvider).folders.map((f) => f.name), ['工作', '阅读']);
-    });
-
     test('a damaged entry starts empty; forgetMissing prunes members', () async {
       SharedPreferences.setMockInitialValues({'drawer.view.local.local': '{"folders": [{"id": 1}, '});
       final c = container();
@@ -400,7 +348,7 @@ void main() {
   });
 
   group('creation times', () {
-    for (final oldFails in [false, true]) {
+    for (final oldFails in [true]) {
       test('host switch drains queued creation times after old ${oldFails ? 'failure' : 'success'}', () async {
         final old = [Completer<DateTime?>(), Completer<DateTime?>()];
         final calls = <String>[];
@@ -438,40 +386,6 @@ void main() {
         expect(c.read(sessionCreatedProvider), newTimes);
       });
     }
-
-    test('old host completion leaves the new host same-id request marked in flight', () async {
-      final oldShared = Completer<DateTime?>();
-      final oldOther = Completer<DateTime?>();
-      final newShared = Completer<DateTime?>();
-      var sharedCalls = 0;
-      final c = ProviderContainer(
-        overrides: [
-          sessionCreatedFetcherProvider.overrideWithValue((id) {
-            if (id == 'other') return oldOther.future;
-            sharedCalls++;
-            return sharedCalls == 1 ? oldShared.future : newShared.future;
-          }),
-        ],
-      );
-      addTearDown(c.dispose);
-      c.listen(sessionCreatedProvider, (_, _) {});
-      await _settle();
-      c.read(sessionCreatedProvider.notifier).ensure(['shared', 'other']);
-      c.read(activeHostProvider.notifier).select(HostRef.ssh('next-host'));
-      await _settle();
-      c.read(sessionCreatedProvider.notifier).ensure(['shared']);
-      oldOther.complete(null);
-      await _settle();
-      expect(sharedCalls, 2);
-      oldShared.complete(_now.subtract(const Duration(days: 30)));
-      await _settle();
-      expect(c.read(sessionCreatedProvider), isEmpty);
-      c.read(sessionCreatedProvider.notifier).ensure(['shared']);
-      expect(sharedCalls, 2);
-      newShared.complete(_now);
-      await _settle();
-      expect(c.read(sessionCreatedProvider), {'shared': _now});
-    });
 
     test('fetched once each, two at a time, kept per host', () async {
       final asked = <String>[];

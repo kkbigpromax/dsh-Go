@@ -4,7 +4,6 @@
 // phone without the runtime.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dsh_app/remote/secret_store.dart';
 import 'package:dsh_app/runtime/runtime_bridge.dart';
@@ -20,11 +19,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../account/support.dart' show FakeBrowser;
-import '../remote/support/fake_relay.dart';
-import '../remote/support/fake_ssh.dart';
 import '../shell/golden_harness.dart';
 import 'local_optional_support.dart';
 
@@ -101,18 +97,9 @@ List<Override> notifications({required bool enabled}) => [
   notifySystemStatusProvider.overrideWith((ref) async => NotifySystemStatus(enabled: enabled)),
 ];
 
-/// Saved hosts for the remote way: the sample SSH host.
-void useSavedHost() {
-  SharedPreferences.setMockInitialValues({
-    HostsController.prefsKey: jsonEncode([sampleSsh.toJson()]),
-  });
-}
-
 List<Override> remoteOverrides() => [
   secretStoreProvider.overrideWithValue(MemorySecretStore()),
   networkKicksProvider.overrideWithValue(const Stream.empty()),
-  relayBackendProvider.overrideWithValue(FakeRelayBackend()),
-  sshTransportFactoryProvider.overrideWithValue(FakeSshServer().connect),
   hostLinkStatusProvider.overrideWith((ref, host) => Stream.value(HostLinkStatus.idle)),
 ];
 

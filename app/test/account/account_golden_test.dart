@@ -42,31 +42,6 @@ void main() {
     overrides: () => _fixed(_signedOut),
   );
 
-  goldenBoth(
-    'connect_failure',
-    () => OnboardingProgress(step: 2, steps: 2, child: ConnectPage(onDone: () {})),
-    overrides: () => _fixed(_signedOut.copyWith(failure: const SignInFailure(SignInFailureKind.offline))),
-  );
-
-  goldenBoth(
-    'connect_starting',
-    () => OnboardingProgress(step: 2, steps: 2, child: ConnectPage(onDone: () {})),
-    overrides: () =>
-        _fixed(const AccountState(phase: AccountPhase.signingIn, stage: SignInStage.preparing, connected: false)),
-  );
-
-  goldenBoth(
-    'connect_waiting',
-    () => OnboardingProgress(step: 2, steps: 2, child: ConnectPage(onDone: () {})),
-    overrides: () => _fixed(_waiting),
-  );
-
-  goldenBoth(
-    'connect_returned',
-    () => OnboardingProgress(step: 2, steps: 2, child: ConnectPage(onDone: () {})),
-    overrides: () => _fixed(_waiting.copyWith(browserHint: BrowserHint.returned)),
-  );
-
   // ── Account page ──
   goldenBoth('account_signed_in', () => const AccountPage(), overrides: () => _fixed(_signedIn));
 

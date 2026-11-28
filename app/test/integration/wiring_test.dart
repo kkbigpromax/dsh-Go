@@ -18,7 +18,6 @@ import 'package:dsh_app/state/session_detail_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/workspace_state.dart';
 import 'package:dsh_app/state/workspaces_state.dart';
-import 'package:dsh_app/ui/bots/bots_page.dart';
 import 'package:dsh_app/ui/chat/chat_screen.dart';
 import 'package:dsh_app/ui/chat/composer.dart';
 import 'package:dsh_app/ui/chat/empty_state.dart' show chatClock;
@@ -182,32 +181,6 @@ void main() {
   });
 
   group('drawer', () {
-    testWidgets('DS Bot conversations fold into one row with the unread count', (tester) async {
-      usePhoneView(tester);
-      await tester.pumpWidget(testApp(_drawer(), overrides: _drawerOverrides()));
-      await pumpFrames(tester, 6);
-      final drawer = find.byType(SessionsDrawer);
-      expect(find.descendant(of: drawer, matching: find.text('DS Bot')), findsOneWidget);
-      // s3, s5 are the Bots'; the rest stay listed.
-      expect(find.text('解释 proot 的 link2symlink'), findsNothing);
-      expect(find.text('写一个解析 tar.xz 的 Kotlin 工具'), findsNothing);
-      expect(find.text('给设置页加深色模式'), findsOneWidget);
-      expect(find.descendant(of: find.byType(DsBotDrawerRow), matching: find.text('3')), findsOneWidget);
-
-      // On the drawer's grid: glyph on the 20 text line, a 44 row.
-      final drawerLeft = tester.getRect(drawer).left;
-      final row = tester.getRect(find.byType(DsBotDrawerRow));
-      expect(row.height, 44);
-      final glyph = tester.getRect(
-        find.descendant(of: find.byType(DsBotDrawerRow), matching: find.byIcon(AppIcons.bot)),
-      );
-      expect(glyph.left - drawerLeft, 20);
-      expect(glyph.center.dy, moreOrLessEquals(row.center.dy));
-
-      await tester.tap(find.byType(DsBotDrawerRow));
-      await tester.pumpAndSettle();
-      expect(find.byType(BotsPage), findsOneWidget);
-    });
 
     testWidgets('no Bot conversations and no DS Bot: no row', (tester) async {
       usePhoneView(tester);

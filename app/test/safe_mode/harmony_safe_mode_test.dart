@@ -57,18 +57,6 @@ void main() {
       final safe = RuntimeFailure(kind: FailureKind.launchFailed, at: failedAt, safeMode: true, causeUnknown: true);
       expect(model(safe).secondary, contains(FailureAction.startNormal));
     });
-
-    test('Android\'s kinds read as they did', () {
-      final killed = RuntimeFailure(kind: FailureKind.killed, at: failedAt);
-      final m = model(killed, held: true);
-      expect(m.title, _zh.phoneFailureKilled);
-      expect(m.primary, FailureAction.retry);
-      expect(m.secondary, [FailureAction.background, FailureAction.showLog]);
-      final launch = RuntimeFailure(kind: FailureKind.launchFailed, at: failedAt);
-      expect(model(launch).secondary, [FailureAction.remote, FailureAction.showLog]);
-      expect(model(startupFailure()).primary, FailureAction.enterSafe);
-      expect(model(startupFailure(), lkg: true).primary, FailureAction.restoreLkg);
-    });
   });
 
   group('the repair prompt', () {

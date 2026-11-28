@@ -28,8 +28,6 @@ void main() {
   const location = ValueKey('background-protection-location');
   const task = ValueKey('background-protection-task');
   const status = ValueKey('background-protection-status');
-  const remoteAudio = ValueKey('remote-background-audio');
-  const remoteLocation = ValueKey('remote-background-location');
   late Map<String, Object?>? actual;
   late List<MethodCall> calls;
   late FutureOr<Object?> Function(MethodCall) update;
@@ -220,34 +218,6 @@ void main() {
     runtime.changed();
     await tester.pumpAndSettle();
     expect(find.text(l10n.backgroundProtectionAudioActive), findsOneWidget);
-  });
-
-  testWidgets('HarmonyOS keeps remote audio separate from local ACL eligibility', (tester) async {
-    actual = {'supported': true, 'permissionStatus': 'eligible'};
-    await pump(tester, os: 'ohos');
-    expect(find.byType(SettingsSwitchTile), findsNWidgets(2));
-    expect(toggle(tester, task).value, isFalse);
-    expect(toggle(tester, remoteAudio).value, isFalse);
-    expect(find.byKey(remoteLocation), findsNothing);
-    update = (call) {
-      actual = {
-        'supported': true,
-        'taskEnabled': true,
-        'taskActive': false,
-        'permissionStatus': 'eligibility_required',
-        'actionRequired': 'obtain_task_keeping_acl_and_install_entitled_build',
-        'error': 'ohos_background_eligibility_required',
-      };
-      return actual;
-    };
-    await tester.tap(find.text(l10n.backgroundProtectionTask));
-    await tester.pumpAndSettle();
-    expect(toggle(tester, task).value, isTrue);
-    expect(find.text(l10n.backgroundProtectionTaskUnavailable), findsOneWidget);
-    expect(find.text(l10n.backgroundProtectionUpdateFailed), findsNothing);
-    expect(tester.widget<SettingsTile>(find.byKey(status)).onTap, isNull);
-    expect(find.text(l10n.backgroundProtectionTaskActive), findsNothing);
-    expect(calls.singleWhere((call) => call.method == 'setBackgroundProtection').arguments, {'taskEnabled': true});
   });
 
   testWidgets('restricted location access does not promise a settings fix', (tester) async {

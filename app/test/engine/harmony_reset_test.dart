@@ -22,7 +22,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../phone/support.dart' show FixedActiveHost;
 import '../safe_mode/support.dart' show FakeBridge, failedAt;
 import '../shell/golden_harness.dart';
 
@@ -83,7 +83,6 @@ Future<void> _pump(
         operatingSystemProvider.overrideWithValue(android ? 'android' : 'ohos'),
         runtimeBridgeProvider.overrideWithValue(bridge),
         activeHostProvider.overrideWith(() => FixedActiveHost(HostRef.local)),
-        hostsProvider.overrideWith(FixedHosts.new),
         localRuntimeProvider.overrideWith(() => FakeRuntime(LocalRuntimeState(loaded: true, status: status))),
         settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true))),
       ],

@@ -13,12 +13,11 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../phone/support.dart' show FixedActiveHost, FixedHosts;
+import '../../phone/support.dart' show FixedActiveHost;
 import '../../shell/golden_harness.dart';
 
 List<Override> _overrides() => [
   activeHostProvider.overrideWith(() => FixedActiveHost(HostRef.local)),
-  hostsProvider.overrideWith(FixedHosts.new),
   localRuntimeProvider.overrideWith(() => FakeRuntime(const LocalRuntimeState(loaded: true, status: runningStatus))),
   settingsProvider.overrideWith(() => FakeSettings(const AppSettings(loaded: true))),
 ];

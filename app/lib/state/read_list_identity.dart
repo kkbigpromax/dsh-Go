@@ -63,23 +63,6 @@ class _RootEpoch {
 
 final _rootEpochProvider = Provider((ref) => _RootEpoch());
 
-class _ResolvedDirectories {
-  final _digests = <String, String>{};
-  String? observe(String config, HostConnection? connection) {
-    if (connection != null) {
-      final value = ReadListIdentity.of(['resolved-cwd', connection.workingDirectory]).digest;
-      _digests.remove(config);
-      _digests[config] = value;
-      while (_digests.length > 32) {
-        _digests.remove(_digests.keys.first);
-      }
-    }
-    return _digests[config];
-  }
-}
-
-final _resolvedDirectoriesProvider = Provider((ref) => _ResolvedDirectories());
-
 typedef _ReadListMux = ({DshConnectionState state, MuxGeneration? generation});
 
 final _readListMuxProvider = StreamProvider.autoDispose.family<_ReadListMux, DshClient>(
@@ -185,70 +168,8 @@ final readListIdentityProvider = Provider<ReadListIdentity?>((ref) {
         accountId,
         epoch,
       ]);
-    case HostKind.ssh:
-      final hosts = ref.watch(hostsProvider);
-      final host = hosts.sshById(selected.id);
-      if (!hosts.loaded ||
-          host == null ||
-          host.hostKeyType?.trim().isNotEmpty != true ||
-          host.hostKeyFingerprint?.trim().isNotEmpty != true) {
-        return null;
-      }
-      if (host.id.length > 256 ||
-          host.connectionKey.length > 8192 ||
-          (host.workingDirectory?.length ?? 0) > 4096 ||
-          host.hostKeyType!.length > 128 ||
-          host.hostKeyFingerprint!.length > 512) {
-        return null;
-      }
-      final config = ReadListIdentity.of([
-        'ssh',
-        host.id,
-        host.connectionKey,
-        host.workingDirectory,
-        host.hostKeyType,
-        host.hostKeyFingerprint,
-        epoch,
-      ]);
-      if (connection != null &&
-          (host.workingDirectory?.trim().isNotEmpty ?? false) &&
-          connection.workingDirectory == null) {
-        return null;
-      }
-      if ((connection?.workingDirectory?.length ?? 0) > 4096) return null;
-      final resolved = ref.watch(_resolvedDirectoriesProvider).observe(config.digest, connection);
-      return ReadListIdentity.of([config.digest, resolved]);
-    case HostKind.relay:
-      final account = ref.watch(relayAccountProvider);
-      if (account.isLoading || account.hasError) return null;
-      final state = account.value;
-      final host = state?.hostById(selected.id);
-      if (state == null ||
-          state.loggingIn ||
-          state.user == null ||
-          host == null ||
-          host.trust != RelayTrust.pinned ||
-          host.fingerprint == null ||
-          host.fingerprint!.trim().isEmpty) {
-        return null;
-      }
-      final server = ref.watch(relayServerProvider) ?? defaultRelayServer;
-      if (server.length > 4096 ||
-          state.user!.id.length > 256 ||
-          host.id.length > 256 ||
-          host.fingerprint!.length > 512 ||
-          (host.harnessVersion?.length ?? 0) > 256) {
-        return null;
-      }
-      return ReadListIdentity.of([
-        'relay',
-        server,
-        state.user!.id,
-        state.user!.provider,
-        host.id,
-        host.fingerprint,
-        host.harnessVersion,
-        epoch,
-      ]);
+    // No remote hosts in this build (docs/fork-maintenance.md): no identity.
+    case HostKind.ssh || HostKind.relay:
+      return null;
   }
 });

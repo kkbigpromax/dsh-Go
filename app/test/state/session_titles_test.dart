@@ -385,33 +385,6 @@ void main() {
     expect(_titles(c)['s2'], 'Title s2');
   });
 
-  test('the connection going drops what it had queued; reads out land nowhere', () async {
-    host.rows = [for (var i = 0; i < 6; i++) _row('s$i', cold: true, updatedAt: 1793000000000 - i * 1000)];
-    host.holdReads = true;
-    start();
-    await c.read(sessionsProvider.future);
-    await _settle();
-    expect(host.reads, ['s0', 's1']);
-    // Another host is chosen: this connection no longer serves the list.
-    c.read(activeHostProvider.notifier).select(HostRef.ssh('laptop'));
-    await c.read(sessionsProvider.future);
-    for (final (id, held) in host.heldReads) {
-      held.complete(_folded(title: 'Title $id'));
-    }
-    await _settle();
-    expect(host.reads, ['s0', 's1']);
-    // Back on it: a fresh list queues them all again.
-    host.holdReads = false;
-    for (var i = 0; i < 6; i++) {
-      host.folded['s$i'] = _folded(title: 'Title s$i');
-    }
-    c.read(activeHostProvider.notifier).select(HostRef.ssh(host.id));
-    await c.read(sessionsProvider.future);
-    await _settle();
-    expect(host.reads.skip(2), ['s0', 's1', 's2', 's3', 's4', 's5']);
-    expect(_titles(c).values, everyElement(startsWith('Title ')));
-  });
-
   test('a refresh asked for while the first list is read reads once more after it', () async {
     // Reconnected: the first list goes out. Meanwhile a conversation starts
     // (its added and status events ask for a refresh), after the Host had

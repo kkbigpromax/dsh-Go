@@ -12409,10 +12409,10 @@ class L10nEn extends L10n {
   String get localeEn => 'English';
 
   @override
-  String get localEnvChooseTitle => 'Where should DSH run?';
+  String get localEnvChooseTitle => 'Run DSH on this phone';
 
   @override
-  String get localEnvChooseMessage => 'You can change this later in Settings';
+  String get localEnvChooseMessage => 'Install the local runtime first; you can remove it later in Settings';
 
   @override
   String localEnvThisPhoneDetail(int storage, int memory) {
@@ -20660,6 +20660,13 @@ class L10nEn extends L10n {
 
   @override
   String get shellGetApiKey => 'Get API key';
+
+  @override
+  String get shellConnectModel => 'Connect a model';
+
+  @override
+  String get shellConnectModelMessage =>
+      'Add a provider that speaks the OpenAI or Anthropic API. ChatGPT and Claude subscription sign-in is in Settings › Models.';
 
   @override
   String get shellConnectDeepSeek => 'Connect DeepSeek';

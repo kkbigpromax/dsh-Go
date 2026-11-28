@@ -27,7 +27,7 @@ Future<void> flush(ProviderContainer c) async {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  for (final destination in ['same', 'other', 'disconnected', 'roundtrip', 'refresh', 'ready', 'ssh']) {
+  for (final destination in ['same', 'other', 'disconnected', 'roundtrip', 'refresh', 'ready']) {
     testWidgets('uninstall consent belongs to opened connection: $destination', (tester) async {
       final a = FakePluginCarrier();
       final b = FakePluginCarrier();

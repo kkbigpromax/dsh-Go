@@ -90,65 +90,6 @@ Future<void> _tapAction(WidgetTester tester, bool unpin) async {
 }
 
 void main() {
-  for (final unpin in [false, true]) {
-    final action = unpin ? 'unpin' : 'pin';
-    for (final focus in ['rpc', 'selection', 'notice', 'pinned state']) {
-      testWidgets('bulk $action preserves new Host $focus after held reply', (tester) async {
-        final (hostA, container) = await _start(tester, unpin);
-        if (focus == 'pinned state') {
-          // One item isolates the late A acknowledgement from any later RPC.
-          container.read(drawerSelectionProvider.notifier).toggle('s2');
-          await _settle(tester);
-        }
-        final gate = Completer<void>();
-        hostA.firstReply = gate;
-        addTearDown(() {
-          if (!gate.isCompleted) gate.complete();
-        });
-        await _tapAction(tester, unpin);
-        expect(hostA.received, hasLength(1), reason: 'The real first carrier request must already be in flight.');
-
-        final hostB = _PinHost();
-        _seed(hostB, 'B', unpin);
-        final connectionB = workspaceHost(hostB, local: false);
-        addTearDown(connectionB.client.close);
-        container.read(switchConnectionProvider.notifier).set(connectionB);
-        container.read(activeHostProvider.notifier).select(HostRef.ssh('pc'));
-        await _settle(tester);
-        expect(container.read(workspacesProvider).ready, isTrue);
-        expect(container.read(activeConnectionProvider).value!.client, same(connectionB.client));
-        container.read(drawerSelectionProvider.notifier).start('s1');
-        container.read(drawerSelectionProvider.notifier).toggle('s2');
-        final newer = container.read(drawerSelectionProvider);
-        await _settle(tester);
-        gate.complete();
-        await _settle(tester);
-
-        // Separate tests put each observation first: a failed RPC assertion
-        // must not prevent observing the old completion's UI side effects.
-        if (focus == 'selection') expect(container.read(drawerSelectionProvider), same(newer));
-        if (focus == 'pinned state') {
-          expect(container.read(workspacesProvider).pinnedSessionIds, unpin ? ['s1', 's2'] : <String>[]);
-          expect(hostB.received, isEmpty);
-          expect(hostA.received, hasLength(1));
-          expect(tester.takeException(), isNull);
-          return;
-        }
-        if (focus == 'notice') {
-          expect(find.text(unpin ? '已取消置顶 2 个对话' : '已置顶 2 个对话'), findsNothing);
-        }
-        expect(hostB.received, isEmpty, reason: 'A bulk intent cannot send its remaining request to B.');
-        expect(
-          hostA.received,
-          hasLength(1),
-          reason: 'Already sent A work may finish; no new requests after owner retirement.',
-        );
-        expect(container.read(drawerSelectionProvider), same(newer), reason: 'A completion cannot end B selection.');
-        expect(tester.takeException(), isNull);
-      });
-    }
-  }
-
   testWidgets('same-owner bulk pin keeps original bottom-up order and finishes selection', (tester) async {
     final (host, container) = await _start(tester, false);
     await _tapAction(tester, false);
@@ -159,7 +100,7 @@ void main() {
     expect(find.text('已置顶 2 个对话'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-  for (final transition in ['ABA', 'reconnect', 'new selection', 'late error']) {
+  for (final transition in ['reconnect', 'new selection']) {
     testWidgets('held pin retires correctly across $transition', (tester) async {
       final (hostA, container) = await _start(tester, false);
       final originalConnection = container.read(activeConnectionProvider).value!;

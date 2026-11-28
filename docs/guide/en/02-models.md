@@ -1,8 +1,8 @@
 # Models and providers
 
-Use a DeepSeek account or API key, or connect any OpenAI- or Anthropic-compatible service. When the engine supports it, you can also sign in with a ChatGPT or Claude subscription. For models in custom providers, set the context, image input and thinking levels yourself.
+Connect any OpenAI- or Anthropic-compatible service (DeepSeek too, as a custom provider). When the engine supports it, you can also sign in with a ChatGPT or Claude subscription. For models in custom providers, set the context, image input and thinking levels yourself.
 
-Providers are stored in the current host's engine. On a remote host, you manage that host's providers.
+Providers are stored in this phone's engine.
 
 ## Switch models and thinking effort
 
@@ -33,8 +33,7 @@ Switching hosts or reconnecting reads that host's defaults again; unsubmitted ch
 
 Providers come in three groups:
 
-- **Official**: DeepSeek. Tap it to open your account, where you sign in or enter an API key. On a remote host, this only shows whether that host is set up; configure it on that host.
-- OpenAI under **Official**: shown only on a supported local Android engine. Sign in with ChatGPT in your browser and allow subscription usage, then choose a model available to that account. This is separate from ChatGPT (Codex) under Subscriptions; existing sign-ins and chats are not migrated. Manage usage and app access in [ChatGPT usage settings](https://chatgpt.com/settings/usage). After signing out, reconnect the same account to keep its app limits, or choose another account. Resetting the local engine does not sign you out of OpenAI; use this provider’s sign-out control to disconnect.
+- **Official**: OpenAI, shown only on a supported local Android engine. Sign in with ChatGPT in your browser and allow subscription usage, then choose a model available to that account. This is separate from ChatGPT (Codex) under Subscriptions; existing sign-ins and chats are not migrated. Manage usage and app access in [ChatGPT usage settings](https://chatgpt.com/settings/usage). After signing out, reconnect the same account to keep its app limits, or choose another account. Resetting the local engine does not sign you out of OpenAI; use this provider’s sign-out control to disconnect.
 - **Subscriptions**: shown when the engine supports them and is connected. Tap **Sign in** and follow the steps in your browser. Open a signed-in subscription to see its models or **Sign out**, which removes its models from the model list.
 - **Custom**: providers you add, plus ones configured in DSH Web or the engine's config file. Connect to the engine to add one.
 
@@ -71,10 +70,3 @@ Tap a provider in the list to open it:
 - **Delete provider**: deletes the provider and its API key. Chats using it will need another model.
 
 Providers configured in DSH Web can only be viewed or deleted here. Providers from the engine's config file can't be deleted here.
-
-## DeepSeek account and API key
-
-Tap DeepSeek under **Official**, or the account card at the top of Settings:
-
-- **Sign in with DeepSeek**: sign in with your browser. Needs DSH installed on this phone.
-- **DeepSeek API key**: enter one if you haven't; otherwise **Replace key** or **Clear**. Clearing while this phone's engine is running deletes the engine's key too. If the engine isn't running, the engine keeps its key; remove it in DSH Web's model settings.

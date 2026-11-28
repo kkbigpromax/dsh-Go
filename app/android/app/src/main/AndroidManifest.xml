@@ -15,10 +15,6 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Composer voice input (voice/VoicePlugin.kt), asked for on the first tap of the mic. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- Remote 扫码配对电脑 (ui/remote/pairing_page.dart, mobile_scanner), asked for when the
-         scanner opens; the photo and paste paths work without it. Never required. -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- TODO(targetSdk >= 30): package visibility hides recognition services from
          SpeechRecognizer.isRecognitionAvailable unless declared; add to <queries>:
          <intent><action android:name="android.speech.RecognitionService" /></intent> -->
@@ -41,8 +37,7 @@
     <!-- libadb-android declares no targetSdk, so the merger implies READ_PHONE_STATE ("读取手机状态");
          nothing here reads it. -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove" />
-    <!-- flutter_webrtc's AudioSwitch asks for these; DSH Remote is data only and must not
-         manage system audio routing. Its native audio module uses media attributes (webrtc_peer.dart). -->
+    <!-- Kept out even without flutter_webrtc: nothing here manages system audio routing. -->
     <uses-permission android:name="android.permission.BLUETOOTH" tools:node="remove" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" tools:node="remove" />
 
@@ -252,16 +247,6 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Runs the user's local DeepSeek Harness agent server" />
-        </service>
-
-        <!-- Helps keep the active remote connection running in the background. -->
-        <service
-            android:name=".remote.RemoteBackgroundService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Helps keep the user's active remote host connection running in the background" />
         </service>
 
         <!-- 手机操控: reads and drives the main screen, owns the status bar / confirm overlay (phone/a11y). -->

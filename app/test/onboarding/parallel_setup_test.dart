@@ -8,7 +8,6 @@ import 'package:dsh_app/performance/performance_state.dart';
 import 'package:dsh_app/runtime/runtime_bridge.dart';
 import 'package:dsh_app/runtime/runtime_state.dart';
 import 'package:dsh_app/state/appearance_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/onboarding_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/ui/onboarding/access_step.dart';
@@ -17,7 +16,6 @@ import 'package:dsh_app/ui/onboarding/connect_page.dart';
 import 'package:dsh_app/ui/onboarding/onboarding_flow.dart';
 import 'package:dsh_app/ui/onboarding/runtime_setup_page.dart';
 import 'package:dsh_app/ui/onboarding/setup_progress.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/shell/root_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,17 +30,8 @@ const _seen = OnboardingPrefs(loaded: true);
 
 Finder _capsuleText(String text) => find.descendant(of: find.byKey(_capsule), matching: find.text(text));
 
-Future<void> _saveKey(WidgetTester tester) async {
-  await tester.tap(find.widgetWithText(OutlinedButton, '使用 API Key'));
-  await frames(tester);
-  await tester.enterText(find.byType(TextField), 'sk-4c1f0e7b9a2d4e6f8a1b3c5d7e9fa3f9');
-  await tester.pump();
-  await tester.tap(find.widgetWithText(FilledButton, '保存并继续'));
-  await frames(tester);
-}
-
 void main() {
-  setUp(useSavedHost);
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('where a launch resumes', () {
     const fresh = OnboardingPrefs(loaded: true);
@@ -170,12 +159,13 @@ void main() {
       expect(tester.getSemantics(find.bySemanticsLabel('深色')), isSemantics(isSelected: true));
     });
 
-    testWidgets('a key saved before the unpack ends waits for it, then goes home with the engine', (tester) async {
+    testWidgets('connecting later before the unpack ends waits for it, then goes home with the engine', (tester) async {
       final rig = await pumpGate(tester);
       await chooseThisPhone(tester);
       rig.runtime.unpack(0.6);
       await pastAppearance(tester);
-      await _saveKey(tester);
+      await tester.tap(find.text('稍后设置'));
+      await frames(tester);
 
       expect(find.byType(RuntimeSetupPage), findsOneWidget);
       expect(find.text('完成后自动进入'), findsOneWidget);
@@ -189,7 +179,7 @@ void main() {
       expect(find.text('home'), findsOneWidget);
       expect(rig.runtime.calls, ['install', 'start']);
       expect(rig.prefs.setupStep, isNull);
-      expect(rig.container.read(settingsProvider).hasApiKey, isTrue);
+      expect(rig.prefs.keySkipped, isTrue);
     });
 
     testWidgets('done between the steps: the capsule says so, fades, keeps its room; the engine starts', (
@@ -239,97 +229,6 @@ void main() {
     });
   });
 
-  group('signing in while it unpacks', () {
-    testWidgets('waits for the runtime, then signs in by itself', (tester) async {
-      final rig = await pumpGate(tester);
-      await chooseThisPhone(tester);
-      rig.runtime.unpack(0.5);
-      await pastAppearance(tester);
-
-      await tester.tap(find.widgetWithText(FilledButton, '用 DeepSeek 账号登录'));
-      await frames(tester);
-      expect(find.text('就绪后自动打开 DeepSeek 登录'), findsOneWidget);
-      // The page is the progress: no capsule under it.
-      expect(find.byKey(_capsule), findsNothing);
-      expect(rig.account.signIns, isEmpty);
-
-      rig.runtime.unpack(0.8);
-      await frames(tester, 2);
-      expect(rig.account.signIns, isEmpty);
-      rig.runtime.finish();
-      await frames(tester, 3);
-      expect(rig.account.signIns, hasLength(1));
-      expect(rig.runtime.calls, contains('start'));
-    });
-
-    testWidgets('ready while the app is away: the sign-in opens once the person is back', (tester) async {
-      addTearDown(() => tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed));
-      final rig = await pumpGate(tester);
-      await chooseThisPhone(tester);
-      rig.runtime.unpack(0.5);
-      await pastAppearance(tester);
-      await tester.tap(find.widgetWithText(FilledButton, '用 DeepSeek 账号登录'));
-      await frames(tester);
-
-      for (final state in [AppLifecycleState.inactive, AppLifecycleState.hidden, AppLifecycleState.paused]) {
-        tester.binding.handleAppLifecycleStateChanged(state);
-      }
-      rig.runtime.finish();
-      await frames(tester, 3);
-      // No browser behind the person's back; the engine still gets going.
-      expect(rig.account.signIns, isEmpty);
-      expect(rig.runtime.calls, contains('start'));
-
-      for (final state in [AppLifecycleState.hidden, AppLifecycleState.inactive, AppLifecycleState.resumed]) {
-        tester.binding.handleAppLifecycleStateChanged(state);
-      }
-      await frames(tester, 3);
-      expect(rig.account.signIns, hasLength(1));
-      expect(find.text('就绪后自动打开 DeepSeek 登录'), findsNothing);
-    });
-
-    testWidgets('取消 goes back to the ways in; back does too', (tester) async {
-      final rig = await pumpGate(tester);
-      await chooseThisPhone(tester);
-      rig.runtime.unpack(0.5);
-      await pastAppearance(tester);
-
-      await tester.tap(find.widgetWithText(FilledButton, '用 DeepSeek 账号登录'));
-      await frames(tester);
-      await tester.tap(find.widgetWithText(OutlinedButton, '取消'));
-      await frames(tester);
-      expect(find.text('就绪后自动打开 DeepSeek 登录'), findsNothing);
-      expect(find.widgetWithText(OutlinedButton, '使用 API Key'), findsOneWidget);
-
-      await tester.tap(find.widgetWithText(FilledButton, '用 DeepSeek 账号登录'));
-      await frames(tester);
-      await tester.binding.handlePopRoute();
-      await frames(tester);
-      expect(find.text('就绪后自动打开 DeepSeek 登录'), findsNothing);
-
-      // Cancelled: the unpack finishing later starts no sign-in.
-      rig.runtime.finish();
-      await frames(tester, 3);
-      expect(rig.account.signIns, isEmpty);
-    });
-
-    testWidgets('a failed unpack drops the wait and shows what to do', (tester) async {
-      final rig = await pumpGate(tester);
-      await chooseThisPhone(tester);
-      rig.runtime.unpack(0.5);
-      await pastAppearance(tester);
-      await tester.tap(find.widgetWithText(FilledButton, '用 DeepSeek 账号登录'));
-      await frames(tester);
-
-      rig.runtime.fail();
-      await frames(tester, 8);
-      expect(find.text('就绪后自动打开 DeepSeek 登录'), findsNothing);
-      expect(find.byKey(const ValueKey('setup-status-sheet')), findsOneWidget);
-      expect(find.text('存储空间不足：需要约 862 MB，当前可用 600 MB'), findsOneWidget);
-      expect(rig.account.signIns, isEmpty);
-    });
-  });
-
   group('a failed unpack', () {
     testWidgets('the capsule turns red; its sheet retries through the one entry', (tester) async {
       final rig = await pumpGate(tester);
@@ -345,7 +244,7 @@ void main() {
       final sheet = find.byKey(const ValueKey('setup-status-sheet'));
       expect(sheet, findsOneWidget);
       expect(find.descendant(of: sheet, matching: find.text('安装未完成')), findsOneWidget);
-      expect(find.widgetWithText(OutlinedButton, '改用远程主机'), findsOneWidget);
+      expect(find.text('改用远程主机'), findsNothing);
       expect(find.widgetWithText(TextButton, '查看日志'), findsOneWidget);
       // Only a drag handle closes it: no ×.
       expect(find.byTooltip('关闭'), findsNothing);
@@ -359,25 +258,7 @@ void main() {
       expect(rig.runtime.calls, ['install', 'install']);
     });
 
-    testWidgets('改用远程主机 from the sheet: host list, a host, home; first run over', (tester) async {
-      final rig = await pumpGate(tester);
-      await chooseThisPhone(tester);
-      rig.runtime.fail();
-      await frames(tester, 3);
-      await tester.tap(find.byKey(_capsule));
-      await frames(tester, 6);
-      await tester.tap(find.widgetWithText(OutlinedButton, '改用远程主机'));
-      await frames(tester);
-      expect(find.byType(RemoteScreen), findsOneWidget);
-
-      await tester.tap(find.text('电脑'));
-      await frames(tester);
-      expect(find.text('home'), findsOneWidget);
-      expect(rig.prefs.localDeclined, isTrue);
-      expect(rig.prefs.setupStep, isNull);
-    });
-
-    testWidgets('on the waiting page: retry, logs and the remote host', (tester) async {
+    testWidgets('on the waiting page: retry and logs, no remote host', (tester) async {
       final rig = await pumpGate(
         tester,
         runtime: unpackingState(0.7),
@@ -389,7 +270,7 @@ void main() {
       expect(find.text('安装未完成'), findsOneWidget);
       expect(find.widgetWithText(FilledButton, '重试'), findsOneWidget);
       expect(find.widgetWithText(OutlinedButton, '查看日志'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, '改用远程主机'), findsOneWidget);
+      expect(find.text('改用远程主机'), findsNothing);
     });
   });
 
@@ -445,21 +326,6 @@ void main() {
   });
 
   group('the other ways are as they were', () {
-    testWidgets('远程主机: no unpack, no setup step', (tester) async {
-      final rig = await pumpGate(tester);
-      await tester.tap(find.byKey(const ValueKey('runtime-option-remote')));
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.widgetWithText(FilledButton, '继续'));
-      await frames(tester);
-      expect(find.byType(RemoteScreen), findsOneWidget);
-      await tester.tap(find.text('电脑'));
-      await frames(tester);
-      expect(find.text('home'), findsOneWidget);
-      expect(rig.container.read(activeHostProvider), isNot(HostRef.local));
-      expect(rig.runtime.calls, isEmpty);
-      expect(rig.prefs.setupStep, isNull);
-    });
-
     testWidgets('an upgrade unpacks on its own page, then home', (tester) async {
       final rig = await pumpGate(
         tester,

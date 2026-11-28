@@ -316,7 +316,7 @@ void main() {
     }
   });
 
-  for (final exit in ['route', 'background', 'host']) {
+  for (final exit in ['route', 'background']) {
     testWidgets('F foreground page owns a real held response until $exit and never restarts on return', (tester) async {
       final previous = binding.lifecycleState;
       binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);

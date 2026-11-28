@@ -16,7 +16,6 @@ import 'package:dsh_app/ui/chat/render/code_block.dart';
 import 'package:dsh_app/ui/engine/engine_screen.dart';
 import 'package:dsh_app/ui/features/all_features_page.dart';
 import 'package:dsh_app/ui/plugins/plugins_screen.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/session/session_detail_page.dart';
 import 'package:dsh_app/ui/settings/search/settings_search_page.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
@@ -480,31 +479,8 @@ void main() {
   });
 
   group('the rows', () {
-    testWidgets('an install that never chose anything: 插件, 本机引擎, 设置, in that order', (tester) async {
-      await _pump(tester);
-      await _swipeOpen(tester);
-      final rows = QuickPanelPrefs.defaultItems.map(_row).toList();
-      for (final row in rows) {
-        expect(row, findsOneWidget);
-      }
-      expect(tester.getTopLeft(rows[0]).dx, lessThan(tester.getTopLeft(rows[1]).dx));
-      expect(tester.getTopLeft(rows[1]).dx, lessThan(tester.getTopLeft(rows[2]).dx));
-      expect(find.byTooltip('插件'), findsOneWidget);
-      expect(find.byTooltip('本机引擎'), findsOneWidget);
-      expect(find.byTooltip('设置'), findsOneWidget);
-      for (final other in [
-        DrawerDestination.web,
-        DrawerDestination.remote,
-        DrawerDestination.settingsSearch,
-        DrawerDestination.features,
-      ]) {
-        expect(_row(other), findsNothing);
-      }
-    });
-
     final pages = <DrawerDestination, Type>{
       DrawerDestination.web: LocalWebScreen,
-      DrawerDestination.remote: RemoteScreen,
       DrawerDestination.plugins: PluginsScreen,
       DrawerDestination.engine: EngineScreen,
       DrawerDestination.settings: SettingsScreen,

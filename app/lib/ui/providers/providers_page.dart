@@ -6,22 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
-import '../../state/account_state.dart';
 import '../../state/connection_state.dart';
 import '../../state/models_state.dart';
 import '../../state/providers_state.dart';
 import '../../state/read_list_cache.dart';
 import '../../state/read_list_identity.dart';
-import '../../state/settings_state.dart';
 import '../../state/subscriptions_state.dart';
-import '../account/account_page.dart';
 import '../common/app_dialog.dart';
 import '../common/list_page_row.dart';
 import '../common/read_list_status.dart';
 import '../common/status_chip.dart';
 import '../features/feature_kit.dart';
 import '../features/feature_widgets.dart';
-import '../onboarding/api_key_page.dart' show maskApiKey;
 import '../settings/index/spots.dart';
 import '../shell/page_frame.dart';
 import '../theme/app_icons.dart';
@@ -68,7 +64,7 @@ class ProvidersPage extends ConsumerWidget {
           : Text(summary),
       children: [
         const NewChatDefaultsCard(),
-        _OfficialAccounts(openAi: official, openAiReady: officialReady),
+        if (official case final openAi?) _OfficialAccounts(openAi: openAi, openAiReady: officialReady),
         if (legacy.isNotEmpty) _SubscriptionAccounts(statuses: legacy),
         if (view.value?.supported == false)
           FeatureMessage(
@@ -134,16 +130,8 @@ String? _summary(
 }) {
   if (conn == null || snapshot == null) return null;
   final remote = !conn.isLocal;
-  final bool deepSeek;
-  if (remote) {
-    deepSeek = catalogHasDeepSeek(ref.watch(modelCatalogProvider).value);
-  } else {
-    final account = ref.watch(accountProvider);
-    deepSeek = account.signedIn || ref.watch(settingsProvider.select((s) => s.hasApiKey));
-  }
-  final total = 1 + (hasOfficial ? 1 : 0) + legacy.length + snapshot.providers.length;
+  final total = (hasOfficial ? 1 : 0) + legacy.length + snapshot.providers.length;
   final ready = [
-    deepSeek,
     officialReady,
     for (final s in legacy) s.signedIn,
     for (final p in snapshot.providers) snapshot.healthOf(p) == ProviderHealth.ready,
@@ -160,56 +148,23 @@ bool _officialModelsReady(AsyncValue<ModelCatalog?> catalog) {
       models.groups.any((group) => group.id == wire && group.models.isNotEmpty);
 }
 
-/// DeepSeek uses the app's account / API key locally and the catalog remotely.
-/// OpenAI is only added when the local bridge offers official ChatGPT sign-in.
-class _OfficialAccounts extends ConsumerWidget {
+/// 「官方」: OpenAI, when the local bridge offers official ChatGPT sign-in. This
+/// build has no DeepSeek account row (docs/fork-maintenance.md); DeepSeek
+/// models are a custom provider like any other.
+class _OfficialAccounts extends StatelessWidget {
   const _OfficialAccounts({required this.openAi, required this.openAiReady});
 
-  final SubscriptionStatus? openAi;
+  final SubscriptionStatus openAi;
   final bool openAiReady;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final conn = ref.watch(activeConnectionProvider).value;
-    final Widget row;
-    if (conn != null && !conn.isLocal) {
-      final ready = catalogHasDeepSeek(ref.watch(modelCatalogProvider).value);
-      row = ListPageRow(
-        leading: const Monogram('DeepSeek'),
-        title: 'DeepSeek',
-        subtitle: ready ? l10n.engineFieldConfigured : l10n.engineProvidersNotConfiguredHere,
-        trailing: ProviderDot(ready ? StatusTone.ok : StatusTone.idle),
-      );
-    } else {
-      final account = ref.watch(accountProvider);
-      final settings = ref.watch(settingsProvider);
-      final (String subtitle, StatusTone tone) = switch (account.phase) {
-        AccountPhase.signedIn => (
-          l10n.engineProvidersAccount(account.profile?.displayName ?? l10n.commonSignedIn),
-          StatusTone.ok,
-        ),
-        AccountPhase.signingIn => (l10n.engineProvidersSigningIn, StatusTone.busy),
-        _ when settings.hasApiKey => ('API Key · ${maskApiKey(settings.apiKey)}', StatusTone.ok),
-        _ => (l10n.engineProvidersSignInOrKey, StatusTone.idle),
-      };
-      row = ListPageRow(
-        leading: const Monogram('DeepSeek'),
-        title: 'DeepSeek',
-        subtitle: subtitle,
-        trailing: ProviderDot(tone),
-        chevron: true,
-        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AccountPage())),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: ListPageCard(
-        title: l10n.engineProvidersOfficial,
-        children: [row, if (openAi case final status?) _SubscriptionRow(status: status, ready: openAiReady)],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 24),
+    child: ListPageCard(
+      title: context.l10n.engineProvidersOfficial,
+      children: [_SubscriptionRow(status: openAi, ready: openAiReady)],
+    ),
+  );
 }
 
 /// 「订阅」: ChatGPT and Claude, signed in through the engine's bridge. Left
@@ -254,12 +209,20 @@ class _SubscriptionRow extends ConsumerWidget {
         subtitle: signOutPending
             ? l10n.engineSubscriptionSignOutFailed(l10n.commonRetry)
             : subtitle ??
-                  (account == null || account.isEmpty ? l10n.commonSignedIn : l10n.engineProvidersSignedInAccount(account)),
-        trailing: ProviderDot(signOutPending ? StatusTone.warn : ready ? StatusTone.ok : StatusTone.idle),
-        chevron: true,
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => SubscriptionPage(subscription: subscription)),
+                  (account == null || account.isEmpty
+                      ? l10n.commonSignedIn
+                      : l10n.engineProvidersSignedInAccount(account)),
+        trailing: ProviderDot(
+          signOutPending
+              ? StatusTone.warn
+              : ready
+              ? StatusTone.ok
+              : StatusTone.idle,
         ),
+        chevron: true,
+        onTap: () =>
+            Navigator.of(context)
+                .push(MaterialPageRoute<void>(builder: (_) => SubscriptionPage(subscription: subscription))),
       );
     }
     Future<void> signIn() async {
@@ -425,7 +388,3 @@ class _ProviderRow extends StatelessWidget {
 /// For callers outside this page (the model sheet, onboarding).
 void openProviders(BuildContext context) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ProvidersPage()));
-
-/// A remote engine's catalog lists DeepSeek models (account or API Key).
-bool catalogHasDeepSeek(ModelCatalog? catalog) =>
-    catalog?.groups.any((g) => g.id.startsWith('deepseek') && g.models.isNotEmpty) ?? false;

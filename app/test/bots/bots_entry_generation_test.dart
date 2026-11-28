@@ -36,7 +36,7 @@ void main() {
       jsonDecode(File('../packages/dsh_client/test/fixtures/dsbot_long_post.json').readAsStringSync()) as Map;
 
   for (final entry in ['bot folder', 'room folder', 'relay limit', 'model', 'chat model', 'duplicate', 'full text']) {
-    for (final transition in ['host', 'HTTP boot', 'unchanged']) {
+    for (final transition in ['HTTP boot', 'unchanged']) {
       testWidgets('$entry entry keeps its rendered generation before a frame: $transition', (tester) async {
         Map<String, Object?> team() {
           final value = sampleTeam(working: false);

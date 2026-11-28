@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../../account/account_page.dart';
 import '../../engine/engine_screen.dart';
 import '../../engine_settings/engine_settings_hub.dart';
 import '../../engine_settings/runtime_settings_pages.dart';
@@ -24,7 +23,6 @@ import '../../phone/system_actions_page.dart';
 import '../../plugins/plugin_inventory_page.dart';
 import '../../plugins/plugins_screen.dart';
 import '../../providers/providers_page.dart';
-import '../../remote/remote_screen.dart';
 import '../../share_hosted/hosted_links_page.dart';
 import '../appearance/appearance_page.dart';
 import '../background_guide_page.dart';
@@ -80,8 +78,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.pluginInventory => const PluginInventoryPage(),
   SettingsPageId.plugins => const PluginsScreen(),
   SettingsPageId.allFeatures => const AllFeaturesPage(),
-  SettingsPageId.account => const AccountPage(),
-  SettingsPageId.remote => const RemoteScreen(),
+  SettingsPageId.account || SettingsPageId.remote => const SizedBox.shrink(),
   SettingsPageId.permission => PermissionPage(sessionId: sessionId),
   SettingsPageId.agentPresets => const AgentPresetsPage(),
   SettingsPageId.personalization => const PersonalizationPage(),

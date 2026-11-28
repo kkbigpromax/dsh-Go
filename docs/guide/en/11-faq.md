@@ -5,7 +5,6 @@
 Check the host status at the bottom of the chat list.
 
 - **This phone**: open the engine page and check its status and **Logs**. Not installed, stopped and failed to start are different cases; follow the page. When a start fails, the failure card links to the logs and a diagnostics bundle.
-- **Remote host**: the remote hosts page offers a fix for the cause, such as **Reconnect**, **Sign in again** or **Trust again**.
 - If no model is set up, **Choose model** offers to enter an API key or add a provider.
 
 Reset and uninstall both delete data on this phone; you rarely need them to fix a problem.
@@ -30,13 +29,11 @@ Results stay in app memory. Only **Let the AI read diagnostics** or a manual bun
 
 Android: follow the guide to turn off battery optimization, keep the "engine running" notification, and lock the app in Recents. After system reclamation of the whole app, a local engine with saved launch options requests restoration. A manual stop is not revived, and launches with temporary environment overrides do not restore automatically. This restarts the engine, not interrupted commands or phone actions. Vendor restrictions still apply.
 
-Android: a separate service keeps the remote connection active without an app-imposed time limit when you switch apps or lock the screen. It does not start the local engine. Network changes, force stop, and system restrictions can still interrupt the connection. Remote silent audio and background location protections are optional and off by default. Location uses approximate access only, requires your permission, and does not save or send coordinates.
-
 iOS: this page offers separate audio and location protection switches, both off by default. They are used only while a local task is running in the background, and released when the task ends, the engine stops or the switch is turned off. Audio protection plays silence, uses more battery and yields to recording, calls or other audio use. Location protection needs Always location access and uses extra power and location permissions, but does not store coordinates. If access is denied, this page links to system settings.
 
 The iOS 26 system continued task remains the default path; the system can refuse, cancel or expire it. Enhanced protection is also best-effort, not unlimited background execution or survival after force quit. Keep long tasks in the foreground or use a remote host when reliable execution matters.
 
-For notifications, also turn on the alerts you want in the app's **Notifications** and allow DSH Go notifications in system settings. Alerts from remote hosts need the app running and the connection online.
+For notifications, also turn on the alerts you want in the app's **Notifications** and allow DSH Go notifications in system settings.
 
 ## The engine keeps failing to start
 
@@ -56,14 +53,13 @@ The default DeepSeek official API route needs `DEEPSEEK_API_KEY`. Supply it in t
 
 DeepSeek account sign-in and an official API key are different credentials. An account sign-in token cannot be used as `DEEPSEEK_API_KEY`. You can keep using the account in the app, or configure an API key separately for headless.
 
-Adding the app's sign-in patch alone does not enable the services that headless disables by default. Custom profiles and remote hosts may use different configurations; follow the configuration of that host.
+Adding the app's sign-in patch alone does not enable the services that headless disables by default. Custom profiles may use different configurations; follow the actual configuration.
 
 ## Phone control doesn't work
 
 The top of the phone control page says what's missing:
 
 - The switch is off, or the engine hasn't started.
-- You're connected to a remote host: switch to **This phone**.
 - DSH isn't installed on this phone: install it first.
 - Safe mode is on: return to normal mode.
 - Accessibility is off: tap **Turn on**. For a sideloaded app, allow restricted settings first.
@@ -76,14 +72,14 @@ Hold and drag the bar out of the way (left, middle or right, at any height), or 
 
 ## A plugin is installed but doesn't show up
 
-Check that the plugin is enabled, and restart the engine if asked. A plugin's native UI needs the dsh-go bridge on the host: this phone's engine has it built in, remote hosts usually don't. A display place may also be turned off in the plugin's details. Plugin panels without a native UI appear in the Plugins group of All features, opening in the app or as Web entries. See [Plugins](08-plugins.md).
+Check that the plugin is enabled, and restart the engine if asked. A plugin's native UI needs the dsh-go bridge on the host: this phone's engine has it built in. A display place may also be turned off in the plugin's details. Plugin panels without a native UI appear in the Plugins group of All features, opening in the app or as Web entries. See [Plugins](08-plugins.md).
 
 ## What the app sends
 
 <!-- nav: commonSettings,hubPrivacy -->
 `Settings › Privacy and sharing`
 
-This fork removes the app’s own anonymous usage statistics. It no longer collects or reports feature counts, random installation IDs or device information for those statistics. The switch, upgrade notice and first-run welcome page are removed; first run starts with the choice of this phone or a remote host. The bundled engine also removes the contributor that attaches complete session logs to DeepSeek requests, together with its native and web settings. A remote host’s own engine controls its uploads; use the same modified engine there to stop that upload path.
+This fork removes the app’s own anonymous usage statistics. It no longer collects or reports feature counts, random installation IDs or device information for those statistics. The switch, upgrade notice and first-run welcome page are removed; first run goes straight to installing the local runtime. The bundled engine also removes the contributor that attaches complete session logs to DeepSeek requests, together with its native and web settings.
 
 Model requests, explicit sharing and third-party SDK data handling follow their respective feature descriptions.
 
@@ -97,8 +93,6 @@ This fork hides in-app update controls and disables launch-time update checks; i
 Phone control uses bundled Google ML Kit Chinese text recognition (`com.google.mlkit:text-recognition-chinese:16.0.1`), enabled by default; expand **More settings** on that page and turn it off separately with **Text recognition**. Recognition runs on this device; screenshots and recognized text are not sent to Google. Google’s SDK collects usage statistics such as device model, app version and processing time. This SDK’s statistics are separate from the removed app usage reporting.
 
 Screenshots and recognized text may be sent to your configured model as part of phone control. While off, recognition requests do not trigger SDK loading or initialization. Turning local recognition off prevents new recognition; work already started may still finish. It does not uninstall the SDK, clear previously accumulated SDK statistics, or guarantee that old SDK statistics stop being sent. A device that has never initialized the SDK and a device previously used with recognition enabled have different histories.
-
-Remote’s pairing scanner also uses ML Kit and initializes the shared SDK separately when the scanner opens. Camera scanning and reading a gallery image do not require phone control or text recognition to be enabled, and do not change that setting. To connect without using ML Kit for pairing, use the Remote account sign-in path instead.
 
 See [Google ML Kit terms](https://developers.google.com/ml-kit/terms) and [Android SDK data disclosure](https://developers.google.com/ml-kit/android-data-disclosure). These SDK terms are distinct from the Apache 2.0 license attached to example code in the documentation.
 

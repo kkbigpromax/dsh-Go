@@ -1,6 +1,6 @@
 {
-  "localEnvChooseTitle": "DSH 在哪里运行？",
-  "localEnvChooseMessage": "之后可以在设置里更改",
+  "localEnvChooseTitle": "在这台手机上运行 DSH",
+  "localEnvChooseMessage": "先安装本机运行环境，之后可以在设置里卸载",
   "localEnvThisPhoneDetail": "存储约 {storage} MB · 内存约 {memory} MB",
   "@localEnvThisPhoneDetail": {
     "placeholders": {

@@ -1,13 +1,10 @@
 import 'dart:io';
 
-import 'package:dsh_app/remote/secret_store.dart';
 import 'package:dsh_app/state/connection_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:dsh_app/state/providers_state.dart';
 import 'package:dsh_app/ui/features/preset_editor/preset_editor_page.dart';
 import 'package:dsh_app/ui/providers/provider_form_page.dart';
 import 'package:dsh_app/ui/providers/provider_widgets.dart';
-import 'package:dsh_app/ui/remote/ssh_host_form.dart';
 import 'package:dsh_client/dsh_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -102,16 +99,6 @@ void main() {
     final error = tester.widget<FormFieldBlock>(block('标识')).error;
     expect(error, isNotNull);
     aligned(tester, '标识', error!, prior: before);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('SSH 共用字段组件：提示和错误对齐标签', (tester) async {
-    await pump(tester, const SshHostFormPage(), [secretStoreProvider.overrideWithValue(MemorySecretStore())]);
-    aligned(tester, '启动命令', '用 nvm 安装的可以填完整路径');
-    final before = left(tester, '用 nvm 安装的可以填完整路径');
-    await tester.tap(find.text('保存'));
-    await tester.pumpAndSettle();
-    aligned(tester, '主机', '填写主机地址（IP 或域名）', prior: before);
     expect(tester.takeException(), isNull);
   });
 

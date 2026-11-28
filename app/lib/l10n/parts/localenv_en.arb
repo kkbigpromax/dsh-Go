@@ -1,6 +1,6 @@
 {
-  "localEnvChooseTitle": "Where should DSH run?",
-  "localEnvChooseMessage": "You can change this later in Settings",
+  "localEnvChooseTitle": "Run DSH on this phone",
+  "localEnvChooseMessage": "Install the local runtime first; you can remove it later in Settings",
   "localEnvThisPhoneDetail": "{storage} MB storage · {memory} MB memory",
   "localEnvThisPhoneDetailShort": "{memory} MB memory while running",
   "localEnvLowStorage": "Needs about {needed} MB free",

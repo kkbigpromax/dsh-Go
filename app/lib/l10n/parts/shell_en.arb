@@ -14,6 +14,8 @@
   "shellShow": "Show",
   "shellApiKeyEncrypted": "Encrypted on this phone",
   "shellGetApiKey": "Get API key",
+  "shellConnectModel": "Connect a model",
+  "shellConnectModelMessage": "Add a provider that speaks the OpenAI or Anthropic API. ChatGPT and Claude subscription sign-in is in Settings › Models.",
   "shellConnectDeepSeek": "Connect DeepSeek",
   "shellConnectDeepSeekMessage": "Sign in to DeepSeek to start. No API key needed.",
   "shellAccountSignInUnsupported": "This engine doesn’t support account sign-in",

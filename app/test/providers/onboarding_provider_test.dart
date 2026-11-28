@@ -14,7 +14,7 @@ import '../shell/golden_harness.dart' show goldenApp, loadGoldenFonts;
 import 'support.dart';
 
 void main() {
-  testWidgets('其他模型渠道 → add form → save finishes the connect step', (tester) async {
+  testWidgets('添加渠道 → add form → save finishes the connect step', (tester) async {
     await tester.runAsync(loadGoldenFonts);
     tester.view.devicePixelRatio = 2;
     tester.view.physicalSize = const Size(390 * 2, 1400 * 2);
@@ -34,13 +34,8 @@ void main() {
     );
     await settle(tester);
 
-    // The two quiet ways on share the row equally.
-    final other = tester.getRect(find.widgetWithText(TextButton, '其他模型渠道'));
-    final later = tester.getRect(find.widgetWithText(TextButton, '稍后设置'));
-    expect(other.width, moreOrLessEquals(later.width, epsilon: 0.6));
-    expect(other.center.dy, moreOrLessEquals(later.center.dy, epsilon: 0.6));
 
-    await tester.tap(find.text('其他模型渠道'));
+    await tester.tap(find.widgetWithText(FilledButton, '添加渠道'));
     await settle(tester);
     expect(find.byType(ProviderFormPage), findsOneWidget);
 

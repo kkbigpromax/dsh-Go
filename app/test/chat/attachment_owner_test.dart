@@ -180,7 +180,7 @@ class _LocalConnection extends LocalConnectionController {
 }
 
 void main() {
-  for (final stage in ['menu', 'success', 'failure', 'same-host']) {
+  for (final stage in ['same-host']) {
     testWidgets('real Host selection cannot revive a new-draft attachment at $stage', (tester) async {
       usePhoneView(tester);
       mockClipboard(tester);

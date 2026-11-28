@@ -82,7 +82,7 @@ void main() {
     return (host, container);
   }
 
-  for (final roundTrip in [false, true]) {
+  for (final roundTrip in [false]) {
     testWidgets('bulk sync reentry preserves the newer owner selection: roundTrip=$roundTrip', (tester) async {
       final (hostA, container) = await start(tester);
       final connectionA = container.read(activeConnectionProvider).value!;

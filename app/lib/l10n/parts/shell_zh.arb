@@ -14,6 +14,8 @@
   "shellShow": "显示",
   "shellApiKeyEncrypted": "加密保存在本机",
   "shellGetApiKey": "获取 API Key",
+  "shellConnectModel": "连接模型",
+  "shellConnectModelMessage": "添加一个兼容 OpenAI 或 Anthropic 的模型渠道。ChatGPT、Claude 订阅登录在「设置 › 模型」里。",
   "shellConnectDeepSeek": "连接 DeepSeek",
   "shellConnectDeepSeekMessage": "登录 DeepSeek 账号即可开始，无需 API Key",
   "shellAccountSignInUnsupported": "当前引擎不支持账号登录",

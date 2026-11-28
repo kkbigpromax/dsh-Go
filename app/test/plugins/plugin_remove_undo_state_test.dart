@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dsh_app/state/plugins_state.dart';
-import 'package:dsh_app/state/hosts_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dsh_client/dsh_client.dart';
 import 'package:flutter/widgets.dart';
@@ -164,17 +163,6 @@ void main() {
     expect(getCalls(), hasLength(1));
   });
 
-  testWidgets('leave and return before a frame cancels the old Host lease', (tester) async {
-    final controller = await ready(tester);
-    final first = controller.scheduleRemoval(bundle('first'));
-    final selection = container.read(activeHostProvider.notifier);
-    selection.select(HostRef.ssh('other'));
-    selection.select(HostRef.local);
-    await tester.pump(const Duration(seconds: 5));
-    expect(await first.done, isNull);
-    expect(getCalls(), isEmpty);
-  });
-
   testWidgets('same client reconnect retires waiting removal', (tester) async {
     final controller = await ready(tester);
     client.mux.start();
@@ -194,21 +182,6 @@ void main() {
     await tester.pump(InstalledPluginsController.removalUndoWindow);
     await failure;
     expect(visible(), ['first', 'second']);
-  });
-
-  testWidgets('owner changes during expiry inventory read never dispatch old removal', (tester) async {
-    final controller = await ready(tester);
-    final first = controller.scheduleRemoval(bundle('first'));
-    final snapshot = Completer<Object?>();
-    carrier.handlers['pluginManager/listBundles'] = (_) => snapshot.future;
-    await tester.pump(InstalledPluginsController.removalUndoWindow);
-    expect(getCalls(), isEmpty);
-    final selection = container.read(activeHostProvider.notifier);
-    selection.select(HostRef.ssh('other'));
-    snapshot.complete(inventory);
-    await tester.pump(const Duration(milliseconds: 1));
-    expect(await first.done, isNull);
-    expect(getCalls(), isEmpty);
   });
 
   testWidgets('late inventory from cancelled timer cannot cancel a new same-name handle', (tester) async {

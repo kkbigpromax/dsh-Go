@@ -34,13 +34,10 @@ void main() {
     'current',
     'reject',
     'current error',
-    'host click',
-    'host ABA',
     'reconnect',
     'card removed',
     'card ABA',
     'readOnly',
-    'late error',
     'late success',
     'busy replacement',
   ]) {

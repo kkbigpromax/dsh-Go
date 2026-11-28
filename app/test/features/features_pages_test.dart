@@ -12,7 +12,6 @@ import 'package:dsh_app/state/features_state.dart';
 import 'package:dsh_app/state/sessions_state.dart';
 import 'package:dsh_app/state/settings_state.dart';
 import 'package:dsh_app/ui/common/app_sheet.dart';
-import 'package:dsh_app/ui/remote/remote_screen.dart';
 import 'package:dsh_app/ui/settings/search/settings_search_page.dart';
 import 'package:dsh_app/ui/settings/settings_screen.dart';
 import 'package:dsh_app/ui/features/agent_presets_page.dart';
@@ -21,7 +20,6 @@ import 'package:dsh_app/ui/features/jobs_page.dart';
 import 'package:dsh_app/ui/features/permission_page.dart';
 import 'package:dsh_app/ui/features/schedules_page.dart';
 import 'package:dsh_app/ui/features/skills_page.dart';
-import 'package:dsh_app/ui/terminal/terminal_page.dart';
 import 'package:dsh_app/ui/theme/theme.dart';
 import 'package:dsh_app/ui/web/web_target.dart';
 import 'package:dsh_client/dsh_client.dart';
@@ -229,11 +227,6 @@ void main() {
       expect(find.text(note), findsOneWidget);
     });
 
-    testWidgets('a remote host\'s tasks run regardless', (tester) async {
-      await schedules(tester, os: 'ohos', host: const HostRef.relay('r1'));
-      expect(find.text(note), findsNothing);
-    });
-
     testWidgets('Android has nothing to add', (tester) async {
       await schedules(tester, os: 'android');
       expect(find.text(note), findsNothing);
@@ -241,51 +234,6 @@ void main() {
   });
 
   group('全部功能', () {
-    testWidgets('native items push their page; web items deep-link', (tester) async {
-      final opened = <DshWebTarget>[];
-      await _pump(
-        tester,
-        const AllFeaturesPage(),
-        overrides: [..._fixed(), dshWebOpenerProvider.overrideWithValue((context, ref, target) => opened.add(target))],
-      );
-      // The overview card names the conversation the tiles act on.
-      expect(find.text('当前打开的对话'), findsOneWidget);
-      expect(find.text('修复登录按钮重复提交'), findsOneWidget);
-
-      // Native terminal keeps its conversation; no redundant web fallback.
-      await _reveal(tester, find.text('终端'));
-      final terminal = find.ancestor(of: find.text('终端'), matching: find.byType(FeatureTileFor));
-      final terminalPage = tester.widget<FeatureTileFor>(terminal).item.native!('s1');
-      expect(terminalPage, isA<TerminalPage>());
-      expect((terminalPage as TerminalPage).sessionId, 's1');
-      expect(find.descendant(of: terminal, matching: find.byTooltip('在网页版打开')), findsNothing);
-
-      // The row opens the native automation page, without a web fallback.
-      await _reveal(tester, find.text('自动化任务'));
-      await tester.tap(find.text('自动化任务'));
-      await tester.pumpAndSettle();
-      expect(find.byType(SchedulesPage), findsOneWidget);
-      await tester.tap(find.byTooltip('返回'));
-      await tester.pumpAndSettle();
-      final row = find.ancestor(of: find.text('自动化任务'), matching: find.byType(FeatureTileFor));
-      expect(find.descendant(of: row, matching: find.byTooltip('在网页版打开')), findsNothing);
-      expect(tester.widget<FeatureTileFor>(row).item.native!('s1'), isA<SchedulesPage>());
-      expect(opened, isEmpty);
-
-      // Settings shortcuts open the same pages as 设置.
-      await _reveal(tester, find.text('远程主机'));
-      final remote = find.ancestor(of: find.text('远程主机'), matching: find.byType(FeatureTileFor));
-      expect(tester.widget<FeatureTileFor>(remote).item.native!(null), isA<RemoteScreen>());
-      expect(find.text('Agent 循环'), findsNothing, reason: 'settings live in 设置');
-      expect(opened, isEmpty);
-
-      // Web-only: 网页版 itself.
-      await _reveal(tester, find.text('网页版'));
-      await tester.tap(find.text('网页版'));
-      await pumpFrames(tester);
-      expect(opened.last, const DshWebTarget());
-    });
-
     testWidgets('settings shortcuts last, then all-settings spanning the grid', (tester) async {
       await _pump(tester, const AllFeaturesPage());
       await _reveal(tester, find.text('全部设置'));
@@ -295,8 +243,7 @@ void main() {
       expect(all.left, card('模型').left);
       expect(all.right, card('权限').right);
       expect(all.left, card('手机操控').left);
-      expect(all.right, card('远程主机').right);
-      expect(all.top - card('远程主机').bottom, 12, reason: 'the grid\'s own gap');
+      expect(all.top - card('手机操控').bottom, 12, reason: 'the grid\'s own gap');
       final width = tester.view.physicalSize.width / tester.view.devicePixelRatio;
       expect(all.left, 16);
       expect(width - all.right, 16);

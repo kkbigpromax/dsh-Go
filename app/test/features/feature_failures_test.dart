@@ -51,15 +51,6 @@ class _Host extends ActiveHostController {
   HostRef build() => host;
 }
 
-class _Remote extends RemoteConnectionController {
-  _Remote(super.host);
-  int retries = 0;
-  @override
-  Future<HostConnection?> build() async => null;
-  @override
-  void retry() => retries++;
-}
-
 const _permission = PermissionState(
   options: [
     PermissionOption('workspace-write', 'workspace-write'),
@@ -203,27 +194,6 @@ void main() {
     ]);
     expect(find.byType(QuietSpinner), findsOneWidget);
     expect(find.text('正在连接「电脑」…'), findsOneWidget);
-  });
-  testWidgets('remote failure has a working retry', (tester) async {
-    final remote = _Remote(host);
-    await _pump(tester, const Scaffold(body: FeatureOffline()), [
-      activeConnectionProvider.overrideWithValue(AsyncError(StateError('raw'), StackTrace.current)),
-      activeHostProvider.overrideWith(() => _Host(host)),
-      hostNameProvider.overrideWith((ref, host) => '电脑'),
-      remoteConnectionProvider(host).overrideWith(() => remote),
-      hostLinkStatusProvider.overrideWith(
-        (ref, host) => Stream.value(
-          const HostLinkStatus(
-            HostLinkPhase.failed,
-            error: HostLinkError(HostLinkErrorKind.unreachable, '网络不可用', retryable: true),
-          ),
-        ),
-      ),
-    ]);
-    expect(find.text('连不上「电脑」'), findsOneWidget);
-    expect(find.text('网络不可用'), findsOneWidget);
-    await tester.tap(find.text('重试'));
-    expect(remote.retries, 1);
   });
   testWidgets('local idle only has a title and does not create native runtime', (tester) async {
     await _pump(tester, const Scaffold(body: FeatureOffline()), [

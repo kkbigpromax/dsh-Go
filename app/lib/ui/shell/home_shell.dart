@@ -26,8 +26,6 @@ import '../notify/chat_alert_host.dart';
 import '../notify/voice_model_host.dart';
 import '../plugins/plugins_screen.dart';
 import '../phone/phone_stop_watcher.dart';
-import '../remote/host_switcher.dart' show showHostSheet;
-import '../remote/remote_screen.dart';
 import '../safe_mode/safe_mode_notice_listener.dart';
 import '../session/session_detail_page.dart';
 import '../settings/search/settings_search_page.dart';
@@ -190,7 +188,6 @@ class _HomeShellState extends ConsumerState<HomeShell> with TickerProviderStateM
   void _openDestination(DrawerDestination destination) {
     final page = switch (destination) {
       DrawerDestination.web => const SizedBox.shrink(),
-      DrawerDestination.remote => const RemoteScreen(),
       DrawerDestination.plugins => const PluginsScreen(),
       DrawerDestination.engine => const EngineScreen(),
       DrawerDestination.settings => const SettingsScreen(),
@@ -310,8 +307,7 @@ class _HomeShellState extends ConsumerState<HomeShell> with TickerProviderStateM
                               onMenu: _onMenu,
                               menuTooltip: AdaptiveChrome.menuTooltipFor(layout),
                               onSearch: _search,
-                              onHost: () =>
-                                  showHostSheet(context, onManage: () => _openDestination(DrawerDestination.remote)),
+                              onHost: () => _openDestination(DrawerDestination.engine),
                               onWeb: () => _openDestination(DrawerDestination.web),
                               onSettings: () => _openDestination(DrawerDestination.settings),
                             ),

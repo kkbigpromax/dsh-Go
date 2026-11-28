@@ -19,13 +19,7 @@ final _routing = activeConnectionProvider.overrideWith((ref) {
   final host = ref.watch(activeHostProvider);
   final peer = ref.watch(_peers)[host];
   return AsyncData<HostConnection?>(
-    peer == null
-        ? null
-        : HostConnection(
-            client: peer.client,
-            label: peer.label,
-            isLocal: host.isLocal,
-          ),
+    peer == null ? null : HostConnection(client: peer.client, label: peer.label, isLocal: host.isLocal),
   );
 });
 
@@ -44,20 +38,14 @@ class _Peer {
     final connection = DshConnection(host.baseUri);
     await connection.login(FakeDsh.token);
     final hold = ReplyHold();
-    final client = DshClient.withCarrier(
-      HeldReplyCarrier(DshHttpCarrier(connection), hold),
-    );
+    final client = DshClient.withCarrier(HeldReplyCarrier(DshHttpCarrier(connection), hold));
     final peer = _Peer(label, host, client, hold);
     host.handlers[r'$events/result'] = (args) {
       peer.answers.add(args);
       return peer.failApproval
           ? {
               'ok': false,
-              'error': {
-                'code': 'approval/test-failure',
-                'message': 'controlled approval failure',
-                'details': {},
-              },
+              'error': {'code': 'approval/test-failure', 'message': 'controlled approval failure', 'details': {}},
             }
           : {'ok': true};
     };
@@ -79,11 +67,7 @@ class _Peer {
     'event': 'approval/request',
     'eventId': id,
     'agentId': 'S',
-    'request': {
-      'toolName': 'bash',
-      'callId': '$label-call-$id$suffix',
-      'reason': 'controlled $label test request',
-    },
+    'request': {'toolName': 'bash', 'callId': '$label-call-$id$suffix', 'reason': 'controlled $label test request'},
   });
 
   Future<void> close() async {
@@ -120,10 +104,7 @@ class _Harness {
   }
 
   Future<void> ready(_Peer peer) => waitSync(
-    () =>
-        peer.follows > 0 &&
-        state.controlReady &&
-        chat.header?.cwd == '/peer-${peer.label}',
+    () => peer.follows > 0 && state.controlReady && chat.header?.cwd == '/peer-${peer.label}',
     '${peer.label} follow applied',
   );
 
@@ -157,19 +138,11 @@ class _Harness {
   }
 }
 
-Future<Completer<void>> _holdAnswer(
-  _Harness h,
-  _Peer peer,
-  String id, {
-  required bool fail,
-}) async {
+Future<Completer<void>> _holdAnswer(_Harness h, _Peer peer, String id, {required bool fail}) async {
   peer.failApproval = fail;
   peer.hold.arm(r'$events/result');
   peer.ask(id);
-  await waitSync(
-    () => h.state.openApproval?.eventId == id,
-    'visible $id before explicit approval',
-  );
+  await waitSync(() => h.state.openApproval?.eventId == id, 'visible $id before explicit approval');
   await h.chat.allowAll(h.state.openApproval!);
   await peer.hold.received!.future;
   expect(peer.answers.last['eventId'], id);
@@ -187,15 +160,14 @@ Future<void> _releaseAnswer(Completer<void> release) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  Future<void> scenario(Future<void> Function(_Harness) body) =>
-      HttpOverrides.runWithHttpOverrides(() async {
-        final h = await _Harness.start();
-        try {
-          await body(h);
-        } finally {
-          await h.close();
-        }
-      }, RealSyncHttp());
+  Future<void> scenario(Future<void> Function(_Harness) body) => HttpOverrides.runWithHttpOverrides(() async {
+    final h = await _Harness.start();
+    try {
+      await body(h);
+    } finally {
+      await h.close();
+    }
+  }, RealSyncHttp());
 
   test(
     'current host failed approval restores the card and reports its error',
@@ -206,67 +178,6 @@ void main() {
       expect(h.state.openApproval?.eventId, 'current-failure');
       expect(h.state.autoAnswered, isEmpty);
       expect(h.a.answers, hasLength(1));
-    }),
-  );
-
-  test(
-    'late A approval failure must not write an error into host B',
-    () => scenario((h) async {
-      final release = await _holdAnswer(h, h.a, 'old-A', fail: true);
-      await h.select(_remote, h.b);
-      h.b.ask('pending-B');
-      await waitSync(
-        () => h.state.approvals.any(
-          (request) => request.callId == 'B-call-pending-B',
-        ),
-        'B request delivered',
-      );
-      expect(h.state.error, isNull);
-      await _releaseAnswer(release);
-      expect(h.state.error, isNull, reason: 'A failure is not a B operation');
-      expect(
-        h.state.approvals.any(
-          (request) => request.callId == 'B-call-pending-B',
-        ),
-        isTrue,
-      );
-      expect(h.b.answers, isEmpty);
-    }),
-  );
-
-  test(
-    'late A failure must not remove a B approval marker with the same id',
-    () => scenario((h) async {
-      const id = 'copied-id';
-      final release = await _holdAnswer(h, h.a, id, fail: true);
-      await h.select(_remote, h.b);
-      await _holdAnswer(h, h.b, id, fail: false);
-      expect(h.state.openApproval, isNull);
-      await _releaseAnswer(release);
-      expect(
-        h.state.autoAnswered,
-        contains(id),
-        reason: 'The outstanding B answer owns its marker',
-      );
-      expect(h.state.openApproval, isNull);
-      expect(h.state.error, isNull);
-      expect(h.b.answers, hasLength(1));
-    }),
-  );
-
-  test(
-    'observed host round trip retires the old failure even after returning to A',
-    () => scenario((h) async {
-      const id = 'A-round-trip';
-      final release = await _holdAnswer(h, h.a, id, fail: true);
-      await h.select(_remote, h.b);
-      await h.select(HostRef.local, h.a);
-      await _holdAnswer(h, h.a, id, fail: false);
-      expect(h.a.answers, hasLength(2));
-      await _releaseAnswer(release);
-      expect(h.state.autoAnswered, contains(id));
-      expect(h.state.openApproval, isNull);
-      expect(h.state.error, isNull);
     }),
   );
 
@@ -285,18 +196,12 @@ void main() {
       await h.ready(replacement);
       replacement.ask(id);
       await waitSync(
-        () => h.state.approvals.any(
-          (request) => request.callId == 'A-new-client-call-$id',
-        ),
+        () => h.state.approvals.any((request) => request.callId == 'A-new-client-call-$id'),
         'redelivered same-host request',
       );
       expect(h.state.autoAnswered, contains(id));
       expect(h.state.openApproval, isNull);
-      expect(
-        replacement.answers,
-        isEmpty,
-        reason: 'The earlier request is still in flight',
-      );
+      expect(replacement.answers, isEmpty, reason: 'The earlier request is still in flight');
       await _releaseAnswer(release);
       expect(h.state.autoAnswered, isNot(contains(id)));
       expect(h.state.openApproval?.eventId, id);
@@ -314,40 +219,19 @@ void main() {
       final follows = h.a.follows;
       await h.a.host.sockets.last.ws.close();
       await waitSync(
-        () =>
-            (h.a.client.mux.generation?.number ?? generation) > generation &&
-            h.a.follows > follows,
+        () => (h.a.client.mux.generation?.number ?? generation) > generation && h.a.follows > follows,
         'same-client new mux',
       );
       await h.ready(h.a);
       h.a.ask(id, suffix: '-redelivered');
       await waitSync(
-        () => h.state.approvals.any(
-          (request) => request.callId == 'A-call-$id-redelivered',
-        ),
+        () => h.state.approvals.any((request) => request.callId == 'A-call-$id-redelivered'),
         'redelivered same-client request was applied',
       );
       expect(h.state.autoAnswered, contains(id));
       await _releaseAnswer(release);
       expect(h.state.autoAnswered, isNot(contains(id)));
       expect(h.state.openApproval?.eventId, id);
-      expect(h.state.error, isNotNull);
-    }),
-  );
-
-  test(
-    'relay display-name change keeps the current failed approval recoverable',
-    () => scenario((h) async {
-      await h.select(_remote, h.b);
-      final release = await _holdAnswer(h, h.b, 'relay-failure', fail: true);
-      h.container
-          .read(activeHostProvider.notifier)
-          .select(const HostRef.relay('controlled-B', name: 'Renamed'));
-      await h.container.pump();
-      expect(h.container.read(currentSessionProvider), 'S');
-      await _releaseAnswer(release);
-      expect(h.state.openApproval?.eventId, 'relay-failure');
-      expect(h.state.autoAnswered, isEmpty);
       expect(h.state.error, isNotNull);
     }),
   );

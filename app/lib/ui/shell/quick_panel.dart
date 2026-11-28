@@ -18,7 +18,6 @@ import 'drawer/drawer_destination.dart';
 extension DrawerDestinationLook on DrawerDestination {
   IconData get icon => switch (this) {
     DrawerDestination.web => AppIcons.webApp,
-    DrawerDestination.remote => AppIcons.remoteHosts,
     DrawerDestination.plugins => AppIcons.plugin,
     DrawerDestination.engine => AppIcons.engine,
     DrawerDestination.settings => AppIcons.settings,
@@ -28,7 +27,6 @@ extension DrawerDestinationLook on DrawerDestination {
 
   String label(L10n l10n) => switch (this) {
     DrawerDestination.web => l10n.commonWeb,
-    DrawerDestination.remote => l10n.commonRemoteHost,
     DrawerDestination.plugins => l10n.hubPlugins,
     DrawerDestination.engine => l10n.hubSettingsEngine,
     DrawerDestination.settings => l10n.commonSettings,
